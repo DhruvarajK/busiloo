@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busiloo - Bus Fare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #D32F2F; 
+            --primary-darker: #D32F2F;
+            --secondary-color: #10b981; 
+            --background-color: #f0f4f8;
+            --card-background: #ffffff;
+            --text-primary: #1f2937; 
+            --text-secondary: #4b5563; 
+            --border-color: #e5e7eb; 
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --error-color: #ef4444; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 650px;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease-in-out;
+        }
+        
+        @media (max-width: 768px) {
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #f9fafb;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .input-field::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-darker);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Autocomplete/Search Results */
+        .search-results-container {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .search-result-item:hover {
+            background-color: #eef2ff; /* Indigo 50 */
+        }
+
+        /* Results Display */
+        #results {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .summary-label {
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .routes-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .route-card {
+            background-color: #f9fafb; /* Gray 50 */
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .route-card:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 6px 15px var(--shadow-color);
+        }
+
+        .route-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-darker);
+            margin-bottom: 1rem;
+        }
+        
+        .route-details {
+            display: grid;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .route-detail-item {
+             display: flex;
+             justify-content: space-between;
+        }
+
+        .route-detail-label {
+            color: var(--text-secondary);
+        }
+
+        .route-detail-value {
+            font-weight: 500;
+        }
+        
+        .route-fare {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            text-align: right;
+            margin-top: 1rem;
+        }
+        
+        .no-routes-message {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+            background-color: #f9fafb;
+            border-radius: 8px;
+        }
+
+        /* Loading Spinner */
+        #loading {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s ease infinite;
+        }
+
+        /* Error Message */
+        #error {
+            background-color: #fee2e2; /* Red 100 */
+            color: var(--error-color);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #fca5a5; /* Red 300 */
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bus Fare Finder</h1>
+
+        <div class="card">
+            <h2>Enter Your Journey Details</h2>
+            <form id="fareForm">
+                <div class="form-group">
+                    <label for="startStopName" class="form-label">Start Stop</label>
+                    <input type="text" id="startStopName" placeholder="e.g., Central Bus Station" class="input-field" autocomplete="off">
+                    <input type="hidden" id="startStopId" name="start_stop_id" required>
+                    <div id="startStopSearchResults" class="search-results-container hidden"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="endStopName" class="form-label">End Stop</label>
+                    <input type="text" id="endStopName" placeholder="e.g., City Hospital" class="input-field" autocomplete="off">
+                    <input type="hidden" id="endStopId" name="end_stop_id" required>
+                    <div id="endStopSearchResults" class="search-results-container hidden"></div>
+                </div>
+
+                <button type="submit" class="btn-primary">Calculate Fare & Find Routes</button>
+            </form>
+        </div>
+
+        <!-- Loading state element -->
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Error message element -->
+        <div id="error" class="hidden">
+            <p id="errorMessage"></p>
+        </div>
+
+        <!-- Results section -->
+        <div id="results" class="hidden">
+            <div class="card">
+                <h2>Calculation Summary</h2>
+                <div class="summary-item">
+                    <span class="summary-label">From:</span>
+                    <span id="startStopNameDisplay" class="summary-value"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">To:</span>
+                    <span id="endStopNameDisplay" class="summary-value"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Est. Distance (Straight Line):</span>
+                    <span class="summary-value"><span id="distanceKm"></span> km</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Buses Found on This Route</h2>
+                <div id="routesList" class="routes-list">
+                    <!-- Bus route details will be injected here -->
+                </div>
+                <p id="noRoutesMessage" class="no-routes-message hidden">No direct buses found for this route.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debounce function to limit API calls (No changes made to this section)
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        async function searchStops(query, resultsContainer, hiddenIdInput, nameInput) {
+            if (query.length < 2) { // Only search if query has at least 2 characters
+                resultsContainer.classList.add('hidden');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/search_stop?q=${encodeURIComponent(query)}`);
+                const stops = await response.json();
+
+                resultsContainer.innerHTML = '';
+                if (stops.length > 0) {
+                    stops.forEach(stop => {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.textContent = stop.name + (stop.district ? ` (${stop.district})` : '');
+                        item.dataset.stopId = stop.id;
+                        item.dataset.stopName = stop.name;
+                        item.addEventListener('click', () => {
+                            nameInput.value = stop.name;
+                            hiddenIdInput.value = stop.id;
+                            resultsContainer.classList.add('hidden');
+                            resultsContainer.innerHTML = '';
+                        });
+                        resultsContainer.appendChild(item);
+                    });
+                    resultsContainer.classList.remove('hidden');
+                } else {
+                    resultsContainer.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error searching stops:', error);
+                resultsContainer.classList.add('hidden');
+            }
+        }
+
+        const debouncedStartStopSearch = debounce((query) => {
+            searchStops(query,
+                document.getElementById('startStopSearchResults'),
+                document.getElementById('startStopId'),
+                document.getElementById('startStopName')
+            );
+        }, 300);
+
+        const debouncedEndStopSearch = debounce((query) => {
+            searchStops(query,
+                document.getElementById('endStopSearchResults'),
+                document.getElementById('endStopId'),
+                document.getElementById('endStopName')
+            );
+        }, 300);
+
+        document.getElementById('startStopName').addEventListener('input', (event) => {
+            document.getElementById('startStopId').value = '';
+            debouncedStartStopSearch(event.target.value);
+        });
+
+        document.getElementById('endStopName').addEventListener('input', (event) => {
+            document.getElementById('endStopId').value = '';
+            debouncedEndStopSearch(event.target.value);
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!document.getElementById('startStopName').contains(event.target) && !document.getElementById('startStopSearchResults').contains(event.target)) {
+                document.getElementById('startStopSearchResults').classList.add('hidden');
+            }
+            if (!document.getElementById('endStopName').contains(event.target) && !document.getElementById('endStopSearchResults').contains(event.target)) {
+                document.getElementById('endStopSearchResults').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('fareForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const startStopId = document.getElementById('startStopId').value;
+            const endStopId = document.getElementById('endStopId').value;
+            
+            // Hide previous results and errors before new submission
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('errorMessage').textContent = '';
+
+
+            if (!startStopId || !endStopId) {
+                document.getElementById('error').classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = 'Please select both start and end stops from the suggestions.';
+                return;
+            }
+
+            document.getElementById('loading').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`/api/calculate_fare?start_stop_id=${startStopId}&end_stop_id=${endStopId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to fetch fare calculation.');
+                }
+
+                document.getElementById('startStopNameDisplay').textContent = data.start_stop_name;
+                document.getElementById('endStopNameDisplay').textContent = data.end_stop_name;
+                document.getElementById('distanceKm').textContent = data.distance_km.toFixed(2);
+
+                const routesList = document.getElementById('routesList');
+                routesList.innerHTML = ''; 
+
+                if (data.routes_found.length > 0) {
+                    document.getElementById('noRoutesMessage').classList.add('hidden');
+                    data.routes_found.forEach(route => {
+                        const routeCard = document.createElement('div');
+                        routeCard.className = 'route-card';
+                        // Using a more structured and professional layout for route cards
+                        routeCard.innerHTML = `
+                            <p class="route-header">${route.bus_name} - ${route.route_name}</p>
+                            <div class="route-details">
+                                <div class="route-detail-item">
+                                    <span class="route-detail-label">Type:</span>
+                                    <span class="route-detail-value">${route.is_limited_stop ? 'Limited Stop' : 'Ordinary'}</span>
+                                </div>
+                                <div class="route-detail-item">
+                                    <span class="route-detail-label">Direction:</span>
+                                    <span class="route-detail-value">${route.direction}</span>
+                                </div>
+                                <div class="route-detail-item">
+                                    <span class="route-detail-label">Departure:</span>
+                                    <span class="route-detail-value">${route.departure_time}</span>
+                                </div>
+                                <div class="route-detail-item">
+                                    <span class="route-detail-label">Arrival at Start:</span>
+                                    <span class="route-detail-value">${route.start_arrival_time}</span>
+                                </div>
+                                 <div class="route-detail-item">
+                                    <span class="route-detail-label">Arrival at End:</span>
+                                    <span class="route-detail-value">${route.end_arrival_time}</span>
+                                </div>
+                            </div>
+                            <p class="route-fare">₹${route.calculated_fare.toFixed(2)}</p>
+                        `;
+                        routesList.appendChild(routeCard);
+                    });
+                } else {
+                    document.getElementById('noRoutesMessage').classList.remove('hidden');
+                }
+
+                document.getElementById('results').classList.remove('hidden');
+
+            } catch (error) {
+                document.getElementById('error').classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = error.message;
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

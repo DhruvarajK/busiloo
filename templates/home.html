@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Busiloo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- App Theme & Variables --- */
+        :root {
+            --primary-color: #D32F2F; /* Bold Red */
+            --primary-dark: #B71C1C;
+            --accent-color: #FFC107; /* Yellow Accent */
+            --background-color: #F5F5F5;
+            --card-background: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #E0E0E0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+            
+        }
+
+        /* --- Base & Body --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            color: var(--text-primary);
+        }
+        #page-loader {
+            position: fixed; /* Covers the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: transparent; /* Updated background color */
+            backdrop-filter: blur(5px); /* Added blur effect */
+            display: flex; /* Centers the loader content */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Ensures it's on top of everything */
+            opacity: 1; /* Initially fully visible */
+            transition: opacity 0.5s ease-out; /* Smooth fade-out transition */
+            pointer-events: all;
+            border-radius: 8px; /* Rounded corners for the overlay itself */
+        }
+
+        /* Class to fade out and hide the loader (added by JavaScript) */
+        #page-loader.fade-out {
+            opacity: 0 !important; /* Force opacity to 0 */
+            pointer-events: none; /* Prevent interaction with elements beneath */
+        }
+
+
+        .loader-spinner {
+            border: 6px solid #e0e0e000;
+            border-top: 6px solid #e24a4a;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1.2s linear infinite;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Keyframe animation for the spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Main App Container --- */
+        .app-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* --- App Header --- */
+        .app-header {
+            background-color: var(--primary-color);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .app-header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex ;
+            align-items: center;
+            justify-content: center;
+        }
+        .time-section {
+            font-size: 0.9em;
+            background: rgba(0,0,0,0.1);
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .time-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.2s;
+        }
+        .time-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+
+        /* --- Main Search Card --- */
+        .search-form-card {
+            background: var(--card-background);
+            margin: 12px 15px 20px 15px;
+            position: relative;
+            z-index: 10;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+        }
+
+        .location-inputs {
+            position: relative;
+        }
+        
+        .swap-btn {
+            position: absolute;
+            top: 58%;
+            right: 0px;
+            transform: translateY(-50%);
+            z-index: 11;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .swap-btn:hover {
+            transform: translateY(-50%) rotate(180deg);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .swap-btn svg { width: 20px; height: 20px; color: var(--primary-color); }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .input-wrapper:last-of-type {
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper .icon {
+            position: absolute;
+            left: 15px;
+            top: 70%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        .input-wrapper .icon svg { width: 20px; height: 20px; }
+        
+        .search-input, .date-input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: #F9F9F9;
+            cursor: pointer;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+        
+        .search-button {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .search-button:hover { background: var(--primary-dark); }
+        
+        /* --- Secondary Actions --- */
+        .secondary-actions {
+            padding: 0 15px;
+        }
+        .action-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .action-link .icon { color: var(--primary-color); }
+        .action-link .icon svg { width: 24px; height: 24px; }
+        .action-link .text h3 { font-size: 1em; margin-bottom: 2px; }
+        .action-link .text p { font-size: 0.8em; color: var(--text-secondary); }
+
+        /* --- OVERLAY STYLES --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--background-color); z-index: 100;
+            display: flex; flex-direction: column;
+            transform: scale(1.1); opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+        }
+        .overlay.active { transform: scale(1); opacity: 1; visibility: visible; }
+        
+        .overlay-header {
+            display: flex; align-items: center; padding: 15px;
+            background: var(--card-background); flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .back-btn, .close-btn {
+            background: none; border: none; font-size: 24px;
+            cursor: pointer; padding: 5px; color: var(--text-secondary);
+        }
+        .back-btn svg, .close-btn svg { width: 28px; height: 28px; }
+
+        .overlay-header h2 { flex: 1; text-align: center; font-weight: 600; font-size: 1.2em; }
+        
+        .overlay-search-wrapper { padding: 15px; background: var(--card-background); }
+        .overlay-search-input {
+            width: 100%; padding: 12px 15px; font-size: 16px;
+            border: 1px solid var(--border-color); border-radius: 10px;
+            background: var(--background-color); font-family: 'Poppins', sans-serif;
+        }
+        
+        .search-results { flex: 1; overflow-y: auto; }
+        .result-item {
+            display: flex; align-items: center; gap: 15px; width: 100%;
+            padding: 15px 20px; border: none; border-bottom: 1px solid var(--border-color);
+            background: var(--card-background); text-align: left; cursor: pointer;
+            font-size: 16px; color: var(--text-primary); text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .result-item .icon { color: var(--text-secondary); }
+        .result-item:hover { background-color: #f7f7f7; }
+        
+        .no-results, .loading { padding: 40px 20px; text-align: center; color: var(--text-secondary); }
+        .loading { color: var(--primary-color); font-weight: 500; }
+
+        /* --- Results Overlay Table --- */
+        .results-overlay .results-content { flex: 1; overflow-y: auto; padding: 15px; }
+        .results-overlay table {
+            width: 100%; border-collapse: collapse; background: white;
+            border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow);
+        }
+        .results-overlay th, .results-overlay td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .results-overlay th { background: #f2f2f2; font-weight: 600; font-size: 0.9em; }
+        .results-overlay tr:last-child td { border-bottom: none; }
+        .results-overlay td { color: var(--text-secondary); font-size: 0.95em; }
+        .results-overlay td:first-child { color: var(--text-primary); font-weight: 500; }
+        .results-overlay .view-trip-btn {
+            background-color: var(--primary-color); color: white;
+            padding: 8px 12px; border-radius: 8px; text-decoration: none;
+            font-size: 0.9em; font-weight: 500; display: inline-block;
+            transition: background-color 0.2s;
+        }
+        .results-overlay .view-trip-btn:hover { background-color: var(--primary-dark); }
+    </style>
+</head>
+<body>
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- Main App Structure -->
+    <div class="app-container">
+        
+        <header class="app-header">
+            <h1>Busiloo&nbsp;<svg width="27" height="27" viewBox="3 1 24 24" xmlns="http://www.w3.org/2000/svg">
+                <g>
+                    <path fill="none" d="M0 0h24v24H0z"/>
+                    <path fill="currentColor" d="M12 3v2H5v7h16v8h-1v1a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1H3v-8H2V8h1V5a2 2 0 0 1 2-2h7zm7 11H5v4h14v-4zm-9 1v2H6v-2h4zm8 0v2h-4v-2h4zm.5-14a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 5.167c-.491 0-.94.177-1.289.47l-.125.115L18.5 8.167l1.413-1.416a1.994 1.994 0 0 0-1.413-.584zm0-2.667a4.65 4.65 0 0 0-3.128 1.203l-.173.165.944.942a3.323 3.323 0 0 1 2.357-.977 3.32 3.32 0 0 1 2.201.83l.156.147.943-.943A4.652 4.652 0 0 0 18.5 3.5z"/>
+                </g>
+            </svg></h1>
+            <div class="time-section">
+                <span id="current-time"></span>
+                <button id="time-toggle-btn" class="time-toggle">24h</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="search-form-card">
+                <div class="location-inputs">
+                    <!-- From Input -->
+                    <div class="input-wrapper">
+                        <label for="start-stop-search">FROM</label>
+                        <div class="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
+                        </div>
+                        <input type="text" id="start-stop-search" class="search-input" placeholder="Starting location" readonly>
+                        <input type="hidden" id="start-stop-id">
+                    </div>
+
+                    <!-- Swap Button -->
+                    <button class="swap-btn" id="swap-btn" aria-label="Swap locations">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                    </button>
+
+                    <!-- To Input -->
+                    <div class="input-wrapper">
+                        <label for="end-stop-search">TO</label>
+                        <div class="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        </div>
+                        <input type="text" id="end-stop-search" class="search-input" placeholder="Destination" readonly>
+                        <input type="hidden" id="end-stop-id">
+                    </div>
+                </div>
+
+                <!-- Date Picker -->
+                <div class="input-wrapper">
+                    <label for="journey-date">DATE OF JOURNEY</label>
+                    <div class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </div>
+                    <input type="text" id="journey-date" class="date-input" readonly>
+                </div>
+
+                <button id="find-btn" class="search-button">Search Buses</button>
+            </section>
+
+            <section class="secondary-actions">
+                <a href="#" id="bus-search-action" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9436 1.25H12.0564C13.8942 1.24998 15.3498 1.24997 16.489 1.40314C17.6614 1.56076 18.6104 1.89288 19.3588 2.64124C20.1071 3.38961 20.4392 4.33856 20.5969 5.51098C20.6996 6.27504 20.7334 7.18144 20.7445 8.25H21C21.9665 8.25 22.75 9.0335 22.75 10V11C22.75 11.5508 22.4907 12.0695 22.05 12.4L20.7475 13.3768C20.7402 14.6093 20.7113 15.6375 20.5969 16.489C20.4392 17.6614 20.1071 18.6104 19.3588 19.3588C19.1689 19.5486 18.9661 19.7117 18.75 19.852V21C18.75 21.9665 17.9665 22.75 17 22.75H15.5C14.5335 22.75 13.75 21.9665 13.75 21V20.7445C13.2253 20.75 12.6616 20.75 12.0564 20.75H11.9436C11.3384 20.75 10.7747 20.75 10.25 20.7445V21C10.25 21.9665 9.4665 22.75 8.5 22.75H7C6.0335 22.75 5.25 21.9665 5.25 21V19.852C5.03392 19.7117 4.83112 19.5486 4.64124 19.3588C3.89288 18.6104 3.56076 17.6614 3.40313 16.489C3.28866 15.6375 3.25975 14.6093 3.25246 13.3768L1.95 12.4C1.50934 12.0695 1.25 11.5508 1.25 11V10C1.25 9.0335 2.0335 8.25 3 8.25H3.25546C3.26659 7.18144 3.30041 6.27504 3.40313 5.51098C3.56076 4.33856 3.89288 3.38961 4.64124 2.64124C5.38961 1.89288 6.33855 1.56076 7.51098 1.40314C8.65019 1.24997 10.1058 1.24998 11.9436 1.25ZM3.25 9.75H3C2.86193 9.75 2.75 9.86193 2.75 10V11C2.75 11.0787 2.78705 11.1528 2.85 11.2L3.25 11.5L3.25 9.94359C3.25 9.87858 3.25 9.81405 3.25 9.75ZM4.75573 13.75C4.76662 14.7836 4.79821 15.6082 4.88976 16.2892C5.02502 17.2952 5.27869 17.8749 5.7019 18.2981C6.12511 18.7213 6.70476 18.975 7.71085 19.1102C8.73851 19.2484 10.0932 19.25 12 19.25C13.9068 19.25 15.2615 19.2484 16.2892 19.1102C17.2952 18.975 17.8749 18.7213 18.2981 18.2981C18.7213 17.8749 18.975 17.2952 19.1102 16.2892C19.2018 15.6082 19.2334 14.7836 19.2443 13.75H4.75573ZM19.25 12.25H4.75002C4.75 12.1677 4.75 12.0844 4.75 12V10C4.75 8.1173 4.75155 6.77287 4.88458 5.75H19.1154C19.2484 6.77287 19.25 8.1173 19.25 10V12C19.25 12.0844 19.25 12.1677 19.25 12.25ZM20.75 11.5L21.15 11.2C21.213 11.1528 21.25 11.0787 21.25 11V10C21.25 9.86193 21.1381 9.75 21 9.75H20.75C20.75 9.81405 20.75 9.87858 20.75 9.94359V11.5ZM18.701 4.25C18.5882 4.03672 18.4548 3.85859 18.2981 3.7019C17.8749 3.27869 17.2952 3.02502 16.2892 2.88976C15.2615 2.75159 13.9068 2.75 12 2.75C10.0932 2.75 8.73851 2.75159 7.71085 2.88976C6.70476 3.02502 6.12511 3.27869 5.7019 3.7019C5.54522 3.85859 5.41177 4.03672 5.29896 4.25H18.701ZM6.75 20.4605V21C6.75 21.1381 6.86193 21.25 7 21.25H8.5C8.63807 21.25 8.75 21.1381 8.75 21V20.7042C8.30066 20.6815 7.88845 20.6476 7.51098 20.5969C7.24599 20.5612 6.99242 20.5167 6.75 20.4605ZM15.25 20.7042V21C15.25 21.1381 15.3619 21.25 15.5 21.25H17C17.1381 21.25 17.25 21.1381 17.25 21V20.4605C17.0076 20.5167 16.754 20.5612 16.489 20.5969C16.1116 20.6476 15.6993 20.6815 15.25 20.7042ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM14.75 16C14.75 15.5858 15.0858 15.25 15.5 15.25H17C17.4142 15.25 17.75 15.5858 17.75 16C17.75 16.4142 17.4142 16.75 17 16.75H15.5C15.0858 16.75 14.75 16.4142 14.75 16Z" fill="currentColor"/>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Search by Bus Name</h3>
+                        <p>Find a specific bus service</p>
+                    </div>
+                </a>
+                <a href="/nearby" class="action-link">
+                    <div class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
+                    <div class="text">
+                        <h3>Stops Near Me</h3>
+                        <p>Find bus stops and routes around you</p>
+                    </div>
+                </a>
+                <a href="/calculate_fare_page" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19.5 12.5C19.5 11.12 20.62 10 22 10V9C22 5 21 4 17 4H7C3 4 2 5 2 9V9.5C3.38 9.5 4.5 10.62 4.5 12C4.5 13.38 3.38 14.5 2 14.5V15C2 19 3 20 7 20H17C21 20 22 19 22 15C20.62 15 19.5 13.88 19.5 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14.75L15 8.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.9945 14.75H15.0035" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.99451 9.25H9.00349" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Calculate fare</h3>
+                        <p>Estimate your travel cost.</p>
+                    </div>
+                </a>
+                <a href="/union/app_feedback" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g id="User / User_Voice">
+                            <path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </g>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Feedback</h3>
+                        <p>Share your experience with us.</p>
+                    </div>
+                </a>
+                <a href="/traffic_report" class="action-link">
+                    <div class="icon">
+                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 3.75L15.75 3H8.25L7.5 3.75V6.75H6V8.25H7.5V11.25H6V12.75H7.5V15.75H6V17.25H7.5V20.25L8.25 21H15.75L16.5 20.25V17.25H18V15.75H16.5V12.75H18V11.25H16.5V8.25H18V6.75H16.5V3.75ZM9 4.5H15V19.5H9V4.5ZM12 9C12.8284 9 13.5 8.32843 13.5 7.5C13.5 6.67157 12.8284 6 12 6C11.1716 6 10.5 6.67157 10.5 7.5C10.5 8.32843 11.1716 9 12 9ZM13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12ZM12 18C12.8284 18 13.5 17.3284 13.5 16.5C13.5 15.6716 12.8284 15 12 15C11.1716 15 10.5 15.6716 10.5 16.5C10.5 17.3284 11.1716 18 12 18Z" fill="currentColor"/>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Report Traffic</h3>
+                        <p>Notify us about traffic issues.</p>
+                    </div>
+                </a>
+
+                
+            </section>
+        </main>
+    </div>
+
+    <!-- Search Overlay -->
+    <div id="search-overlay" class="overlay">
+        <div class="overlay-header">
+            <button class="back-btn" id="back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <div class="overlay-search-wrapper">
+                 <input type="text" id="overlay-search-input" class="overlay-search-input" placeholder="Search..." />
+            </div>
+        </div>
+        <div class="search-results" id="search-results">
+            <div class="no-results">Start typing to search...</div>
+        </div>
+    </div>
+
+    <!-- Results Overlay -->
+    <div id="results-overlay" class="overlay results-overlay">
+        <div class="overlay-header">
+            <button class="close-btn" id="results-close-btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h2>Available Buses</h2>
+        </div>
+        <div class="results-content" id="results-content"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const pageLoader = document.getElementById('page-loader');
+            window.addEventListener('load', () => {
+                console.log('Window loaded. Hiding initial page loader.');
+                pageLoader.classList.add('fade-out'); // Start fading out the loader
+                pageLoader.addEventListener('transitionend', function handler() {
+                    if (pageLoader.classList.contains('fade-out')) {
+                        pageLoader.style.display = 'none';
+                        pageLoader.removeEventListener('transitionend', handler);
+                    }
+                });
+            });
+
+            // --- 2. Show loader when <a> links are clicked ---
+            const allLinks = document.querySelectorAll('a');
+            allLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    if (
+                        link.hostname === window.location.hostname && // Same domain
+                        link.target !== '_blank' && // Not opening in a new tab
+                        link.href.indexOf('#') === -1 // Not an internal anchor link
+                    ) {
+                        console.log('Link clicked. Showing loader.');
+                        pageLoader.style.display = 'flex'; // Ensure it's visible
+                        pageLoader.classList.remove('fade-out'); // Remove fade-out class
+                        pageLoader.style.opacity = '1'; // Ensure full visibility
+                    }
+                });
+            });
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    pageLoader.classList.add('fade-out'); // Fade out
+                    pageLoader.addEventListener('transitionend', function handler() {
+                        if (pageLoader.classList.contains('fade-out')) {
+                            pageLoader.style.display = 'none';
+                            pageLoader.removeEventListener('transitionend', handler);
+                        }
+                    });
+                }
+            });
+
+            // --- TIME & DATE LOGIC ---
+            const currentTimeElem = document.getElementById('current-time');
+            const journeyDateElem = document.getElementById('journey-date');
+            const timeToggleBtn = document.getElementById('time-toggle-btn');
+            let is24Hour = false; // Default to 12-hour format
+
+            function formatTime(dateOrString) {
+                let date;
+                if (typeof dateOrString === 'string') {
+                    const [h, m, s] = dateOrString.split(':').map(Number);
+                    date = new Date();
+                    date.setHours(h, m, s || 0);
+                } else date = dateOrString;
+                return new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Kolkata',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: !is24Hour
+                }).format(date);
+            }
+            
+            function updateCurrentTime() {
+                 const now = new Date();
+                 const options = {
+                    timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                    hour: 'numeric', minute: '2-digit', hour12: !is24Hour
+                 };
+                 currentTimeElem.textContent = new Intl.DateTimeFormat('en-US', options).format(now).replace(' at', ',');
+            }
+            
+            function setJourneyDate() {
+                 const today = new Date();
+                 journeyDateElem.value = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            }
+            
+            timeToggleBtn.addEventListener('click', () => {
+                is24Hour = !is24Hour;
+                timeToggleBtn.textContent = is24Hour ? "12h" : "24h";
+                updateCurrentTime();
+                
+                // Update times in the results table if it's open
+                document.querySelectorAll('[data-time]').forEach(el => {
+                    el.textContent = formatTime(el.getAttribute('data-time'));
+                });
+            });
+
+            setInterval(updateCurrentTime, 60000); // Update every minute
+            updateCurrentTime();
+            setJourneyDate();
+
+            // --- OVERLAY LOGIC ---
+            const searchOverlay = document.getElementById('search-overlay');
+            const overlaySearchInput = document.getElementById('overlay-search-input');
+            const searchResults = document.getElementById('search-results');
+            const backBtn = document.getElementById('back-btn');
+            
+            let currentSearchType = '', currentTargetInput = null, currentHiddenInput = null, searchTimeout = null, allStops = [];
+
+            function openSearchOverlay(type, target, hidden = null) {
+                currentSearchType = type;
+                currentTargetInput = target;
+                currentHiddenInput = hidden;
+                searchOverlay.classList.add('active');
+                overlaySearchInput.value = '';
+                overlaySearchInput.placeholder = `Search for a ${type === 'buses' ? 'bus' : 'stop'}...`;
+                searchResults.innerHTML = '<div class="no-results">Start typing to search...</div>';
+                setTimeout(() => overlaySearchInput.focus(), 100);
+            }
+
+            function closeSearchOverlay() {
+                searchOverlay.classList.remove('active');
+            }
+            backBtn.addEventListener('click', closeSearchOverlay);
+
+            overlaySearchInput.addEventListener('input', () => {
+                const q = overlaySearchInput.value.trim().toLowerCase();
+                clearTimeout(searchTimeout);
+                if (q.length < 2) {
+                    searchResults.innerHTML = '<div class="no-results">Enter at least 2 characters...</div>';
+                    return;
+                }
+                searchResults.innerHTML = '<div class="loading">Searching...</div>';
+                
+                searchTimeout = setTimeout(() => {
+                    if (currentSearchType === 'buses') {
+                        fetch(`/api/search_bus?q=${encodeURIComponent(q)}`)
+                            .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+                            .then(data => {
+                                if (!data.length) {
+                                    searchResults.innerHTML = '<div class="no-results">No buses found</div>';
+                                    return;
+                                }
+                                let html = '';
+                                data.forEach(bus => html += `<a href="/redirect_to_current_trip/${bus.id}" class="result-item">${bus.name}</a>`);
+                                searchResults.innerHTML = html;
+                            }).catch(() => searchResults.innerHTML = '<div class="no-results">Search failed.</div>');
+                    } else { // Searching for stops
+                        const filtered = allStops.filter(s => s.name.toLowerCase().includes(q));
+                        if (!filtered.length) {
+                            searchResults.innerHTML = '<div class="no-results">No stops found</div>';
+                            return;
+                        }
+                        let html = '';
+                        filtered.slice(0, 50).forEach(s => html += `<button class="result-item" data-stop-id="${s.id}" data-stop-name="${s.name}">${s.name}</button>`);
+                        searchResults.innerHTML = html;
+                        searchResults.querySelectorAll('.result-item').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                currentTargetInput.value = btn.dataset.stopName;
+                                if (currentHiddenInput) currentHiddenInput.value = btn.dataset.stopId;
+                                closeSearchOverlay();
+                            });
+                        });
+                    }
+                }, 300);
+            });
+
+            // --- FETCH STOPS & SETUP INPUTS ---
+            fetch('/union/stops?skip=0&limit=1000')
+               .then(r => r.json())
+               .then(data => allStops = data)
+               .catch(err => console.error("Failed to fetch stops:", err));
+
+            document.getElementById('start-stop-search').addEventListener('click', (e) => openSearchOverlay('stops', e.target, document.getElementById('start-stop-id')));
+            document.getElementById('end-stop-search').addEventListener('click', (e) => openSearchOverlay('stops', e.target, document.getElementById('end-stop-id')));
+            document.getElementById('bus-search-action').addEventListener('click', () => openSearchOverlay('buses', null, null));
+
+            // --- SWAP BUTTON LOGIC ---
+            document.getElementById('swap-btn').addEventListener('click', () => {
+                const startInput = document.getElementById('start-stop-search');
+                const endInput = document.getElementById('end-stop-search');
+                const startIdInput = document.getElementById('start-stop-id');
+                const endIdInput = document.getElementById('end-stop-id');
+
+                [startInput.value, endInput.value] = [endInput.value, startInput.value];
+                [startIdInput.value, endIdInput.value] = [endIdInput.value, startIdInput.value];
+            });
+
+
+            // --- RESULTS OVERLAY LOGIC ---
+            const resultsOverlay = document.getElementById('results-overlay');
+            const resultsContent = document.getElementById('results-content');
+            const resultsClose = document.getElementById('results-close-btn');
+
+            resultsClose.addEventListener('click', () => resultsOverlay.classList.remove('active'));
+
+            document.getElementById('find-btn').addEventListener('click', () => {
+                const startId = document.getElementById('start-stop-id').value;
+                const endId = document.getElementById('end-stop-id').value;
+                if (!startId || !endId) {
+                    alert('Please select a starting and ending stop.');
+                    return;
+                }
+                if (startId === endId) {
+                    alert('Start and end stops cannot be the same.');
+                    return;
+                }
+                resultsContent.innerHTML = '<div class="loading">Searching for buses...</div>';
+                resultsOverlay.classList.add('active');
+
+                fetch(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.length) {
+                            resultsContent.innerHTML = '<p class="no-results">No upcoming buses found for this route.</p>';
+                            return;
+                        }
+                        let html = '<table><thead><tr><th>Bus</th><th>Route</th><th>Depart</th><th>Arrive</th><th></th></tr></thead><tbody>';
+                        data.forEach(r => {
+                            html += `<tr>
+                                <td>${r.bus_name}</td>
+                                <td>${r.route_name} (${r.direction})</td>
+                                <td><span data-time="${r.start_arrival}">${formatTime(r.start_arrival)}</span></td>
+                                <td><span data-time="${r.end_arrival}">${formatTime(r.end_arrival)}</span></td>
+                                <td><a href="/redirect_to_current_trip/${r.bus_id}" class="view-trip-btn">View Trip</a></td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table>';
+                        resultsContent.innerHTML = html;
+                    }).catch(() => resultsContent.innerHTML = '<p class="no-results">Error fetching data. Please try again.</p>');
+            });
+        });
+    </script>
+</body>
+</html>

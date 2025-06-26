@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create New Trip</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* * General Body & Layout 
+     * Sets up the basic page appearance and a centered layout.
+     */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9; /* A light slate color */
+      color: #334155; /* Default text color */
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 56rem; /* Equivalent to Tailwind's max-w-4xl */
+      margin: auto;
+    }
+
+    .main-container {
+      background-color: #ffffff;
+      border-radius: 1rem; /* Softer, larger corners */
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); /* A prominent shadow */
+      min-height: 100vh;
+
+    }
+
+    /* * Header Styling
+     */
+    .page-header {
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #c51d1d, #e11d48); /* Gradient for the header */
+      color: #ffffff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      border-radius: 0 0 33px 33px ;
+    }
+
+    .page-header-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* * General Content Padding
+     */
+    .content-padding {
+      padding: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .content-padding {
+        padding: 2rem;
+      }
+    }
+
+    /* * Progress Bar Styling
+     */
+    .progress-container {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .progress-bar-container {
+      width: 100%;
+      background-color: #e5e7eb;
+      border-radius: 9999px;
+      height: 0.625rem;
+    }
+    .progress-bar {
+      background-color: #e11d48;
+      height: 0.625rem;
+      border-radius: 9999px;
+      transition: width 0.5s ease-in-out;
+    }
+
+    /* * Wizard & Step Animation
+     * Controls the visibility and fade-in animation of wizard steps.
+     */
+    .wizard-step {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .wizard-step.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .step-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+
+    /* * Responsive Grid Layouts
+     */
+    .grid-container {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .grid-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .service-days-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (min-width: 640px) {
+      .service-days-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 768px) {
+      .service-days-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    /* * Form Element Styling
+     * Provides a consistent look for inputs, selects, and labels.
+     */
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.25rem;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      transition: box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+      appearance: none;
+      background-color: #fff;
+      font-size: 1rem;
+    }
+    .form-select {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      padding-right: 2.5rem;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: #e11d48;
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.3);
+    }
+    
+    .service-day-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background-color: #fff;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+      position: relative;
+    }
+    .service-day-label:hover {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+    }
+    .service-day-label span {
+      color: #374151;
+      font-weight: 500;
+    }
+
+    .form-checkbox {
+      height: 1.25rem;
+      width: 1.25rem;
+      color: #e11d48;
+      border: 1px solid #d1d5db;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      appearance: none;
+      transition: background-color 0.2s, border-color 0.2s;
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .form-checkbox:checked {
+      background-color: #e11d48;
+      border-color: #e11d48;
+    }
+    .form-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 2px;
+      width: 6px;
+      height: 12px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .form-checkbox:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.3);
+    }
+
+    /*
+     * Template Section for reusing trip data
+     */
+    .template-container {
+      margin-top: 1.5rem;
+      background-color: #f9fafb;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+    }
+    .template-container.hidden {
+        display: none;
+    }
+    .template-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #374151;
+    }
+
+    /* * Stop Entry Styling 
+     */
+    .stop-entry {
+      background-color: #ffffff;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      position: relative;
+    }
+    .stop-grid {
+      display: grid;
+      gap: 1rem;
+      align-items: flex-end;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .stop-grid {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+      }
+    }
+
+    /* * Autocomplete Styling for stop search
+     */
+    .autocomplete-container {
+      position: relative;
+    }
+    .autocomplete-list {
+      border: 1px solid #d1d5db;
+      max-height: 10rem;
+      overflow-y: auto;
+      background-color: #ffffff;
+      position: absolute;
+      width: 100%;
+      z-index: 10;
+      border-radius: 0.375rem;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    .autocomplete-list.hidden {
+      display: none;
+    }
+    .autocomplete-list li {
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .autocomplete-list li:hover {
+      background-color: #fef2f2;
+    }
+
+    /* * Button Styling
+     * Defines general button styles and specific types (primary, secondary, danger).
+     */
+    .button-container {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    .button-container.space-between {
+      justify-content: space-between;
+    }
+    .btn {
+      width: 100%;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+    @media (min-width: 768px) {
+      .btn {
+        width: auto;
+      }
+    }
+    .btn-primary {
+      background-color: #e11d48;
+    }
+    .btn-primary:hover {
+      background-color: #be123c;
+    }
+    .btn-secondary {
+      background-color: #6b7280;
+      color: #ffffff;
+    }
+    .btn-secondary:hover {
+      background-color: #4b5563;
+    }
+    .btn-danger {
+      background-color: #ef4444;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .btn-danger:hover {
+      background-color: #dc2626;
+    }
+
+    /* * Confirmation Screen styling
+     */
+    .confirmation-details {
+      background-color: #f9fafb;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+    }
+    .confirmation-details strong {
+      display: block;
+      color: #1f2937;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
+    .confirmation-details p, .confirmation-details ul {
+      color: #4b5563;
+      margin: 0;
+    }
+    .confirmation-details ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+    }
+    .confirmation-details li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .confirmation-details li:last-child {
+        border-bottom: none;
+    }
+    .confirmation-details li span:last-child {
+      font-family: monospace;
+      font-size: 0.9rem;
+      background-color: #e5e7eb;
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.25rem;
+    }
+
+    #message {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 600;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      min-height: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+    #message.visible {
+        opacity: 1;
+    }
+    #message.success { background-color: #dcfce7; color: #16a34a; }
+    #message.error { background-color: #fee2e2; color: #dc2626; }
+    #message.info { background-color: #dbeafe; color: #2563eb; }
+  </style>
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <div id="main-container" class="main-container">
+      <!-- Header -->
+      <header class="page-header">
+        <h1 id="header-title" class="page-header-title">Create a New Trip</h1>
+      </header>
+
+      <!-- Progress Bar -->
+      <div class="progress-container">
+          <div class="progress-bar-container">
+              <div id="progress-bar" class="progress-bar" style="width: 10%"></div>
+          </div>
+      </div>
+
+      <div class="content-padding">
+        <form id="trip-form">
+
+          <!-- Step 1: Trip Details -->
+          <div id="step-1" class="wizard-step">
+            <h2 class="step-title">Trip Details</h2>
+            <div class="grid-container">
+                <div>
+                  <label for="bus-select" class="form-label">Select Bus</label>
+                  <select id="bus-select" name="bus_id" class="form-select" required></select>
+                </div>
+                <div>
+                  <label for="departure-time-input" class="form-label">Departure Time</label>
+                  <input type="time" id="departure-time-input" name="departure_time" class="form-input" required />
+                </div>
+                <div>
+                  <label for="route-name-input" class="form-label">Route Name</label>
+                  <input type="text" id="route-name-input" name="route_name" class="form-input" placeholder="e.g., Kannur to Koothuparamba" required />
+                </div>
+                <div>
+                  <label for="direction-input" class="form-label">Direction</label>
+                  <input type="text" id="direction-input" name="direction" class="form-input" placeholder="e.g., Outbound / Inbound" required />
+                </div>
+            </div>
+            <!-- Template Section -->
+            <div id="template-section" class="template-container">
+              <h3 class="template-title">Reuse Existing Trip Template</h3>
+              <div class="grid-container">
+                  <div>
+                      <label for="template-route-select" class="form-label">Route Template</label>
+                      <select id="template-route-select" class="form-select">
+                          <option value="">--Select Route--</option>
+                      </select>
+                  </div>
+                  <div>
+                      <label for="template-trip-select" class="form-label">Template Trip</label>
+                      <select id="template-trip-select" class="form-select" disabled>
+                          <option value="">--Select Template--</option>
+                      </select>
+                  </div>
+              </div>
+            </div>
+            <div class="button-container">
+              <button type="button" class="btn btn-primary" onclick="nextStep(1)">Next &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Service Days -->
+          <div id="step-2" class="wizard-step">
+            <h2 class="step-title">Service Days</h2>
+            <div class="service-days-grid">
+              <!-- Checkboxes will be dynamically inserted here -->
+            </div>
+            <div class="button-container space-between">
+              <button type="button" class="btn btn-secondary" onclick="prevStep(0)">&larr; Previous</button>
+              <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Add Stops -->
+          <div id="step-3" class="wizard-step">
+            <h2 class="step-title">Manage Stops</h2>
+            <div id="stops-fieldset">
+              <!-- Dynamically appended .stop-entry divs -->
+            </div>
+            <div class="button-container space-between">
+                 <button type="button" id="add-stop-manual-btn" class="btn btn-secondary" style="margin-right: auto;">Add Stop Manually</button>
+                 <button type="button" class="btn btn-secondary" onclick="prevStep(1)">&larr; Previous</button>
+                 <button type="button" class="btn btn-primary" onclick="nextStep(3)">Review Trip &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Confirmation -->
+          <div id="step-4" class="wizard-step">
+            <h2 class="step-title">Confirm Your Trip</h2>
+            <div id="confirmation-details" class="confirmation-details">
+              <!-- Confirmation details will be populated here -->
+            </div>
+            <div id="message"></div>
+            <div class="button-container space-between">
+              <button type="button" class="btn btn-secondary" onclick="prevStep(2)">&larr; Edit Details</button>
+              <button type="submit" class="btn btn-primary">Create Trip</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- State Management ---
+    let currentStep = 0;
+    const steps = document.querySelectorAll('.wizard-step');
+    const progressBar = document.getElementById('progress-bar');
+    const totalSteps = steps.length;
+
+    // --- Wizard Navigation ---
+    function updateProgressBar() {
+        const progress = ((currentStep + 1) / totalSteps) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    function showStep(stepIndex) {
+      steps.forEach((step, index) => {
+        step.classList.toggle('active', index === stepIndex);
+      });
+      currentStep = stepIndex;
+      updateProgressBar();
+    }
+
+    function nextStep(stepIndex) {
+      // Validation logic for each step before proceeding
+      if (currentStep === 0 && !validateStep1()) return;
+      if (currentStep === 1 && !validateStep2()) return;
+      if (currentStep === 2) {
+          if (!validateAndPrepareConfirmation()) return;
+      }
+      showStep(stepIndex);
+    }
+
+    function prevStep(stepIndex) {
+      showStep(stepIndex);
+    }
+    
+    // --- Custom Alert ---
+    function showMessage(text, type = 'error') {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = text;
+        messageDiv.className = `visible ${type}`;
+        if (type !== 'info') {
+            setTimeout(() => { messageDiv.className = ''; }, 4000);
+        }
+    }
+
+    // --- Validation Logic ---
+    function validateStep1() {
+      const busId = document.getElementById('bus-select').value;
+      const routeName = document.getElementById('route-name-input').value;
+      const departureTime = document.getElementById('departure-time-input').value;
+      const direction = document.getElementById('direction-input').value;
+
+      if (!busId || !routeName || !departureTime || !direction) {
+          alert('Please fill in all Trip Details before proceeding.');
+          return false;
+      }
+      return true;
+    }
+
+    function validateStep2() {
+      const serviceDays = document.querySelectorAll('input[name="service_days"]:checked');
+      if (serviceDays.length === 0) {
+          alert('Please select at least one Service Day.');
+          return false;
+      }
+      return true;
+    }
+
+    function validateAndPrepareConfirmation() {
+      const stopEntries = document.querySelectorAll('.stop-entry');
+      if (stopEntries.length < 2) { // A trip must have at least a start and end
+          alert('Please add at least two stops.');
+          return false;
+      }
+
+      let allStopsValid = true;
+      stopEntries.forEach((div, index) => {
+          const stopId = div.querySelector('input[name="stop_id"]').value;
+          const arrival = div.querySelector('input[name="arrival_time"]').value;
+          const seq = div.querySelector('input[name="sequence"]').value;
+          if (!stopId || !arrival || !seq) {
+              allStopsValid = false;
+          }
+      });
+
+      if (!allStopsValid) {
+          alert('Please ensure all stops have a selected name, arrival time, and sequence number.');
+          return false;
+      }
+      populateConfirmation();
+      return true;
+    }
+
+    // --- UI Population ---
+    function setupServiceDays() {
+        const daysContainer = document.querySelector('.service-days-grid');
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        daysContainer.innerHTML = days.map(day => `
+            <label class="service-day-label">
+                <input type="checkbox" name="service_days" value="${day.toLowerCase()}" class="form-checkbox" />
+                <span>${day}</span>
+            </label>
+        `).join('');
+    }
+
+    function populateConfirmation() {
+        const busSelect = document.getElementById('bus-select');
+        const selectedBusText = busSelect.options[busSelect.selectedIndex].text;
+        const routeName = document.getElementById('route-name-input').value;
+        const direction = document.getElementById('direction-input').value;
+        const departureTime = document.getElementById('departure-time-input').value;
+
+        const serviceDays = Array.from(document.querySelectorAll('input[name="service_days"]:checked'))
+            .map(cb => cb.parentElement.querySelector('span').textContent)
+            .join(', ');
+
+        const stopsHtml = Array.from(document.querySelectorAll('.stop-entry'))
+             .sort((a, b) => { // Sort by sequence before displaying
+                const seqA = a.querySelector('input[name="sequence"]').value;
+                const seqB = b.querySelector('input[name="sequence"]').value;
+                return parseInt(seqA) - parseInt(seqB);
+            })
+            .map(div => {
+                const stopName = div.querySelector('input[name="stop_name"]').value;
+                const arrivalTime = div.querySelector('input[name="arrival_time"]').value;
+                const sequence = div.querySelector('input[name="sequence"]').value;
+                return `<li>
+                          <span><strong>${sequence}.</strong> ${stopName}</span>
+                          <span>${arrivalTime}</span>
+                        </li>`;
+            }).join('');
+
+        const confirmationDetails = document.getElementById('confirmation-details');
+        confirmationDetails.innerHTML = `
+            <div class="grid-container">
+                <div><strong>Bus:</strong><p>${selectedBusText}</p></div>
+                <div><strong>Route:</strong><p>${routeName}</p></div>
+                <div><strong>Direction:</strong><p>${direction}</p></div>
+                <div><strong>Departure:</strong><p>${departureTime}</p></div>
+            </div>
+            <div>
+                <strong>Service Days:</strong><p>${serviceDays || 'None selected'}</p>
+            </div>
+            <div>
+                <strong>Stops:</strong>
+                <ul>${stopsHtml}</ul>
+            </div>
+        `;
+    }
+
+    // --- Backend Logic & API Calls ---
+    const token = localStorage.getItem('token');
+    // if (!token) { window.location.href = '/login'; } // Uncomment in production
+
+    let currentTemplateOffsets = [];
+
+    async function loadBuses() {
+        try {
+            const res = await fetch('/union/buses', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) throw new Error('Failed to load buses');
+            const buses = await res.json();
+            const select = document.getElementById('bus-select');
+            select.innerHTML = '<option value="">--Choose Bus--</option>';
+            buses.forEach(bus => {
+                const opt = document.createElement('option');
+                opt.value = bus.id;
+                opt.textContent = `${bus.name} (${bus.registration_no})`;
+                select.appendChild(opt);
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function loadTemplateRoutes() {
+        try {
+            const res = await fetch('/union/trips/templates/names', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) throw new Error('Failed to load template route names');
+            const names = await res.json();
+            const sel = document.getElementById('template-route-select');
+            sel.innerHTML = '<option value="">--Select Route--</option>';
+            names.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                sel.appendChild(opt);
+            });
+            document.getElementById('template-section').classList.remove('hidden');
+        } catch (error) {
+            console.error(error);
+            // Hide template section if it fails to load
+            document.getElementById('template-section').classList.add('hidden');
+        }
+    }
+
+    document.getElementById('template-route-select').addEventListener('change', async function() {
+        const route = this.value;
+        const tripSelect = document.getElementById('template-trip-select');
+        tripSelect.innerHTML = '<option value="">--Select Template--</option>';
+        tripSelect.disabled = true;
+        if (!route) return;
+
+        try {
+            const res = await fetch(`/union/trips/templates?route_name=${encodeURIComponent(route)}`, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) throw new Error('Failed to load trip templates');
+            const templates = await res.json();
+            if (templates.length === 0) return;
+
+            templates.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = `${t.direction} | departs at ${t.departure_time}`;
+                tripSelect.appendChild(opt);
+            });
+            tripSelect.disabled = false;
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
+    document.getElementById('template-trip-select').addEventListener('change', async function() {
+        const templateId = this.value;
+        document.getElementById('stops-fieldset').innerHTML = '';
+        currentTemplateOffsets = [];
+        if (!templateId) return;
+
+        try {
+            const res = await fetch(`/union/trips/templates/${templateId}`, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) throw new Error('Failed to fetch template detail');
+            const detail = await res.json();
+
+            document.getElementById('route-name-input').value = detail.route_name || '';
+            document.getElementById('direction-input').value = detail.direction || '';
+
+            currentTemplateOffsets = detail.stop_template.map(s => ({ ...s }));
+            currentTemplateOffsets.sort((a, b) => a.sequence - b.sequence).forEach(item => {
+                addStopEntry(item.stop_id, item.stop_name, '', item.sequence);
+            });
+            document.getElementById('departure-time-input').value = '';
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
+    document.getElementById('departure-time-input').addEventListener('change', function() {
+        const dep = this.value;
+        if (!dep || !currentTemplateOffsets || currentTemplateOffsets.length === 0) return;
+        const [h0, m0] = dep.split(':').map(Number);
+        if (isNaN(h0) || isNaN(m0)) return;
+        const baseMinutes = h0 * 60 + m0;
+
+        const bySeq = {};
+        currentTemplateOffsets.forEach(item => { bySeq[item.sequence] = item.offset_minutes; });
+
+        document.querySelectorAll('.stop-entry').forEach(div => {
+            const seqInput = div.querySelector('input[name="sequence"]');
+            const arrInput = div.querySelector('input[name="arrival_time"]');
+            const seq = parseInt(seqInput.value);
+            if (!isNaN(seq) && bySeq.hasOwnProperty(seq)) {
+                const total = baseMinutes + bySeq[seq];
+                const hh = String(Math.floor(total / 60) % 24).padStart(2, '0');
+                const mm = String(total % 60).padStart(2, '0');
+                arrInput.value = `${hh}:${mm}`;
+            }
+        });
+    });
+
+    function addStopEntry(stopId = '', stopName = '', arrival = '', sequence = '') {
+        const fs = document.getElementById('stops-fieldset');
+        const div = document.createElement('div');
+        div.className = 'stop-entry';
+        div.innerHTML = `
+            <input type="hidden" name="stop_id" value="${stopId}" />
+            <div class="stop-grid">
+                <div class="autocomplete-container">
+                    <label class="form-label">Stop Name</label>
+                    <input type="text" name="stop_name" class="form-input stop-name-autocomplete" value="${stopName}" placeholder="Type to search..." autocomplete="off" required />
+                    <ul class="autocomplete-list hidden"></ul>
+                </div>
+                <div>
+                    <label class="form-label">Arrival Time</label>
+                    <input type="time" name="arrival_time" class="form-input" value="${arrival}" required />
+                </div>
+                <div>
+                    <label class="form-label">Sequence</label>
+                    <input type="number" name="sequence" class="form-input" value="${sequence}" min="1" required />
+                </div>
+            </div>
+            <button type="button" class="btn-danger remove-stop-btn">Remove</button>`;
+        fs.appendChild(div);
+        setupAutocomplete(div);
+    }
+
+    function setupAutocomplete(div) {
+        const input = div.querySelector('.stop-name-autocomplete');
+        const hiddenId = div.querySelector('input[name="stop_id"]');
+        const list = div.querySelector('.autocomplete-list');
+        let debounceTimer;
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const q = input.value.trim();
+            hiddenId.value = '';
+            list.innerHTML = '';
+            list.classList.add('hidden');
+            if (!q) return;
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/union/stops?search=${encodeURIComponent(q)}`, { headers: { 'Authorization': 'Bearer ' + token } });
+                    if (!res.ok) return;
+                    const stops = await res.json();
+                    list.innerHTML = stops.map(s => `<li data-id="${s.id}" data-name="${s.name}">${s.name}</li>`).join('');
+                    list.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Autocomplete search failed:', error);
+                }
+            }, 300);
+        });
+
+        list.addEventListener('mousedown', e => {
+            if (e.target.tagName === 'LI') {
+                hiddenId.value = e.target.dataset.id;
+                input.value = e.target.dataset.name;
+                list.classList.add('hidden');
+                e.preventDefault();
+            }
+        });
+        
+        div.querySelector('.remove-stop-btn').addEventListener('click', () => div.remove());
+    }
+    
+    // Global click listener to hide any open autocomplete lists
+    document.addEventListener('click', e => {
+      document.querySelectorAll('.autocomplete-list').forEach(list => {
+          if (!list.parentElement.contains(e.target)) {
+            list.classList.add('hidden');
+          }
+      });
+    });
+
+
+    document.getElementById('add-stop-manual-btn').addEventListener('click', () => {
+        const existingCount = document.querySelectorAll('.stop-entry').length;
+        addStopEntry('', '', '', existingCount + 1);
+        currentTemplateOffsets = []; // Diverge from template
+    });
+
+    document.getElementById('trip-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const form = this;
+        showMessage('Creating trip...', 'info');
+
+        const payload = {
+            bus_id: parseInt(form.bus_id.value),
+            route_name: form.route_name.value.trim(),
+            departure_time: form.departure_time.value,
+            direction: form.direction.value.trim(),
+            service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: cb.value })),
+            stop_times: Array.from(document.querySelectorAll('.stop-entry')).map(div => ({
+                stop_id: parseInt(div.querySelector('input[name="stop_id"]').value),
+                arrival_time: div.querySelector('input[name="arrival_time"]').value,
+                sequence: parseInt(div.querySelector('input[name="sequence"]').value)
+            }))
+        };
+        
+        try {
+            const res = await fetch('/union/trips', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                showMessage('Trip created successfully!', 'success');
+                setTimeout(() => {
+                    form.reset();
+                    document.getElementById('stops-fieldset').innerHTML = '';
+                    document.getElementById('template-trip-select').innerHTML = '<option value="">--Select Template--</option>';
+                    document.getElementById('template-trip-select').disabled = true;
+                    currentTemplateOffsets = [];
+                    showStep(0);
+                    document.getElementById('message').className = '';
+                }, 2000);
+            } else {
+                const err = await res.json();
+                showMessage(`Error: ${JSON.stringify(err.detail || err)}`, 'error');
+            }
+        } catch (err) {
+            console.error('Error submitting trip:', err);
+            showMessage('A network error occurred. Please try again.', 'error');
+        }
+    });
+
+    // --- Initial Page Load ---
+    window.addEventListener('DOMContentLoaded', () => {
+      showStep(0); // Start at the first step
+      setupServiceDays();
+      loadBuses();
+      loadTemplateRoutes();
+    });
+  </script>
+</body>
+</html>

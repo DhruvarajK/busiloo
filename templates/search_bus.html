@@ -1,0 +1,189 @@
+<!-- search_bus.html -->
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Search Bus</title></head>
+<body>
+  <div>
+    <span id="current-time"></span>
+    <button id="time-toggle">Switch to 12-hour</button>
+  </div>
+  <h1>Search Bus by Name</h1>
+
+  <input type="text" id="bus-search" placeholder="Type bus name..." autocomplete="off" />
+  <ul id="suggestions" style="border:1px solid #ccc; max-width:200px;"></ul>
+  <div id="trip-info"></div>
+
+  <script>
+    // --- Time display & toggle (unchanged) ---
+    const currentTimeElem = document.getElementById('current-time');
+    const toggleBtn = document.getElementById('time-toggle');
+    let is24Hour = true;
+    function formatTime(dateOrString) {
+      let date;
+      if (typeof dateOrString === 'string') {
+        const [h, m, s] = dateOrString.split(':').map(Number);
+        date = new Date(); date.setHours(h, m, s || 0);
+      } else {
+        date = dateOrString;
+      }
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        hour: 'numeric', minute: '2-digit', second: '2-digit',
+        hour12: !is24Hour
+      }).format(date);
+    }
+    function updateCurrentTime() {
+      const now = new Date();
+      currentTimeElem.textContent = formatTime(now);
+    }
+    toggleBtn.addEventListener('click', () => {
+      is24Hour = !is24Hour;
+      toggleBtn.textContent = is24Hour ? 'Switch to 12-hour' : 'Switch to 24-hour';
+      updateCurrentTime();
+      document.querySelectorAll('[data-time]').forEach(el => {
+        el.textContent = formatTime(el.getAttribute('data-time'));
+      });
+    });
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
+    // --- End time toggle snippet ---
+
+    const searchInput = document.getElementById('bus-search');
+    const suggestions = document.getElementById('suggestions');
+    const tripInfo = document.getElementById('trip-info');
+    let timeoutId;
+
+    searchInput.addEventListener('input', () => {
+      clearTimeout(timeoutId);
+      const q = searchInput.value.trim();
+      suggestions.innerHTML = '';
+      if (q.length < 2) return;
+      timeoutId = setTimeout(() => {
+        fetch(`/api/search_bus?q=${encodeURIComponent(q)}`)
+          .then(res => res.json())
+          .then(data => {
+            suggestions.innerHTML = '';
+            data.forEach(bus => {
+              const li = document.createElement('li');
+              li.textContent = bus.name;
+              li.style.cursor = 'pointer';
+              li.addEventListener('click', () => selectBus(bus));
+              suggestions.appendChild(li);
+            });
+          });
+      }, 300);
+    });
+
+    function selectBus(bus) {
+      searchInput.value = bus.name;
+      suggestions.innerHTML = '';
+      tripInfo.innerHTML = '<p>Loading trip...</p>';
+      fetch(`/api/bus/${bus.id}/current_trip`)
+        .then(res => {
+          if (!res.ok) throw new Error('No current trip');
+          return res.json();
+        })
+        .then(trip => {
+          let html = `<h2>Current Trip for ${bus.name}</h2>`;
+          html += `<p>Route: ${trip.route_name} (${trip.direction})</p>`;
+          html += `<p>Departure: <span data-time="${trip.departure_time}">${formatTime(trip.departure_time)}</span></p>`;
+          html += `<ul>`;
+          trip.stop_times.forEach(st => {
+            html += `<li>Stop ID ${st.stop_id}: ` +
+                    `Arrival <span data-time="${st.arrival_time}">${formatTime(st.arrival_time)}</span> ` +
+                    `(Seq: ${st.sequence})</li>`;
+          });
+          html += `</ul>`;
+
+          // Add crowd prediction placeholder
+          html += `<div id="crowd-prediction"><p>Loading crowd prediction...</p></div>`;
+
+          // Add travel confirmation checkbox & form
+          html += `
+            <div id="crowd-submission-section" style="margin-top:1em;">
+              <label>
+                <input type="checkbox" id="confirm-travel-checkbox" />
+                Are you travelling on this bus?
+              </label>
+              <div id="crowd-form" style="display:none; margin-top:0.5em;">
+                <label for="crowd-level">Select crowd level:</label>
+                <select id="crowd-level">
+                  <option value="1">Low</option>
+                  <option value="2">Medium</option>
+                  <option value="3">High</option>
+                </select>
+                <button id="submit-crowd-btn">Submit</button>
+                <span id="submit-status" style="margin-left:0.5em;"></span>
+              </div>
+            </div>
+          `;
+
+          tripInfo.innerHTML = html;
+
+          // After inserting HTML, fetch prediction
+          fetch(`/api/bus/${bus.id}/crowd_prediction`)
+            .then(res => res.json())
+            .then(pred => {
+              const cpDiv = document.getElementById('crowd-prediction');
+              if (pred.predicted_level === null) {
+                cpDiv.innerHTML = `<p>Crowd prediction: ${pred.description}.</p>`;
+              } else {
+                let desc = pred.description;
+                cpDiv.innerHTML = `<p>Crowd prediction: <strong>${desc}</strong> (based on ${pred.based_on_count} submissions).<br/>${pred.recommended_action || ''}</p>`;
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              const cpDiv = document.getElementById('crowd-prediction');
+              cpDiv.innerHTML = `<p>Crowd prediction unavailable.</p>`;
+            });
+
+          // Hook up checkbox to show/hide form
+          const chk = document.getElementById('confirm-travel-checkbox');
+          const formDiv = document.getElementById('crowd-form');
+          chk.addEventListener('change', () => {
+            formDiv.style.display = chk.checked ? 'block' : 'none';
+          });
+          // Submit button
+          const submitBtn = document.getElementById('submit-crowd-btn');
+          submitBtn.addEventListener('click', () => {
+            const lvl = document.getElementById('crowd-level').value;
+            document.getElementById('submit-status').textContent = 'Submitting...';
+            fetch(`/api/bus/${bus.id}/submit_crowd`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+                // add auth header if needed
+              },
+              body: JSON.stringify({ crowd_level: parseInt(lvl, 10) })
+            }).then(res => {
+              if (!res.ok) throw new Error('Failed');
+              return res.json();
+            }).then(data => {
+              document.getElementById('submit-status').textContent = 'Submitted!';
+              // Optionally refresh prediction after submission:
+              setTimeout(() => {
+                fetch(`/api/bus/${bus.id}/crowd_prediction`)
+                  .then(res => res.json())
+                  .then(pred2 => {
+                    const cpDiv = document.getElementById('crowd-prediction');
+                    if (pred2.predicted_level === null) {
+                      cpDiv.innerHTML = `<p>Crowd prediction: ${pred2.description}.</p>`;
+                    } else {
+                      cpDiv.innerHTML = `<p>Crowd prediction: <strong>${pred2.description}</strong> (based on ${pred2.based_on_count} submissions).<br/>${pred2.recommended_action || ''}</p>`;
+                    }
+                  }).catch(()=>{});
+              }, 1000);
+            }).catch(err => {
+              console.error(err);
+              document.getElementById('submit-status').textContent = 'Error';
+            });
+          });
+        })
+        .catch(() => {
+          tripInfo.innerHTML = '<p>No current trip found for this bus.</p>';
+        });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Current Trip for {{ bus_name }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --color-primary: #333;
+      --color-secondary: #777;
+      --color-accent: #27a3ff;
+      --color-departed: #28a745;
+      --color-background: #f4f7f6;
+      --color-surface: #ffffff;
+      --timeline-line-color: #e0e0e0;
+      --timeline-dot-color: #bbbbbb;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-background);
+      color: var(--color-primary);
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      background: var(--color-surface);
+      z-index: 10;
+      padding: 12px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-bottom: 1px solid #eee;
+    }
+    .header h2, .header p {
+      margin: 0;
+    }
+    .header h2 {
+      font-size: 1.3em;
+    }
+    .header p {
+      font-size: 0.9em;
+      color: var(--color-secondary);
+    }
+
+    .top-controls {
+        padding: 10px 20px;
+        background: #fafafa;
+        font-size: 0.8em;
+    }
+
+    .main-container {
+        padding: 20px;
+    }
+
+    .timeline-container {
+      position: relative;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .timeline-line {
+      position: absolute;
+      left: 8%;
+      top: 10px;
+      bottom: 10px;
+      width: 6px;
+      background: var(--timeline-line-color);
+      border-radius: 3px;
+      transform: translateX(-50%);
+    }
+
+    .stop {
+      position: absolute;
+      width: 50%;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .stop-details {
+      display: flex;
+      flex-direction: column;
+      padding: 5px 15px;
+      margin-left: 66px;
+  }
+
+ 
+
+    .stop-dot {
+      position: absolute;
+      top: 30%;
+      left: 16%;
+      width: 16px;
+      height: 16px;
+      background: var(--color-surface);
+      border: 4px solid var(--timeline-dot-color);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      transition: border-color 0.5s ease;
+    }
+    
+    .stop-name {
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+    .stop-time {
+      font-size: 0.9em;
+      color: var(--color-secondary);
+    }
+    .loc-link {
+      color: var(--color-accent);
+      text-decoration: none;
+      font-size: 0.8em;
+    }
+    .loc-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Departed State */
+    .stop.departed .stop-dot {
+      border-color: var(--color-departed);
+    }
+    .stop.departed .stop-name, .stop.departed .stop-time {
+      color: var(--color-departed);
+      opacity: 0.9;
+    }
+    .departed-icon {
+        display: none;
+        width: 16px;
+        height: 16px;
+        margin-right: 5px;
+        color: var(--color-departed);
+    }
+    .stop.departed:nth-child(even) .departed-icon {
+        display: inline-block;
+    }
+    .stop.departed:nth-child(odd) .stop-name {
+        order: 2;
+    }
+    .stop.departed:nth-child(odd) .departed-icon {
+        display: inline-block;
+        margin-left: 5px;
+        margin-right: 0;
+        order: 1;
+    }
+
+
+    .bus-marker {
+      position: absolute;
+      left: 7%;
+      width: 32px;
+      height: 32px;
+      margin-left: -16px;
+      background: #ffc107;
+      border: 3px solid white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 50%;
+      transition: top 1s linear;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+      z-index: 5;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+    }
+
+
+    /* Crowd Prediction & Submission */
+    #crowd-section {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--color-surface);
+        padding: 15px 20px;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        z-index: 20;
+    }
+    #crowd-prediction { margin-bottom: 10px; }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        display: none; /* Changed from 'none' to 'flex' by JS */
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content {
+        background: var(--color-surface);
+        padding: 25px 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+    }
+    .modal-content h3 {
+        margin-top: 0;
+    }
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+    }
+    .close-btn:hover { color: #333; }
+    #crowd-form select {
+        width: 100%;
+        padding: 10px;
+        margin: 15px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    #submit-crowd-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        background-color: var(--color-accent);
+        color: white;
+        font-size: 1.1em;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    #submit-crowd-btn:hover {
+        opacity: 0.9;
+    }
+
+
+    @media (max-width: 600px) {
+      .header h2 { font-size: 1.2em; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="trip-info">
+      <p style="text-align: center; padding-top: 50px;">Loading trip information...</p>
+  </div>
+
+  <div id="crowd-modal" class="modal-overlay">
+      <div class="modal-content">
+          <span class="close-btn" id="close-modal-btn">&times;</span>
+          <h3>Report Crowd Level</h3>
+          <p>Your input helps everyone travel smarter.</p>
+          <div id="crowd-form">
+              <label for="crowd-level">How busy is the bus right now?</label>
+              <select id="crowd-level">
+                  <option value="1">Empty seats available (Low)</option>
+                  <option value="2">All seats taken (Medium)</option>
+                  <option value="3">Standing room only (High)</option>
+              </select>
+              <button id="submit-crowd-btn">Submit</button>
+              <p id="submit-status" style="margin-top:10px; text-align:center;"></p>
+          </div>
+      </div>
+  </div>
+
+
+  <script>
+    const BUS_ID = {{ bus_id }};
+    const BUS_NAME = "{{ bus_name }}";
+    const tripInfo = document.getElementById('trip-info');
+    let is24Hour = true; // Default or can be set by user preference
+
+    // --- TIME FORMATTING UTILITIES ---
+    function formatTime(input, showSeconds) {
+      let date;
+      if (input instanceof Date) {
+        date = input;
+      } else if (typeof input === 'string') {
+        const parts = input.split(':').map(Number);
+        date = new Date();
+        date.setHours(parts[0], parts[1], parts[2] || 0, 0);
+      } else {
+        return '';
+      }
+      const options = { hour: 'numeric', minute: '2-digit', hour12: !is24Hour, timeZone: 'Asia/Kolkata' };
+      if (showSeconds) options.second = '2-digit';
+      return new Intl.DateTimeFormat('en-US', options).format(date);
+    }
+    
+    function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const [h, m, s = 0] = timeStr.split(':').map(Number);
+      return h * 60 + m + s / 60;
+    }
+
+    // --- MAIN FETCH AND RENDER LOGIC ---
+    function fetchAndRenderTrip() {
+      fetch(`/api/bus/${BUS_ID}/current_trip`)
+        .then(res => res.ok ? res.json() : Promise.reject(new Error('Trip not found')))
+        .then(trip => {
+          const stopSpacing = 120; // Increased spacing for the new design
+          const totalHeight = (trip.stop_times.length - 1) * stopSpacing;
+          
+          let stopsHtml = '';
+          trip.stop_times.forEach(st => {
+            const yPos = (st.sequence - 1) * stopSpacing;
+            stopsHtml += `
+              <div class="stop" style="top:${yPos}px;" data-arrival-time="${st.arrival_time}" data-sequence="${st.sequence}">
+                <div class="stop-dot"></div>
+                <div class="stop-details">
+                   <div style="display: flex; align-items: center;">
+                        <svg class="departed-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"></path></svg>
+                        <span class="stop-name">${st.stop_name}</span>
+                   </div>
+                   <span class="stop-time" data-time="${st.arrival_time}">${formatTime(st.arrival_time, false)}</span>
+                   ${st.loc_link ? `<a href="${st.loc_link}" target="_blank" rel="noopener" class="loc-link">View on Map</a>` : ''}
+                </div>
+              </div>`;
+          });
+
+          const pageHtml = `
+            <div class="header">
+              <h2>${BUS_NAME}</h2>
+              <p>Route: ${trip.route_name} (${trip.direction})</p>
+            </div>
+            <div class="top-controls">
+                <span id="current-time"></span>
+                <button id="time-toggle" style="margin-left:10px; border: 1px solid #ccc; background: #fff; padding: 5px 8px; border-radius: 5px; cursor:pointer;">Switch to 12-hour</button>
+            </div>
+            <div class="main-container">
+              <div class="timeline-container" style="height:${totalHeight + 40}px;">
+                <div class="timeline-line"></div>
+                ${stopsHtml}
+                <div id="bus-marker" class="bus-marker" style="top:0px;">
+                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9436 1.25H12.0564C13.8942 1.24998 15.3498 1.24997 16.489 1.40314C17.6614 1.56076 18.6104 1.89288 19.3588 2.64124C20.1071 3.38961 20.4392 4.33856 20.5969 5.51098C20.6996 6.27504 20.7334 7.18144 20.7445 8.25H21C21.9665 8.25 22.75 9.0335 22.75 10V11C22.75 11.5508 22.4907 12.0695 22.05 12.4L20.7475 13.3768C20.7402 14.6093 20.7113 15.6375 20.5969 16.489C20.4392 17.6614 20.1071 18.6104 19.3588 19.3588C19.1689 19.5486 18.9661 19.7117 18.75 19.852V21C18.75 21.9665 17.9665 22.75 17 22.75H15.5C14.5335 22.75 13.75 21.9665 13.75 21V20.7445C13.2253 20.75 12.6616 20.75 12.0564 20.75H11.9436C11.3384 20.75 10.7747 20.75 10.25 20.7445V21C10.25 21.9665 9.4665 22.75 8.5 22.75H7C6.0335 22.75 5.25 21.9665 5.25 21V19.852C5.03392 19.7117 4.83112 19.5486 4.64124 19.3588C3.89288 18.6104 3.56076 17.6614 3.40313 16.489C3.28866 15.6375 3.25975 14.6093 3.25246 13.3768L1.95 12.4C1.50934 12.0695 1.25 11.5508 1.25 11V10C1.25 9.0335 2.0335 8.25 3 8.25H3.25546C3.26659 7.18144 3.30041 6.27504 3.40313 5.51098C3.56076 4.33856 3.89288 3.38961 4.64124 2.64124C5.38961 1.89288 6.33855 1.56076 7.51098 1.40314C8.65019 1.24997 10.1058 1.24998 11.9436 1.25Z" fill="currentColor"/>
+                    </svg>
+                </div>
+              </div>
+            </div>
+            <div id="crowd-section">
+                <div id="crowd-prediction"><p>Loading crowd prediction...</p></div>
+                <label><input type="checkbox" id="confirm-travel-checkbox" /> Are you on this bus? Help others by reporting the crowd level.</label>
+            </div>
+          `;
+          tripInfo.innerHTML = pageHtml;
+
+          const stops = trip.stop_times.map(st => ({
+            sequence: st.sequence,
+            arrival_time: st.arrival_time,
+            y: (st.sequence - 1) * stopSpacing
+          }));
+
+          function updateBusPosition() {
+            const now = new Date();
+            const localTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' });
+            const currentMinutes = timeToMinutes(localTimeStr);
+
+            // Update time display
+            document.getElementById('current-time').textContent = `Current Time: ${formatTime(now, true)}`;
+
+            const firstStopTime = stops[0].arrival_time;
+            const lastStopTime = stops[stops.length - 1].arrival_time;
+            const startMin = timeToMinutes(firstStopTime);
+            const endMin = timeToMinutes(lastStopTime);
+
+            let yBus;
+            if (currentMinutes <= startMin) {
+              yBus = 0;
+            } else if (currentMinutes >= endMin) {
+              yBus = stops[stops.length - 1].y;
+            } else {
+              const nextStopIndex = stops.findIndex(st => timeToMinutes(st.arrival_time) > currentMinutes);
+              const prevStop = stops[nextStopIndex - 1];
+              const nextStop = stops[nextStopIndex];
+              const segmentDuration = timeToMinutes(nextStop.arrival_time) - timeToMinutes(prevStop.arrival_time);
+              const timeIntoSegment = currentMinutes - timeToMinutes(prevStop.arrival_time);
+              const fraction = segmentDuration > 0 ? timeIntoSegment / segmentDuration : 0;
+              yBus = prevStop.y + fraction * (nextStop.y - prevStop.y);
+            }
+            document.getElementById('bus-marker').style.top = yBus + 'px';
+
+            // Update departed status for stops
+            document.querySelectorAll('.stop').forEach(stopEl => {
+              const stopTime = stopEl.getAttribute('data-arrival-time');
+              if (currentMinutes > timeToMinutes(stopTime)) {
+                stopEl.classList.add('departed');
+              } else {
+                stopEl.classList.remove('departed');
+              }
+            });
+          }
+          
+          function setupEventListeners() {
+            // Time toggle button
+            const toggleBtn = document.getElementById('time-toggle');
+            toggleBtn.addEventListener('click', () => {
+              is24Hour = !is24Hour;
+              toggleBtn.textContent = is24Hour ? 'Switch to 12-hour' : 'Switch to 24-hour';
+              document.querySelectorAll('[data-time]').forEach(el => {
+                el.textContent = formatTime(el.getAttribute('data-time'), false);
+              });
+              updateBusPosition();
+            });
+
+            // Modal controls
+            const modal = document.getElementById('crowd-modal');
+            document.getElementById('confirm-travel-checkbox').addEventListener('change', e => {
+                modal.style.display = e.target.checked ? 'flex' : 'none';
+            });
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                modal.style.display = 'none';
+                document.getElementById('confirm-travel-checkbox').checked = false;
+            });
+            document.getElementById('submit-crowd-btn').addEventListener('click', submitCrowdData);
+          }
+
+          updateBusPosition();
+          setInterval(updateBusPosition, 2000); // Update every 2 seconds
+          setupEventListeners();
+          loadCrowdPrediction();
+        })
+        .catch(() => {
+          tripInfo.innerHTML = '<p style="text-align: center; padding-top: 50px;">No current trip found for this bus or an error occurred.</p>';
+        });
+    }
+
+    // --- CROWD DATA FUNCTIONS ---
+    function loadCrowdPrediction() {
+      fetch(`/api/bus/${BUS_ID}/crowd_prediction`)
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(pred => {
+          const cp = document.getElementById('crowd-prediction');
+          cp.innerHTML = pred.predicted_level === null
+            ? `<p><strong>Notification:</strong> ${pred.description}</p>`
+            : `<p><strong>Notification:</strong> ${pred.description} (based on ${pred.based_on_count} reports).${pred.recommended_action ? `<br/><em>${pred.recommended_action}</em>` : ''}</p>`;
+        })
+        .catch(() => {
+          document.getElementById('crowd-prediction').innerHTML = '<p>Crowd prediction is currently unavailable.</p>';
+        });
+    }
+    
+    function submitCrowdData() {
+        const crowdLevel = +document.getElementById('crowd-level').value;
+        const statusEl = document.getElementById('submit-status');
+        statusEl.textContent = 'Submitting...';
+
+        fetch(`/api/bus/${BUS_ID}/submit_crowd`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ crowd_level: crowdLevel })
+        })
+        .then(res => {
+            if (!res.ok) return Promise.reject(new Error('Submission failed'));
+            return res.json();
+        })
+        .then(() => {
+            statusEl.textContent = 'Thank you for your contribution!';
+            setTimeout(() => {
+                document.getElementById('crowd-modal').style.display = 'none';
+                document.getElementById('confirm-travel-checkbox').checked = false;
+                statusEl.textContent = ''; // Reset status
+            }, 1500);
+            setTimeout(loadCrowdPrediction, 500); // Refresh prediction
+        })
+        .catch(() => {
+            statusEl.textContent = 'Error during submission. Please try again.';
+        });
+    }
+
+    // --- INITIALIZE ---
+    fetchAndRenderTrip();
+  </script>
+</body>
+</html>

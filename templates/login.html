@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Busiloo: Kerala Bus Tracking App</title>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define custom CSS variables for colors */
+        :root {
+            --primary-red: #e11d48;
+            --primary-red-dark: #be123c;
+            --primary-red-light: #fca5a5; /* Lighter shade for gradients */
+        }
+
+        /* Basic body styling for full-screen centering and font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #ffd0d0, #ffa0a0); /* Enhanced light red gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Minimum height of the viewport */
+            margin: 0;
+            padding: 12px; /* Increased padding for better spacing on all screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        /* Login card container styling */
+        .login-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0); /* Subtle gradient for the card */
+            padding: 1.5rem; /* Default padding for all screens */
+            border-radius: 1rem; /* More rounded corners */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+            width: 100%; /* Full width by default */
+            max-width: 26rem; /* Slightly larger max-width for better appearance */
+            text-align: center;
+            box-sizing: border-box;
+            position: relative; /* Needed for potential future pseudo-elements */
+            animation: fadeIn 0.8s ease-out; /* Add fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments for login card */
+        @media (min-width: 640px) { /* Small screens and up (sm) */
+            .login-card {
+                max-width: 32rem; /* Equivalent to sm:max-w-md, larger */
+                padding: 3.5rem; /* More generous padding */
+            }
+        }
+
+        @media (min-width: 1024px) { /* Large screens and up (lg) */
+            .login-card {
+                max-width: 38rem; /* Equivalent to lg:max-w-lg, even larger */
+            }
+        }
+
+        /* Heading styles */
+        .main-heading {
+            font-size: 2.5rem; /* Larger text for impact */
+            font-weight: 800; /* font-extrabold */
+            color: #1a202c; /* dark gray */
+            margin-bottom: 0.75rem; /* mb-3 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+        }
+
+        @media (min-width: 768px) { /* Medium screens and up (md) */
+            .main-heading {
+                font-size: 3rem; /* md:text-5xl for larger screens */
+            }
+        }
+
+        .main-heading .highlight {
+            color: var(--primary-red);
+        }
+
+        /* Subtitle/description text */
+        .subtitle {
+            color: #4a5568; /* gray-600 */
+            margin-bottom: 2.5rem; /* mb-10 */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 300; /* Lighter font weight for subtitle */
+        }
+
+        /* Form styling */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem; /* space-y-5, slightly tighter */
+        }
+
+        /* Label styling */
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-size: 0.95rem; /* Slightly larger text */
+            font-weight: 600; /* Bolder font weight */
+            color: #2d3748; /* Darker gray for labels */
+            margin-bottom: 0.3rem; /* mb-1 */
+        }
+
+        /* Input field styling */
+        .form-group input {
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1.2rem; /* More padding for better touch targets */
+            border: 1px solid #cdd5e0; /* border gray */
+            border-radius: 0.6rem; /* Slightly more rounded */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06); /* Inner shadow for depth */
+            color: #1a202c; /* text-gray-900 */
+            font-size: 1.05rem; /* Slightly larger text */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: #8c96a7; /* placeholder-gray-500 */
+        }
+
+        /* Input focus styles */
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-red); /* Focus border color */
+            box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.2); /* Softer, larger focus ring */
+        }
+
+        /* Button styling */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(to right, var(--primary-red), var(--primary-red-dark)); /* Gradient button */
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* Bolder font */
+            padding: 0.9rem 1.5rem; /* Generous padding for easier tapping */
+            border-radius: 0.75rem; /* More rounded */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+            transition: all 0.3s ease;
+            font-size: 1.2rem; /* Larger text */
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.05em; /* Slight letter spacing */
+            position: relative;
+            overflow: hidden; /* For ripple effect or other future animations */
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, var(--primary-red-dark), var(--primary-red)); /* Inverted gradient on hover */
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3); /* Even stronger shadow */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(190, 18, 60, 0.4), 0 0 0 2px rgba(255, 255, 255, 1);
+        }
+
+        /* Message display area */
+        #message {
+            margin-top: 1.75rem; /* mt-7 */
+            text-align: center;
+            font-size: 0.9rem; /* text-base */
+            font-weight: 500; /* font-medium */
+            color: #4a5568; /* text-gray-700 */
+            min-height: 1.2rem; /* Ensure space even when empty */
+        }
+
+        /* Message colors */
+        #message.text-green-600 {
+            color: #38a169; /* green-600 */
+        }
+        #message.text-red-600 {
+            color: #e53e3e; /* red-600 */
+        }
+
+        /* Footer text and link */
+        .footer-text {
+            margin-top: 2.5rem; /* mt-10 */
+            font-size: 0.9rem; /* text-sm */
+            color: #718096; /* gray-500 */
+        }
+
+        .footer-text a {
+            color: var(--primary-red);
+            text-decoration: none;
+            font-weight: 600; /* Bolder link text */
+            transition: text-decoration 0.2s ease, color 0.2s ease;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+            color: var(--primary-red-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Card Container -->
+    <div class="login-card">
+        <h1 class="main-heading">
+            Welcome to <span class="highlight">Busiloo</span>
+        </h1>
+        <p class="subtitle">Your Kerala Bus Tracking Companion</p>
+
+        <!-- Login Form -->
+        <form id="login-form" class="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    type="text"
+                    name="username"
+                    id="username"
+                    required
+                    placeholder="Enter your username"
+                    aria-label="Username"
+                />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    required
+                    placeholder="Enter your password"
+                    aria-label="Password"
+                />
+            </div>
+
+            <button type="submit" class="btn-primary">
+                Login
+            </button>
+        </form>
+
+        <!-- Message Display Area -->
+        <div id="message" role="alert" aria-live="polite"></div>
+
+        <!-- Optional: Footer text or links -->
+        <div class="footer-text">
+            Don't have an account? <a href="/register">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        // Get the login form and message display element
+        const form = document.getElementById('login-form');
+        const messageDisplay = document.getElementById('message');
+
+        // Add an event listener for form submission
+        form.addEventListener('submit', async (e) => {
+            // Prevent the default form submission behavior (page reload)
+            e.preventDefault();
+
+            // Create a FormData object from the form to easily access input values
+            const formData = new FormData(form);
+
+            // Create URLSearchParams to format data for x-www-form-urlencoded
+            const payload = new URLSearchParams();
+            payload.append('username', formData.get('username'));
+            payload.append('password', formData.get('password'));
+
+            // Clear previous messages and show loading state
+            messageDisplay.textContent = 'Logging in...';
+            messageDisplay.classList.remove('text-green-600', 'text-red-600');
+            messageDisplay.style.color = '#4a5568'; // Reset to default grey
+
+            try {
+                // Send a POST request to the login endpoint
+                const res = await fetch('/union/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: payload
+                });
+
+                // Check if the response was successful (status 200-299)
+                if (res.ok) {
+                    const result = await res.json();
+                    // Store the access token in local storage
+                    localStorage.setItem('token', result.access_token);
+                    // Display success message
+                    messageDisplay.textContent = 'Login successful! Redirecting to dashboard...';
+                    messageDisplay.classList.add('text-green-600');
+
+                    // Redirect to the dashboard after a short delay
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    // Handle unsuccessful login attempts
+                    const err = await res.json();
+                    // Display error message
+                    messageDisplay.textContent = 'Error: ' + (err.detail || 'An unknown error occurred.');
+                    messageDisplay.classList.add('text-red-600');
+                }
+            } catch (error) {
+                // Handle network errors or other exceptions
+                console.error('Login error:', error);
+                messageDisplay.textContent = 'An unexpected error occurred. Please try again.';
+                messageDisplay.classList.add('text-red-600');
+            }
+        });
+    </script>
+</body>
+</html>

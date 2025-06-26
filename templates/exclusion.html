@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Exclusion Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS Variables */
+        :root {
+            --color-redbus-red: #D32F2F;
+            --color-primary-dark: #A02020;
+            --color-text: #333;
+            --color-light-gray: #f4f7f6;
+            --color-medium-gray: #e9ecef;
+            --color-dark-gray: #495057;
+            --color-white: #ffffff;
+            --color-border: #e0e0e0;
+            --color-success: #28a745;
+            --color-error: #dc3545;
+            --color-info-bg: #d4edda;
+            --color-info-text: #155724;
+            --color-error-bg: #f8d7da;
+            --color-error-text: #721c24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            color: var(--color-text);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--color-white);
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 30px;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2 {
+            color: var(--color-redbus-red);
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            border-bottom: 2px solid var(--color-redbus-red);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            color: var(--color-dark-gray);
+            font-size: 1.5em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Form and Input Styling */
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--color-dark-gray);
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            width: calc(100% - 24px); /* Account for padding */
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fcfcfc;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus {
+            border-color: var(--color-redbus-red);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.2);
+        }
+
+        button {
+            background: linear-gradient(145deg, var(--color-redbus-red), var(--color-primary-dark));
+            color: white;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            margin-top: 10px;
+            width: auto; /* Allow button to size based on content */
+            display: inline-block; /* For better margin control if multiple buttons */
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, var(--color-primary-dark), var(--color-redbus-red));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button.delete-btn {
+            background-color: var(--color-error);
+            background: linear-gradient(145deg, #dc3545, #c82333);
+            padding: 10px 15px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        button.delete-btn:hover {
+            background: linear-gradient(145deg, #c82333, #dc3545);
+            transform: translateY(-1px);
+        }
+
+        /* Search Results */
+        #searchResults {
+            border: 1px solid var(--color-border);
+            border-top: none;
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+            margin-top: -1px; /* Overlap with search input border */
+            background-color: var(--color-white);
+            position: absolute;
+            width: calc(100% - 60px); /* Adjust based on container padding */
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: none; /* Hidden by default */
+            box-sizing: border-box;
+            left: 30px; /* Align with container padding */
+        }
+
+        .search-result-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+            color: var(--color-text);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background-color: #f0f4f7;
+        }
+
+        /* Messages */
+        #message {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(-10px);
+            display: none; /* Hidden by default, shown by JS */
+        }
+
+        #message.success {
+            background-color: var(--color-info-bg);
+            color: var(--color-info-text);
+            border: 1px solid #a7d8b5;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #message.error {
+            background-color: var(--color-error-bg);
+            color: var(--color-error-text);
+            border: 1px solid #eab7bd;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Exclusions List */
+        #exclusionsList {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden; /* For rounded corners on table */
+            background-color: var(--color-white);
+        }
+
+        #exclusionsList th,
+        #exclusionsList td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        #exclusionsList th {
+            background-color: var(--color-medium-gray);
+            color: var(--color-dark-gray);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        #exclusionsList tr:nth-child(even) {
+            background-color: #f9fbfb;
+        }
+
+        #exclusionsList tr:hover {
+            background-color: #f0f4f7;
+        }
+
+        .no-exclusions {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+            font-style: italic;
+            font-size: 1.1em;
+            background-color: var(--color-white);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        /* Custom Modal for Confirmation */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--color-white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h3 {
+            color: var(--color-redbus-red);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .modal-content p {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            color: var(--color-text);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .modal-buttons .confirm-yes {
+            background: linear-gradient(145deg, var(--color-redbus-red), var(--color-primary-dark));
+        }
+
+        .modal-buttons .confirm-yes:hover {
+            background: linear-gradient(145deg, var(--color-primary-dark), var(--color-redbus-red));
+        }
+
+        .modal-buttons .confirm-no {
+            background-color: #6c757d;
+            background: linear-gradient(145deg, #6c757d, #5a6268);
+        }
+
+        .modal-buttons .confirm-no:hover {
+            background: linear-gradient(145deg, #5a6268, #6c757d);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .section-title {
+                font-size: 1.3em;
+            }
+            input[type="text"],
+            input[type="date"],
+            input[type="number"] {
+                width: 100%; /* Full width on smaller screens */
+                padding: 10px;
+                font-size: 15px;
+            }
+            #exclusionsList th,
+            #exclusionsList td {
+                padding: 12px;
+                font-size: 13px;
+            }
+            button {
+                width: 100%;
+                margin-top: 15px;
+                font-size: 15px;
+            }
+            button.delete-btn {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            .search-input-wrapper {
+                margin-bottom: 70px; /* Make space for results on small screens */
+            }
+            #searchResults {
+                width: calc(100% - 50px); /* Adjust for smaller padding */
+                left: 25px; /* Align with input */
+                right: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            .section-title {
+                font-size: 1.2em;
+            }
+            #exclusionsList th,
+            #exclusionsList td {
+                padding: 6px 7px;
+                font-size: 10px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+            .modal-content h3 {
+                font-size: 1.2em;
+            }
+            .modal-content p {
+                font-size: 1em;
+            }
+            .modal-buttons button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Trip Exclusions</h1>
+
+        <h2 class="section-title">Add New Exclusion</h2>
+        <div id="message" style="display: none;"></div>
+
+        <div class="form-group search-input-wrapper">
+            <label for="tripSearchInput">Search Trip by Route Name:</label>
+            <input type="text" id="tripSearchInput" placeholder="Start typing route name...">
+            <div id="searchResults"></div>
+        </div>
+
+        <form id="addExclusionForm">
+            <div class="form-group">
+                <label for="tripIdInput">Selected Trip ID:</label>
+                <input type="number" id="tripIdInput" readonly required>
+            </div>
+            <div class="form-group">
+                <label for="exclusionDateInput">Exclusion Date:</label>
+                <input type="date" id="exclusionDateInput" required>
+            </div>
+            <button type="submit">Add Exclusion</button>
+        </form>
+        <h2 class="section-title">Your Existing Exclusions</h2>
+        <table id="exclusionsList">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Route Name</th>
+                    <th>Dep-Time</th>
+                    <th>Direction</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Exclusions will be loaded here -->
+            </tbody>
+        </table>
+        <p id="noExclusionsMessage" class="no-exclusions" style="display: none;">No exclusions found.</p>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this exclusion?</p>
+            <div class="modal-buttons">
+                <button class="confirm-yes">Yes, Delete</button>
+                <button class="confirm-no">No, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANT: Ensure your login page stores the token using the key 'token'.
+        const AUTH_TOKEN = localStorage.getItem('token'); // Changed from 'access_token' to 'token'
+        const BASE_URL = '/union'; // Your FastAPI router prefix
+
+        const tripSearchInput = document.getElementById('tripSearchInput');
+        const searchResultsDiv = document.getElementById('searchResults');
+        const tripIdInput = document.getElementById('tripIdInput');
+        const exclusionDateInput = document.getElementById('exclusionDateInput');
+        const addExclusionForm = document.getElementById('addExclusionForm');
+        const exclusionsListBody = document.querySelector('#exclusionsList tbody');
+        const messageDiv = document.getElementById('message');
+        const noExclusionsMessage = document.getElementById('noExclusionsMessage');
+
+        // Modal elements
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmYesBtn = confirmModal.querySelector('.confirm-yes');
+        const confirmNoBtn = confirmModal.querySelector('.confirm-no');
+
+        let currentExclusionToDelete = null; // To store the ID of the exclusion to be deleted
+
+        // Function to display messages (success/error)
+        function displayMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = ''; // Clear existing classes
+            messageDiv.classList.add(type);
+            messageDiv.style.display = 'block'; // Make sure it's visible
+            // The opacity and transform are handled by CSS transitions due to class addition
+            setTimeout(() => {
+                messageDiv.style.opacity = '0';
+                messageDiv.style.transform = 'translateY(-10px)';
+                setTimeout(() => messageDiv.style.display = 'none', 400); // Hide after transition
+            }, 5000); // Message disappears after 5 seconds
+        }
+
+        // --- Trip Search Functionality ---
+        let searchTimeout;
+        tripSearchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const query = tripSearchInput.value.trim();
+            if (query.length > 2) { // Only search if query is at least 3 characters
+                searchTimeout = setTimeout(() => searchTrips(query), 300); // Debounce search
+            } else {
+                searchResultsDiv.innerHTML = '';
+                searchResultsDiv.style.display = 'none';
+            }
+        });
+
+        async function searchTrips(query) {
+            if (!AUTH_TOKEN) {
+                displayMessage('Authentication required to search trips. Please log in.', 'error');
+                return;
+            }
+            try {
+                // Corrected endpoint path to match '/union/' and query parameter name to 'search_query'
+                const response = await fetch(`${BASE_URL}/?search_query=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const trips = await response.json();
+                displaySearchResults(trips);
+            } catch (error) {
+                console.error('Error searching trips:', error);
+                displayMessage('Failed to search for trips. Please try again.', 'error');
+                searchResultsDiv.innerHTML = '';
+                searchResultsDiv.style.display = 'none';
+            }
+        }
+
+        function displaySearchResults(trips) {
+            searchResultsDiv.innerHTML = '';
+            if (trips.length === 0) {
+                searchResultsDiv.style.display = 'none';
+                return;
+            }
+
+            trips.forEach(trip => {
+                const item = document.createElement('div');
+                item.classList.add('search-result-item');
+                item.textContent = `${trip.route_name} (ID: ${trip.id}, ${trip.departure_time} - ${trip.direction})`;
+                item.dataset.tripId = trip.id;
+                item.addEventListener('click', () => {
+                    selectTrip(trip);
+                });
+                searchResultsDiv.appendChild(item);
+            });
+            searchResultsDiv.style.display = 'block';
+        }
+
+        function selectTrip(trip) {
+            tripIdInput.value = trip.id;
+            tripSearchInput.value = `${trip.route_name} (ID: ${trip.id})`; // Show selected trip
+            searchResultsDiv.innerHTML = '';
+            searchResultsDiv.style.display = 'none';
+        }
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!tripSearchInput.contains(event.target) && !searchResultsDiv.contains(event.target)) {
+                searchResultsDiv.style.display = 'none';
+            }
+        });
+
+
+        // --- Add Exclusion Functionality ---
+        addExclusionForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            if (!AUTH_TOKEN) {
+                displayMessage('Authentication required to add an exclusion. Please log in.', 'error');
+                return;
+            }
+
+            const trip_id = parseInt(tripIdInput.value);
+            const date = exclusionDateInput.value; //YYYY-MM-DD format
+
+            if (isNaN(trip_id) || !date) {
+                displayMessage('Please select a trip and a valid date.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/exclusions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify({ trip_id, date })
+                });
+
+                if (response.status === 409) {
+                    const errorData = await response.json();
+                    displayMessage(errorData.detail || 'This trip is already excluded on this date.', 'error');
+                } else if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
+                } else {
+                    const newExclusion = await response.json();
+                    displayMessage('Exclusion added successfully!', 'success');
+                    addExclusionForm.reset();
+                    tripIdInput.value = ''; // Clear selected trip ID
+                    tripSearchInput.value = ''; // Clear search input
+                    loadExclusions(); // Refresh the list
+                }
+            } catch (error) {
+                console.error('Error adding exclusion:', error);
+                displayMessage(`Failed to add exclusion: ${error.message}`, 'error');
+            }
+        });
+
+        // --- Load Exclusions Functionality ---
+        async function loadExclusions() {
+            if (!AUTH_TOKEN) {
+                displayMessage('Authentication required to view exclusions. Please log in.', 'error');
+                return;
+            }
+            try {
+                const response = await fetch(`${BASE_URL}/exclusions`, {
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const exclusions = await response.json();
+                renderExclusions(exclusions);
+            } catch (error) {
+                console.error('Error loading exclusions:', error);
+                displayMessage('Failed to load exclusions. Please check your connection or login.', 'error');
+            }
+        }
+
+        function renderExclusions(exclusions) {
+            exclusionsListBody.innerHTML = ''; // Clear existing list
+            if (exclusions.length === 0) {
+                noExclusionsMessage.style.display = 'block';
+                document.getElementById('exclusionsList').style.display = 'none';
+            } else {
+                noExclusionsMessage.style.display = 'none';
+                document.getElementById('exclusionsList').style.display = 'table';
+                exclusions.forEach(excl => {
+                    const row = exclusionsListBody.insertRow();
+                    row.insertCell().textContent = excl.date;
+                    row.insertCell().textContent = excl.trip.route_name;
+                    row.insertCell().textContent = excl.trip.departure_time;
+                    row.insertCell().textContent = excl.trip.direction;
+
+                    const actionCell = row.insertCell();
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.classList.add('delete-btn');
+                    deleteButton.dataset.exclusionId = excl.id;
+                    deleteButton.addEventListener('click', () => showConfirmModal(excl.id));
+                    actionCell.appendChild(deleteButton);
+                });
+            }
+        }
+
+        // --- Custom Confirmation Modal Logic ---
+        function showConfirmModal(exclusionId) {
+            currentExclusionToDelete = exclusionId;
+            confirmModal.classList.add('show');
+        }
+
+        function hideConfirmModal() {
+            confirmModal.classList.remove('show');
+            currentExclusionToDelete = null;
+        }
+
+        confirmYesBtn.addEventListener('click', async () => {
+            if (currentExclusionToDelete) {
+                await deleteExclusion(currentExclusionToDelete);
+            }
+            hideConfirmModal();
+        });
+
+        confirmNoBtn.addEventListener('click', () => {
+            hideConfirmModal();
+        });
+
+        // Close modal if clicking outside the content (on the overlay)
+        confirmModal.addEventListener('click', (event) => {
+            if (event.target === confirmModal) {
+                hideConfirmModal();
+            }
+        });
+
+
+        // --- Delete Exclusion Functionality ---
+        async function deleteExclusion(exclusionId) {
+            if (!AUTH_TOKEN) {
+                displayMessage('Authentication required to delete an exclusion. Please log in.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/exclusions/${exclusionId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
+                } else {
+                    displayMessage('Exclusion deleted successfully!', 'success');
+                    loadExclusions(); // Refresh the list
+                }
+            } catch (error) {
+                console.error('Error deleting exclusion:', error);
+                displayMessage(`Failed to delete exclusion: ${error.message}`, 'error');
+            }
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set today's date as default for exclusion date input
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(today.getDate()).padStart(2, '0');
+            exclusionDateInput.value = `${year}-${month}-${day}`;
+
+            // Log the token being used for debugging
+            console.log('AUTH_TOKEN being used:', AUTH_TOKEN);
+
+            if (!AUTH_TOKEN) {
+                displayMessage('No authentication token found. Please ensure you are logged in.', 'error');
+            }
+
+            loadExclusions();
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Where is my Bus?</title>
+    <style>
+      /* Minimal inline styling; you can move to static CSS file */
+      body { font-family: sans-serif; margin: 20px; }
+      .form-group { margin-bottom: 1em; }
+      label { display: block; margin-bottom: 0.3em; }
+      input[type="text"], select { width: 100%; padding: 0.5em; }
+      button { padding: 0.6em 1.2em; }
+    </style>
+</head>
+<body>
+    <h1>Where is my Bus?</h1>
+    <form action="/search" method="get">
+        <div class="form-group">
+            <label for="bus_name">Search by Bus Name (optional):</label>
+            <input type="text" id="bus_name" name="bus_name" placeholder="Enter full or partial bus name">
+        </div>
+        <p>-- OR --</p>
+        <div class="form-group">
+            <label for="start_stop">Select Start Stop:</label>
+            <select id="start_stop" name="start_stop">
+                <option value="">-- choose --</option>
+                {% for stop in stops %}
+                <option value="{{ stop.id }}">{{ stop.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="end_stop">Select Destination Stop:</label>
+            <select id="end_stop" name="end_stop">
+                <option value="">-- choose --</option>
+                {% for stop in stops %}
+                <option value="{{ stop.id }}">{{ stop.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>

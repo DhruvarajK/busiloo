@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Traffic Block</title>
+    <style>
+        /* Basic styling for body and font */
+        body {
+            font-family: "Inter", sans-serif; /* Using Inter font */
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            padding: 20px;
+            box-sizing: border-box;
+            margin: 0; /* Ensure no default body margin */
+        }
+
+        /* Custom RedBus Red color */
+        :root {
+            --color-redbus-red: #D32F2F;
+        }
+
+        /* Container Styling */
+        .container {
+            background-color: #ffffff;
+            padding: 32px; /* p-8 */
+            border-radius: 20px; /* rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            max-width: 448px; /* max-w-md */
+            width: 100%;
+            position: relative; /* For modal positioning */
+            z-index: 1; /* Ensure container is below modal overlay */
+        }
+
+        /* Heading Styling */
+        h1 {
+            font-size: 30px;
+            font-weight: 700;
+            text-align: center;
+            margin: 17px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h1 svg {
+            width: 32px; /* w-8 */
+            height: 32px; /* h-8 */
+            margin-right: 12px; /* mr-3 */
+            color: var(--color-redbus-red); /* redbus-red-text */
+        }
+
+        /* Form Group Spacing */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* space-y-5 */
+        }
+
+        /* Label Styling */
+        label {
+            display: block;
+            color: #374151; /* text-gray-700 */
+            font-size: 14px; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 8px; /* mb-2 */
+        }
+
+        /* Input, Textarea, Select Styling */
+        input[type="text"],
+        .textarea1,
+        .select1 {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            -webkit-appearance: none; /* appearance-none */
+            -moz-appearance: none;
+            appearance: none;
+            border: 1px solid #d1d5db; /* border */
+            border-radius: 6px; /* rounded-md */
+            width: 100%;
+            padding: 12px 16px; /* py-3 px-4 */
+            color: #374151; /* text-gray-700 */
+            line-height: 1.25; /* leading-tight */
+            outline: none;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* transition duration-200 ease-in-out */
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        .textarea1:focus,
+        .select1:focus {
+            outline: none; /* focus:outline-none */
+            box-shadow: 0 0 0 3px rgba(251, 191, 189, 0.5); /* focus:ring-2 focus:ring-red-300 focus:ring-opacity-75 */
+            border-color: transparent; /* focus:border-transparent */
+        }
+
+        .textarea1 {
+            height: 112px; /* h-28 */
+            resize: vertical; /* resize-y */
+        }
+
+        .text-xs { font-size: 12px; }
+        .text-red-500 { color: #ef4444; }
+        .mt-1 { margin-top: 4px; }
+        .border-red-500 { border-color: #ef4444; }
+
+        /* Dropdown arrow for select */
+        .relative {
+            position: relative;
+        }
+        .pointer-events-none {
+            pointer-events: none;
+        }
+        .inset-y-0 {
+            top: 0;
+            bottom: 0;
+        }
+        .right-0 {
+            right: 0;
+        }
+        .flex {
+            display: flex;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .px-2 {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        .text-gray-700 {
+            color: #374151;
+        }
+        .h-4 { height: 16px; }
+        .w-4 { width: 16px; }
+        .fill-current { fill: currentColor; }
+
+        /* Button Container */
+        .flex-col {
+            flex-direction: column;
+        }
+        .sm\:flex-row {
+            /* For small screens and up, change to row */
+            @media (min-width: 640px) {
+                flex-direction: row;
+            }
+        }
+        .gap-4 {
+            gap: 4px; /* gap-4 */
+            display: flex;
+        }
+
+        /* Button Styling */
+        button {
+            flex: 1; /* flex-1 */
+            width: 100%;
+            font-weight: 700; /* font-bold */
+            padding: 12px 24px; /* py-3 px-6 */
+            border-radius: 23px; /* rounded-md */
+            transition: all 0.3s ease-in-out, transform 0.1s ease-in-out; /* transition duration-300 ease-in-out */
+            transform: scale(1); /* Initial scale for hover effect */
+            outline: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none; /* Remove default button border */
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Add initial shadow */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight for mobile */
+        }
+
+        button:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Larger shadow on hover */
+        }
+        button:focus {
+            outline: none; /* focus:outline-none */
+            box-shadow: 0 0 0 4px rgba(251, 191, 189, 0.5); /* focus:ring-2 focus:ring-red-300 focus:ring-opacity-75 */
+        }
+        button:active {
+            transform: scale(0.98); /* Slight shrink on click for "bubble" effect */
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Smaller shadow on active */
+        }
+
+
+        /* Specific Button Colors & Gradients */
+        #locationBtn {
+            background-image: linear-gradient(to right, #3b82f6, #2563eb); /* bg-blue-500 to blue-600 */
+            color: #ffffff;
+        }
+        #locationBtn:hover {
+            background-image: linear-gradient(to right, #2563eb, #1e40af); /* Darker blue on hover */
+        }
+        #locationBtn:focus {
+            box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.5); /* focus:ring-blue-300 */
+        }
+        #locationBtn.success-color {
+            background-image: linear-gradient(to right, #22c55e, #16a34a); /* bg-green-500 to green-600 */
+        }
+        #locationBtn.success-color:hover {
+            background-image: linear-gradient(to right, #16a34a, #15803d); /* Darker green on hover */
+        }
+
+
+        #submitBtn {
+            background-image: linear-gradient(to right, var(--color-redbus-red), #b91c1c); /* redbus-red-bg to red-700 */
+            color: #ffffff;
+        }
+        #submitBtn:hover {
+            background-image: linear-gradient(to right, #b91c1c, #991b1b); /* Darker red on hover */
+        }
+        #submitBtn:focus {
+             box-shadow: 0 0 0 4px rgba(251, 191, 189, 0.5); /* focus:ring-red-300 */
+        }
+
+        /* Disabled Button State */
+        button:disabled {
+            opacity: 0.6; /* adjusted opacity for better visibility */
+            cursor: not-allowed;
+            transform: none; /* remove hover/active effects when disabled */
+            box-shadow: none; /* remove shadow when disabled */
+        }
+
+        /* Button SVG Icon */
+        button svg {
+            width: 20px; /* w-5 */
+            height: 20px; /* h-5 */
+            margin-right: 8px; /* mr-2 */
+            transition: transform 0.3s ease-in-out;
+        }
+        button:hover svg {
+            transform: translateX(-2px); /* Slight icon shift on hover */
+        }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .ml-2 { margin-left: 8px; }
+        .w-4 { width: 16px; }
+        .h-4 { height: 16px; }
+        .border-2 { border-width: 2px; }
+        .border-t-2 { border-top-width: 2px; }
+        .border-white { border-color: #ffffff; }
+        .rounded-full { border-radius: 9999px; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-width: 380px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content.success-modal {
+            border-top: 5px solid #22c55e; /* Green border for success */
+        }
+        .modal-content.error-modal {
+            border-top: 5px solid #ef4444; /* Red border for error */
+        }
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 16px;
+        }
+        .modal-icon.success-icon {
+            color: #22c55e; /* Green checkmark */
+        }
+        .modal-icon.error-icon {
+            color: #ef4444; /* Red x-circle */
+        }
+        .modal-message {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        .modal-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+        .modal-close-btn {
+            background-color: var(--color-redbus-red);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-weight: 600;
+        }
+        .modal-close-btn:hover {
+            background-color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <!-- SVG Icon for Traffic Report -->
+            <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            Report Traffic Block
+        </h1>
+
+        <!-- Inline Message Displays (hidden by default, used as fallback if modal fails) -->
+        <div id="error" class="error hidden" role="alert" style="display: none;">
+            <strong>Error!</strong>
+            <span id="error-message"></span>
+        </div>
+        <div id="success" class="success hidden" role="alert" style="display: none;">
+            <strong>Success!</strong>
+            <span id="success-message"></span>
+        </div>
+
+        <form id="trafficForm">
+            <div class="form-group">
+                <label for="description">
+                    Description
+                </label>
+                <textarea id="description" name="description" required minlength="10" class="textarea1"
+                    placeholder="Describe the traffic situation (e.g., 'Heavy congestion due to accident near...', 'Road closed due to water logging...')"></textarea>
+                <p id="description-error" class="text-xs text-red-500 mt-1 hidden">Description must be at least 10 characters long.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="severity">
+                    Traffic Density
+                </label>
+                <div class="relative">
+                    <select id="severity" name="severity" class="select1">
+                        <option value="1">Low</option>
+                        <option value="2">Medium</option>
+                        <option value="3">High</option>
+                    </select>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="route_name">
+                    Route Name (optional)
+                </label>
+                <input type="text" id="route_name" name="route_name"
+                    placeholder="e.g., NH66, MG Road, Bypass">
+            </div>
+
+            <div class="flex-col sm:flex-row gap-4">
+                <button type="button" id="locationBtn">
+                    <!-- SVG Icon for Location -->
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span id="location-button-text">Use My Location</span>
+                    <div id="location-spinner" class="hidden ml-2 w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin"></div>
+                </button>
+
+                <button type="submit" id="submitBtn">
+                    <!-- SVG Icon for Submit -->
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span id="submit-button-text">Submit Report</span>
+                    <div id="submit-spinner" class="hidden ml-2 w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="messageModal" class="modal-overlay">
+        <div class="modal-content">
+            <svg id="modalIcon" class="modal-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <!-- Icon will be set by JS -->
+            </svg>
+            <p id="modalMessage" class="modal-message"></p>
+            <p id="modalDescription" class="modal-description"></p>
+            <button id="modalCloseBtn" class="modal-close-btn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('trafficForm');
+        const descriptionInput = document.getElementById('description');
+        const descriptionError = document.getElementById('description-error');
+        const locationBtn = document.getElementById('locationBtn');
+        const locationButtonText = document.getElementById('location-button-text');
+        const locationSpinner = document.getElementById('location-spinner');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitButtonText = document.getElementById('submit-button-text');
+        const submitSpinner = document.getElementById('submit-spinner');
+
+        // Modal elements
+        const messageModal = document.getElementById('messageModal');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        let formData = {
+            description: '',
+            severity: 1,
+            latitude: null,
+            longitude: null,
+            route_name: null
+        };
+
+        // Function to show modal message
+        function showModal(type, title, description) {
+            modalMessage.textContent = title;
+            modalDescription.textContent = description;
+            messageModal.classList.add('show');
+            modalIcon.innerHTML = ''; // Clear previous icon
+
+            // Set icon and modal style based on type
+            if (type === 'success') {
+                modalIcon.classList.remove('error-icon');
+                modalIcon.classList.add('success-icon');
+                messageModal.querySelector('.modal-content').classList.remove('error-modal');
+                messageModal.querySelector('.modal-content').classList.add('success-modal');
+                modalIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>`; // Checkmark
+            } else if (type === 'error') {
+                modalIcon.classList.remove('success-icon');
+                modalIcon.classList.add('error-icon');
+                messageModal.querySelector('.modal-content').classList.remove('success-modal');
+                messageModal.querySelector('.modal-content').classList.add('error-modal');
+                modalIcon.innerHTML = `<path d="M12 7.5V11.5M12 14.5H12.01M19 10.2C19 14.1764 15.5 17.4 12 21C8.5 17.4 5 14.1764 5 10.2C5 6.22355 8.13401 3 12 3C15.866 3 19 6.22355 19 10.2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`; // X-circle
+            }
+
+            // Automatically close after a few seconds for non-critical messages, or keep open for errors
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideModal();
+                }, 3000); // Hide success message after 3 seconds
+            }
+        }
+
+        // Function to hide modal message
+        function hideModal() {
+            messageModal.classList.remove('show');
+            // Remove specific type classes after transition for clean reset
+            setTimeout(() => {
+                modalIcon.classList.remove('success-icon', 'error-icon');
+                messageModal.querySelector('.modal-content').classList.remove('success-modal', 'error-modal');
+            }, 300); // Match transition duration
+        }
+
+        // Event listener for modal close button
+        modalCloseBtn.addEventListener('click', hideModal);
+        messageModal.addEventListener('click', (e) => {
+            if (e.target === messageModal) { // Close when clicking outside content
+                hideModal();
+            }
+        });
+
+        // Function to validate description input
+        descriptionInput.addEventListener('input', () => {
+            if (descriptionInput.value.length < 10 && descriptionInput.value.length > 0) {
+                descriptionError.classList.remove('hidden');
+                descriptionInput.style.borderColor = '#ef4444'; /* border-red-500 */
+                descriptionInput.style.boxShadow = 'none'; /* Remove focus ring to show error border */
+            } else {
+                descriptionError.classList.add('hidden');
+                descriptionInput.style.borderColor = '#d1d5db'; /* Reset border */
+                descriptionInput.style.boxShadow = '0 0 0 3px rgba(251, 191, 189, 0.5)'; /* Restore focus ring */
+            }
+            hideModal(); // Clear modal if typing
+        });
+
+
+        // Get user's current location
+        function getLocation() {
+            hideModal(); // Clear previous modal messages
+            locationBtn.disabled = true;
+            locationButtonText.textContent = 'Fetching Location...';
+            locationSpinner.classList.remove('hidden');
+            locationBtn.classList.remove('success-color'); // Reset success color if previously applied
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        formData.latitude = position.coords.latitude;
+                        formData.longitude = position.coords.longitude;
+                        showModal('success', 'Location Captured!', 'Your current location has been successfully retrieved.');
+                        locationButtonText.textContent = 'Location Added!'; // Indicate success
+                        locationBtn.classList.add('success-color'); // Change color to green on success
+                        submitBtn.disabled = false; // Enable submit button once location is obtained
+                        locationSpinner.classList.add('hidden'); // Cleanup
+                        locationBtn.disabled = false; // Cleanup
+                    },
+                    err => {
+                        showModal('error', 'Location Error!', 'Failed to get location. Please ensure location services are enabled and permissions are granted.');
+                        formData.latitude = null; // Reset location data
+                        formData.longitude = null;
+                        locationButtonText.textContent = 'Use My Location'; // Revert text
+                        locationBtn.classList.remove('success-color'); // Ensure no success color
+                        submitBtn.disabled = true; // Keep submit button disabled if location fails
+                        locationSpinner.classList.add('hidden'); // Cleanup
+                        locationBtn.disabled = false; // Cleanup
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Options for better accuracy
+                );
+            } else {
+                showModal('error', 'Geolocation Not Supported!', 'Your browser does not support geolocation. Please use a different browser.');
+                submitBtn.disabled = true; // Keep submit button disabled if geolocation not supported
+                locationSpinner.classList.add('hidden'); // Cleanup
+                locationBtn.disabled = false; // Cleanup
+            }
+        }
+
+        // Handle form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+            hideModal(); // Clear previous modal messages
+
+            // Form validation
+            if (descriptionInput.value.length < 10) {
+                showModal('error', 'Validation Error!', 'Description must be at least 10 characters long.');
+                descriptionError.classList.remove('hidden');
+                descriptionInput.style.borderColor = '#ef4444'; /* border-red-500 */
+                return;
+            } else {
+                 descriptionError.classList.add('hidden');
+                 descriptionInput.style.borderColor = '#d1d5db'; /* Reset border */
+            }
+
+
+            formData.description = descriptionInput.value;
+            formData.severity = parseInt(form.severity.value);
+            formData.route_name = form.route_name.value.trim() || null;
+
+            if (!formData.latitude || !formData.longitude) {
+                showModal('error', 'Location Required!', 'Please provide your location before submitting the report.');
+                return;
+            }
+
+            // Show loading animation on submit button
+            submitBtn.disabled = true;
+            submitButtonText.textContent = 'Submitting...';
+            submitSpinner.classList.remove('hidden');
+
+            try {
+                // Simulate API call
+                // const response = await fetch('/api/traffic_blocks/', { // Uncomment and use your actual API endpoint
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(formData)
+                // });
+                // if (!response.ok) {
+                //     const errorData = await response.json();
+                //     throw new Error(errorData.detail || 'Failed to report traffic block');
+                // }
+
+                // Simulate success after a delay
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+
+                showModal('success', 'Report Submitted!', 'Traffic block reported successfully. Thank you!');
+                form.reset(); // Clear form fields
+                formData = { description: '', severity: 1, latitude: null, longitude: null, route_name: null }; // Reset formData
+                locationButtonText.textContent = 'Use My Location'; // Reset location button text
+                locationBtn.classList.remove('success-color'); // Remove green color
+                submitBtn.disabled = true; // Disable submit until new location is added
+            } catch (err) {
+                showModal('error', 'Submission Failed!', err.message || 'An unexpected error occurred during submission.');
+            } finally {
+                // Hide loading animation and re-enable button
+                submitBtn.disabled = false;
+                submitButtonText.textContent = 'Submit Report';
+                submitSpinner.classList.add('hidden');
+            }
+        }
+
+        // Event Listeners
+        locationBtn.addEventListener('click', getLocation);
+        form.addEventListener('submit', handleSubmit);
+
+        // Initially disable submit button until location is obtained
+        submitBtn.disabled = true;
+    </script>
+</body>
+</html>

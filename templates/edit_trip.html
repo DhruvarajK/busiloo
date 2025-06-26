@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Trip Times</title>
+  <style>
+    .stop-entry {
+      position: relative;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+    }
+    .stop-entry label {
+      display: inline-block;
+      margin-right: 1rem;
+    }
+    .stop-entry .stop-name {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit Trip Times</h1>
+
+  <!-- Bus selection -->
+  <label>
+    Select Bus:
+    <select id="bus-select">
+      <option value="">--Choose Bus--</option>
+    </select>
+  </label>
+  <button type="button" id="load-trips-btn">Load Trips</button>
+  <br/><br/>
+
+  <!-- Trip selection -->
+  <label>
+    Select Trip:
+    <select id="trip-select" disabled>
+      <option value="">--Choose Trip--</option>
+    </select>
+  </label>
+  <br/><br/>
+
+  <!-- Edit form -->
+  <form id="edit-trip-form" style="display:none;">
+    <fieldset>
+      <legend>Trip Info (cannot change route name/direction here)</legend>
+      <label>
+        Route Name:
+        <input type="text" id="route-name-input" name="route_name" readonly />
+      </label>
+      <br/><br/>
+      <label>
+        Direction:
+        <input type="text" id="direction-input" name="direction" readonly />
+      </label>
+      <br/><br/>
+      <label>
+        Departure Time:
+        <input type="time" id="departure-time-input" name="departure_time" required />
+      </label>
+      <br/><br/>
+      <fieldset>
+        <legend>Service Days</legend>
+        <label><input type="checkbox" name="service_days" value="monday" /> Monday</label>
+        <label><input type="checkbox" name="service_days" value="tuesday" /> Tuesday</label>
+        <label><input type="checkbox" name="service_days" value="wednesday" /> Wednesday</label>
+        <label><input type="checkbox" name="service_days" value="thursday" /> Thursday</label>
+        <label><input type="checkbox" name="service_days" value="friday" /> Friday</label>
+        <label><input type="checkbox" name="service_days" value="saturday" /> Saturday</label>
+        <label><input type="checkbox" name="service_days" value="sunday" /> Sunday</label>
+      </fieldset>
+    </fieldset>
+    <br/>
+
+    <!-- Stops with arrival times -->
+    <fieldset id="stops-fieldset">
+      <legend>Stops (edit arrival times below)</legend>
+      <!-- dynamically inserted .stop-entry divs -->
+    </fieldset>
+    <br/>
+
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <div id="message" style="margin-top:1rem;"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+    }
+
+    // Load buses into dropdown
+    async function loadBuses() {
+      const res = await fetch('/union/buses', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) {
+        const buses = await res.json();
+        const sel = document.getElementById('bus-select');
+        sel.innerHTML = '<option value="">--Choose Bus--</option>';
+        buses.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = `${b.name} (${b.registration_no})`;
+          sel.appendChild(opt);
+        });
+      } else {
+        console.error('Failed to load buses');
+      }
+    }
+
+    // Load trips for selected bus
+    document.getElementById('load-trips-btn').addEventListener('click', async () => {
+      const busId = document.getElementById('bus-select').value;
+      const tripSel = document.getElementById('trip-select');
+      tripSel.innerHTML = '<option value="">--Choose Trip--</option>';
+      tripSel.disabled = true;
+      document.getElementById('edit-trip-form').style.display = 'none';
+      if (!busId) return alert('Select a bus first');
+      const res = await fetch(`/union/buses/${busId}/trips`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) {
+        const trips = await res.json();
+        if (trips.length === 0) {
+          alert('No trips found for this bus');
+          return;
+        }
+        trips.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = `${t.route_name} | ${t.direction} | Departs ${t.departure_time}`;
+          tripSel.appendChild(opt);
+        });
+        tripSel.disabled = false;
+      } else {
+        console.error('Failed to load trips');
+      }
+    });
+
+    // When a trip is selected, fetch its details
+    document.getElementById('trip-select').addEventListener('change', async function() {
+      const tripId = this.value;
+      if (!tripId) {
+        document.getElementById('edit-trip-form').style.display = 'none';
+        return;
+      }
+      const res = await fetch(`/union/trips/${tripId}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) {
+        alert('Failed to fetch trip details');
+        return;
+      }
+      const trip = await res.json();
+      // Populate form fields
+      document.getElementById('route-name-input').value = trip.route_name;
+      document.getElementById('direction-input').value = trip.direction;
+      document.getElementById('departure-time-input').value = trip.departure_time;
+
+      // Service days
+      document.querySelectorAll('input[name="service_days"]').forEach(cb => {
+        cb.checked = trip.service_days.some(sd => sd.weekday === cb.value);
+      });
+
+      // Stops
+      const fs = document.getElementById('stops-fieldset');
+      fs.innerHTML = '<legend>Stops (edit arrival times below)</legend>';
+      trip.stop_times.forEach(st => {
+        const div = document.createElement('div');
+        div.className = 'stop-entry';
+        div.innerHTML = `
+          <label class="stop-name">Stop: ${st.stop_id}</label>
+          <input type="hidden" name="stop_id" value="${st.stop_id}" />
+          <label>Sequence: 
+            <input type="number" name="sequence" value="${st.sequence}" readonly />
+          </label>
+          <label>Arrival Time:
+            <input type="time" name="arrival_time" value="${st.arrival_time}" required />
+          </label>
+        `;
+        // Optionally, show stop name text if you want. For that, you could fetch stop name separately or include in TripOut.
+        // If TripOut included stop_name, adjust accordingly.
+        fs.appendChild(div);
+      });
+
+      // Show the form
+      document.getElementById('edit-trip-form').style.display = 'block';
+      document.getElementById('message').textContent = '';
+    });
+
+    // Submit updated times via PUT
+    document.getElementById('edit-trip-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const tripId = document.getElementById('trip-select').value;
+      if (!tripId) return;
+      const form = this;
+      const departureTime = form.departure_time.value;
+      const service_days = [];
+      form.querySelectorAll('input[name="service_days"]:checked').forEach(cb => {
+        service_days.push({ weekday: cb.value });
+      });
+      const stop_times = [];
+      document.querySelectorAll('.stop-entry').forEach(div => {
+        const stopId = parseInt(div.querySelector('input[name="stop_id"]').value);
+        const seq = parseInt(div.querySelector('input[name="sequence"]').value);
+        const arrival = div.querySelector('input[name="arrival_time"]').value;
+        if (stopId && arrival && !isNaN(seq)) {
+          stop_times.push({ stop_id: stopId, arrival_time: arrival, sequence: seq });
+        }
+      });
+      const payload = {
+        departure_time: departureTime,
+        stop_times,
+        service_days
+      };
+      const res = await fetch(`/union/trips/${tripId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(payload)
+      });
+      const msgDiv = document.getElementById('message');
+      if (res.ok) {
+        msgDiv.style.color = 'green';
+        msgDiv.textContent = 'Trip updated successfully';
+        // Optionally reload trips list to reflect new departure_time in the dropdown
+        // e.g., trigger Load Trips again
+      } else {
+        const err = await res.json();
+        msgDiv.style.color = 'red';
+        msgDiv.textContent = 'Error: ' + JSON.stringify(err.detail || err);
+      }
+    });
+
+    // On load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadBuses();
+    });
+  </script>
+</body>
+</html>

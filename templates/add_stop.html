@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stop Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* CSS Variables for easier theme management */
+        :root {
+            --primary-color: #3b82f6; /* Blue 500 */
+            --primary-color-dark: #2563eb; /* Blue 600 */
+            --danger-color: #ef4444; /* Red 500 */
+            --danger-color-dark: #dc2626; /* Red 600 */
+            --background-color: #f9fafb; /* Gray 50 */
+            --surface-color: #ffffff;
+            --text-primary: #1f2937; /* Gray 800 */
+            --text-secondary: #4b5563; /* Gray 600 */
+            --text-muted: #6b7280; /* Gray 500 */
+            --border-color: #e5e7eb; /* Gray 200 */
+            --border-focus-color: var(--primary-color);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 1rem; /* 12px */
+            --transition: all 0.3s ease-in-out;
+        }
+
+        /* General Body Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .header h1 {
+            font-size: 2.25rem; /* 36px */
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .header p {
+            font-size: 1.125rem; /* 18px */
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Card styles for form and table containers */
+        .card {
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+        }
+        
+        .card-header {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Form Styles */
+        #stop-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem; /* 14px */
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem; /* 8px */
+            font-size: 1rem;
+            transition: var(--transition);
+            box-sizing: border-box; /* Important for padding */
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--border-focus-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color-dark);
+        }
+        
+        .btn-secondary {
+            background-color: #e5e7eb; /* Gray 200 */
+            color: var(--text-secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d1d5db; /* Gray 300 */
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-color-dark);
+        }
+        
+        #cancel-edit-btn.hidden {
+            display: none;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto; /* For mobile responsiveness */
+        }
+
+        .stops-table {
+            width: 100%;
+            min-width: 340px; /* Ensure table has min-width for scrolling */
+            border-collapse: collapse;
+        }
+        td.table-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stops-table th, .stops-table td {
+            padding:6px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stops-table thead {
+            background-color: var(--background-color);
+        }
+
+        .stops-table th {
+            font-size: 0.75rem; /* 12px */
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stops-table tbody tr:hover {
+            background-color: #f9fafb; /* Gray 50 */
+        }
+
+        .stops-table td {
+            font-size: 0.875rem; /* 14px */
+        }
+        
+        .table-actions button {
+            background: none;
+            border: none;
+            padding: 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .table-actions .edit-btn {
+            color: var(--primary-color);
+        }
+        
+        .table-actions .edit-btn:hover {
+            color: var(--primary-color-dark);
+        }
+        
+        .table-actions .delete-btn {
+            color: var(--danger-color);
+            margin-left: 1rem;
+        }
+        
+        .table-actions .delete-btn:hover {
+            color: var(--danger-color-dark);
+        }
+        
+        #search-input {
+            max-width: 400px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 2000;
+        }
+        
+        .toast-success {
+            background-color: #22c55e; /* Green 500 */
+        }
+        
+        .toast-error {
+            background-color: var(--danger-color);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            margin: auto;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            max-width: 450px;
+            width: 90%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content h3 {
+            font-size: 1.25rem; /* 20px */
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .container {
+                padding: 2rem;
+            }
+
+            #stop-form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-group-full {
+                grid-column: 1 / -1;
+            }
+            
+            .form-actions {
+                grid-column: 1 / -1;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>Stop Management</h1>
+            <p>Add, view, edit, and delete bus stops.</p>
+        </header>
+
+        <main id="main-content">
+            <!-- Form for Adding and Editing Stops -->
+            <div class="card">
+                <h2 id="form-title" class="card-header">Add New Stop</h2>
+                <form id="stop-form">
+                    <input type="hidden" id="stop-id" name="stop-id" />
+                    <div class="form-group">
+                        <label for="name">Stop Name</label>
+                        <input type="text" id="name" name="name" required class="form-input" placeholder="e.g., Central Bus Terminal" />
+                    </div>
+                    <div class="form-group">
+                        <label for="district">District</label>
+                        <input type="text" id="district" name="district" class="form-input" placeholder="e.g., Thiruvananthapuram" />
+                    </div>
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="text" id="latitude" name="latitude" class="form-input" placeholder="e.g., 8.5241" />
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="text" id="longitude" name="longitude" class="form-input" placeholder="e.g., 76.9366" />
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label for="loc_link">Location Link (Google Maps)</label>
+                        <input type="url" id="loc_link" name="loc_link" class="form-input" placeholder="https://maps.app.goo.gl/..." />
+                    </div>
+                    <div class="form-actions form-group-full">
+                        <button type="button" id="cancel-edit-btn" class="btn btn-secondary hidden">Cancel</button>
+                        <button type="submit" id="submit-btn" class="btn btn-primary">Save Stop</button>
+                    </div>
+                </form>
+        
+                <h2 class="card-header">Existing Stops</h2>
+                <input type="text" id="search-input" placeholder="Search stops by name..." class="form-input" oninput="handleSearch()" />
+                <div class="table-container">
+                    <table class="stops-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>District</th>
+                                <th>Coordinates</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stops-table-body">
+                            <tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading stops...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Action</h3>
+            <p id="confirm-message">Are you sure?</p>
+            <div class="modal-actions">
+                <button id="confirm-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button id="confirm-ok-btn" class="btn btn-danger">OK</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Backend JavaScript (Unaltered) ---
+        const API_BASE_URL = '/union'; // Ensure this matches your FastAPI base path
+        const stopsTableBody = document.getElementById('stops-table-body');
+        const stopForm = document.getElementById('stop-form');
+        const formTitle = document.getElementById('form-title');
+        const stopIdInput = document.getElementById('stop-id');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        const mainContent = document.getElementById('main-content');
+
+        // Modal elements
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmMessage = document.getElementById('confirm-message');
+        const confirmOkBtn = document.getElementById('confirm-ok-btn');
+        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+
+        let lastSearchTerm = '';
+        let confirmCallback = null;
+
+        // --- Utility Functions ---
+        function getAuthToken() {
+            return localStorage.getItem('token');
+        }
+
+        function showToast(message, isError = false) {
+            toastMessage.textContent = message;
+            toast.className = isError ? 'toast-error' : 'toast-success';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+
+        function showConfirmModal(message, callback) {
+            confirmMessage.textContent = message;
+            confirmCallback = callback;
+            confirmModal.style.display = 'flex';
+        }
+
+        function hideConfirmModal() {
+            confirmModal.style.display = 'none';
+            confirmCallback = null;
+        }
+
+        confirmOkBtn.addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback(true);
+            }
+            hideConfirmModal();
+        });
+
+        confirmCancelBtn.addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback(false);
+            }
+            hideConfirmModal();
+        });
+
+        async function fetchAPI(endpoint, options = {}) {
+            const token = getAuthToken();
+            const headers = { 'Content-Type': 'application/json', ...options.headers };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showToast('Unauthorized: Please ensure a valid token is in local storage.', true);
+                    }
+                    const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
+                    throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+                }
+                return response.status === 204 ? null : response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        const renderStops = (stops) => {
+            stopsTableBody.innerHTML = '';
+            if (stops.length === 0) {
+                stopsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No stops found. Add one using the form above.</td></tr>';
+                return;
+            }
+            stops.forEach(stop => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${stop.id}</td>
+                    <td>${stop.name}</td>
+                    <td>${stop.district || 'N/A'}</td>
+                    <td>${stop.latitude && stop.longitude ? `${stop.latitude}, ${stop.longitude}` : 'N/A'}</td>
+                    <td class="table-actions">
+                        <button onclick="handleEdit(${stop.id})" class="edit-btn">Edit</button>
+                        <button onclick="handleDelete(${stop.id})" class="delete-btn">Delete</button>
+                    </td>
+                `;
+                stopsTableBody.appendChild(row);
+            });
+        };
+
+        const loadStops = async (search = '') => {
+            lastSearchTerm = search;
+            stopsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading stops...</td></tr>';
+            try {
+                const query = search ? `?search=${encodeURIComponent(search)}` : '';
+                const stops = await fetchAPI(`/stops${query}`);
+                renderStops(stops);
+            } catch (error) {
+                console.error('Failed to load stops:', error);
+                showToast(`Error: ${error.message}`, true);
+                stopsTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--danger-color);">Failed to load stops. Make sure a valid token is in local storage if required.</td></tr>`;
+            }
+        };
+
+        let searchTimeout = null;
+        function handleSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchValue = document.getElementById('search-input').value.trim();
+                loadStops(searchValue);
+            }, 300);
+        }
+
+        const resetForm = () => {
+            stopForm.reset();
+            stopIdInput.value = '';
+            formTitle.textContent = 'Add New Stop';
+            cancelEditBtn.classList.add('hidden');
+            document.getElementById('submit-btn').textContent = 'Save Stop';
+        };
+
+        stopForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(stopForm);
+            const stopData = Object.fromEntries(formData.entries());
+            const id = stopIdInput.value;
+            Object.keys(stopData).forEach(key => {
+                if (stopData[key] === '') delete stopData[key];
+            });
+            delete stopData['stop-id'];
+
+            try {
+                if (id) {
+                    await fetchAPI(`/stops/${id}`, { method: 'PUT', body: JSON.stringify(stopData) });
+                    showToast('Stop updated successfully!');
+                } else {
+                    await fetchAPI('/stops', { method: 'POST', body: JSON.stringify(stopData) });
+                    showToast('Stop added successfully!');
+                }
+                resetForm();
+                loadStops(lastSearchTerm);
+            } catch (error) {
+                console.error('Failed to save stop:', error);
+                showToast(`Error: ${error.message}`, true);
+            }
+        });
+
+        const handleEdit = async (id) => {
+            try {
+                const stop = await fetchAPI(`/stops/${id}`);
+                formTitle.textContent = `Editing Stop: ${stop.name}`;
+                stopIdInput.value = stop.id;
+                document.getElementById('name').value = stop.name;
+                document.getElementById('district').value = stop.district || '';
+                document.getElementById('latitude').value = stop.latitude || '';
+                document.getElementById('longitude').value = stop.longitude || '';
+                document.getElementById('loc_link').value = stop.loc_link || '';
+                cancelEditBtn.classList.remove('hidden');
+                document.getElementById('submit-btn').textContent = 'Update Stop';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                console.error('Failed to fetch stop for editing:', error);
+                showToast(`Error: ${error.message}`, true);
+            }
+        };
+
+        cancelEditBtn.addEventListener('click', resetForm);
+
+        const handleDelete = async (id) => {
+            showConfirmModal(`Are you sure you want to delete stop #${id}?`, async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await fetchAPI(`/stops/${id}`, { method: 'DELETE' });
+                        showToast('Stop deleted successfully!');
+                        loadStops(lastSearchTerm);
+                    } catch (error) {
+                        console.error('Failed to delete stop:', error);
+                        showToast(`Error: ${error.message}`, true);
+                    }
+                }
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStops();
+        });
+    </script>
+</body>
+</html>

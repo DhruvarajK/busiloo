@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Find Route</title>
+</head>
+<body>
+  <div>
+    <span id="current-time"></span>
+    <button id="time-toggle">Switch to 12-hour</button>
+  </div>
+  <h1>Find Buses Between Stops</h1>
+  <label>
+    Start Stop:
+    <select id="start-stop"></select>
+  </label><br>
+  <label>
+    End Stop:
+    <select id="end-stop"></select>
+  </label><br>
+  <button id="find-btn">Find Buses</button>
+  <div id="results"></div>
+
+  <script>
+    // Time toggle logic
+    const currentTimeElem = document.getElementById('current-time');
+    const toggleBtn = document.getElementById('time-toggle');
+    let is24Hour = true;
+    function formatTime(dateOrString) {
+      let date;
+      if (typeof dateOrString === 'string') {
+        const [h, m, s] = dateOrString.split(':').map(Number);
+        date = new Date(); date.setHours(h, m, s || 0);
+      } else {
+        date = dateOrString;
+      }
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: !is24Hour
+      }).format(date);
+    }
+    function updateCurrentTime() {
+      currentTimeElem.textContent = formatTime(new Date());
+    }
+    toggleBtn.addEventListener('click', () => {
+      is24Hour = !is24Hour;
+      toggleBtn.textContent = is24Hour ? 'Switch to 12-hour' : 'Switch to 24-hour';
+      updateCurrentTime();
+      document.querySelectorAll('[data-time]').forEach(el => {
+        el.textContent = formatTime(el.getAttribute('data-time'));
+      });
+    });
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
+
+    const startSelect = document.getElementById('start-stop');
+    const endSelect = document.getElementById('end-stop');
+    const btn = document.getElementById('find-btn');
+    const resultsDiv = document.getElementById('results');
+
+    // Populate stops
+    fetch(`/union/stops?skip=0&limit=1000`)
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(stop => {
+          [startSelect, endSelect].forEach(sel => {
+            const opt = document.createElement('option');
+            opt.value = stop.id;
+            opt.textContent = stop.name;
+            sel.appendChild(opt);
+          });
+        });
+      }).catch(err => console.error(err));
+
+    btn.addEventListener('click', () => {
+      const startId = startSelect.value;
+      const endId = endSelect.value;
+      if (!startId || !endId || startId === endId) {
+        resultsDiv.innerHTML = '<p>Select different start and end stops.</p>';
+        return;
+      }
+      resultsDiv.innerHTML = '<p>Searching...</p>';
+      fetch(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            resultsDiv.innerHTML = '<p>No upcoming buses found.</p>';
+            return;
+          }
+          let html = `<table border="1"><tr><th>Bus</th><th>Route</th><th>Depart</th><th>Arrive</th><th>Current Trip</th></tr>`;
+          data.forEach(r => {
+            const busId = r.bus_id;
+            const busName = r.bus_name;
+            html += `<tr>`
+                  + `<td>${busName}</td>`
+                  + `<td>${r.route_name} (${r.direction})</td>`
+                  + `<td><span data-time="${r.start_arrival}">${formatTime(r.start_arrival)}</span></td>`
+                  + `<td><span data-time="${r.end_arrival}">${formatTime(r.end_arrival)}</span></td>`
+                  // Backend redirect endpoint:
+                  + `<td><a href="/redirect_to_current_trip/${busId}">View Current Trip</a></td>`
+                  + `</tr>`;
+          });
+          html += `</table>`;
+          resultsDiv.innerHTML = html;
+        })
+        .catch(err => {
+          console.error('Fetch error:', err);
+          resultsDiv.innerHTML = '<p>Error fetching data.</p>';
+        });
+    });
+  </script>
+</body>
+</html>

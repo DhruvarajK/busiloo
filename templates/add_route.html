@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Add Route{% endblock %}
+{% block content %}
+<h2>Add Route</h2>
+<form method="post">
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Origin Stop:
+        <select name="origin_stop_id">
+            {% for stop in stops %}
+                <option value="{{ stop.id }}">{{ stop.name }}</option>
+            {% endfor %}
+        </select>
+    </label><br>
+    <label>Destination Stop:
+        <select name="destination_stop_id">
+            {% for stop in stops %}
+                <option value="{{ stop.id }}">{{ stop.name }}</option>
+            {% endfor %}
+        </select>
+    </label><br>
+    <button type="submit">Add Route</button>
+</form>
+{% endblock %}
