@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+python-multipart
+jinja2
+requests
+overpy
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+numpy
+psycopg2-binary
+mysqlclient
+aiosqlite
