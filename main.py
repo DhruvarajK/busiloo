@@ -27,6 +27,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # after templates defined:
 public_user.templates = templates  # so the router can use the same templates instance
 
+@app.api_route("/health", methods=["GET", "HEAD"])
+async def health_check():
+    return {"status": "ok"}
+
 # Example HTML endpoints
 @app.get("/register")
 def register_page(request: Request):
