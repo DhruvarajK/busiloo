@@ -12,3 +12,5 @@ numpy
 psycopg2-binary
 mysqlclient
 aiosqlite
+pydantic[email]
+email-validator
