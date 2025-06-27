@@ -13,13 +13,14 @@ from sqlalchemy.orm import aliased
 from sqlalchemy import and_, select, exists
 import logging
 import models, schemas, database
-from models import Trip, ServiceDay, StopTime
+from models import Stop, StopIssue, Trip, ServiceDay, StopTime
 from fastapi import BackgroundTasks, Depends, APIRouter
 from zoneinfo import ZoneInfo
 import overpy
 from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy import func, and_, select, exists, cast, Float
 from sqlalchemy.orm import joinedload
+
 
 router = APIRouter(prefix="", tags=["public"])
 templates = None  # will be set in main
@@ -833,5 +834,73 @@ def api_calculate_fare(
         distance_km=round(distance_km, 2), # Round distance for display
         routes_found=found_routes
     )
+
+
+# --- NEW FUNCTION ---
+def get_stop_by_name(db: Session, name: str):
+    """
+    Fetches a single stop by its name.
+    It performs a case-insensitive search.
+    """
+    return db.query(Stop).filter(func.lower(Stop.name) == func.lower(name)).first()
+
+
+def create_stop_issue(db: Session, issue: schemas.StopIssueCreate) -> schemas.StopIssue:
+    """Creates a new stop issue record in the database."""
+    db_issue = StopIssue(
+        stop_id=issue.stop_id,
+        issue_type=issue.issue_type,
+        description=issue.description,
+        user_id=issue.user_id
+    )
+    db.add(db_issue)
+    db.commit()
+    db.refresh(db_issue)
+    return db_issue 
     
+
+@router.get("/report-issue-page/{stop_name}", response_class=HTMLResponse)
+async def get_report_issue_page_for_stop(
+    request: Request, 
+    stop_name: str, 
+    db: Session = Depends(database.get_db) # Replace Depends() with your get_db dependency
+):
+    """
+    Finds a stop by name and renders the issue reporting page for it.
+    This is the endpoint that your href links will point to.
+    """
+    # Look up the stop in the database using the new CRUD function
+    db_stop = get_stop_by_name(db, name=stop_name)
+
+    if not db_stop:
+        # You can render a custom 404 template here for a better user experience
+        raise HTTPException(status_code=404, detail=f"Stop '{stop_name}' not found")
+
+    # Render the HTML template, passing the stop object to it.
+    # The template file should be named 'report_issue.html' in your 'templates' folder.
+    return templates.TemplateResponse("report_issue.html", {
+        "request": request, 
+        "stop": db_stop
+    })
     
+def get_stop(db: Session, stop_id: int):
+    """Fetches a single stop by its ID."""
+    return db.query(Stop).filter(Stop.id == stop_id).first()
+
+# --- The endpoint that RECEIVES the form submission ---
+# No changes are needed here. The frontend will still send the same JSON payload.
+@router.post("/report-issue", response_model=schemas.StopIssue, status_code=201)
+def report_issue_for_stop(
+    issue: schemas.StopIssueCreate,
+    db: Session = Depends(database.get_db) # Replace Depends() with your get_db
+):
+    """
+    Creates a new issue report for a given bus stop.
+    """
+    # Verify that the stop ID from the form is valid
+    db_stop = get_stop(db, stop_id=issue.stop_id)
+    if db_stop is None:
+        raise HTTPException(status_code=404, detail=f"Stop with ID {issue.stop_id} not found.")
+
+    new_issue = create_stop_issue(db=db, issue=issue)
+    return new_issue
