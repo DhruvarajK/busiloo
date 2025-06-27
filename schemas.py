@@ -3,6 +3,8 @@ from typing import List, Optional
 from datetime import datetime, time, date
 from enum import Enum
 
+from models import StopIssueType
+
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3)
     email: EmailStr
@@ -261,3 +263,23 @@ class FareCalculationResult(BaseModel):
     end_stop_name: str
     distance_km: float
     routes_found: List[RouteFareDetail]
+    
+
+class StopIssueBase(BaseModel):
+    """Base schema for a stop issue, containing common fields."""
+    stop_id: int
+    issue_type: StopIssueType
+    description: str
+
+class StopIssueCreate(StopIssueBase):
+    """Schema used for creating a new stop issue. Allows optional user_id."""
+    user_id: Optional[int] = None
+
+class StopIssue(StopIssueBase):
+    """Schema for returning a stop issue from the API, includes DB-generated fields."""
+    id: int
+    status: str
+    reported_at: datetime
+    user_id: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
