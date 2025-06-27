@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The title now dynamically shows the stop name -->
+    <title>Report Issue for {{ stop.name }}</title>
+    <!-- Removed Tailwind CSS CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define CSS variables for consistent styling */
+        :root {
+            --primary-color: #D32F2F;
+            --primary-dark-color: #b72525;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --green-100: #d1fae5;
+            --green-200: #a7f3d0;
+            --green-800: #065f46;
+            --red-100: #fee2e2;
+            --red-200: #fecaca;
+            --red-800: #991b1b;
+            --spacing-1: 0.25rem;   /* mt-1, mb-1, etc. */
+            --spacing-2: 0.5rem;    /* p-2, mt-2, etc. */
+            --spacing-3: 0.75rem;
+            --spacing-4: 1rem;      /* p-4 */
+            --spacing-5: 1.25rem;   /* p-5 */
+            --spacing-6: 1.5rem;    /* p-6 */
+            --spacing-8: 2rem;      /* p-8 */
+        }
+
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gray-100);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-4); /* p-4 */
+            margin: 0;
+            overflow-y: auto; /* Enable scrolling for smaller screens */
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark-color);
+        }
+
+        /* Main container styling */
+        .container {
+            width: 100%;
+            max-width: 32rem; /* max-w-lg */
+            background-color: #fff;
+            padding: var(--spacing-6); /* p-6 */
+            border-radius: 1rem; /* rounded-2xl */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* shadow-xl approximation */
+            border: 1px solid var(--gray-200);
+            box-sizing: border-box; /* Ensure padding doesn't increase total width */
+        }
+
+        /* Spacing between sections */
+        .space-y-6 > *:not(:last-child) {
+            margin-bottom: var(--spacing-6);
+        }
+        .space-y-5 > *:not(:last-child) {
+            margin-bottom: var(--spacing-5);
+        }
+
+        /* Header styling */
+        .header {
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.875rem; /* text-3xl */
+            line-height: 2.25rem; /* leading-9 */
+            font-weight: 800; /* font-extrabold */
+            color: var(--gray-800);
+            letter-spacing: -0.025em; /* tracking-tight */
+            margin-bottom: 0;
+        }
+        .header p {
+            font-size: 1rem; /* text-base */
+            line-height: 1.5rem; /* leading-6 */
+            color: var(--gray-500);
+            margin-top: var(--spacing-2); /* mt-2 */
+        }
+
+        /* Stop information display */
+        .stop-info label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-2); /* mb-2 */
+        }
+        .stop-info-box {
+            padding: var(--spacing-4); /* p-4 */
+            background-color: rgba(183, 37, 37, 0.05); /* bg-primary-dark/5 */
+            border-left: 4px solid var(--primary-color);
+            border-top-right-radius: 0.5rem; /* rounded-r-lg */
+            border-bottom-right-radius: 0.5rem; /* rounded-r-lg */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        }
+        .stop-info-box h2 {
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.75rem; /* leading-7 */
+            font-weight: 600; /* font-semibold */
+            color: var(--primary-dark-color);
+            margin: 0; /* Remove default h2 margin */
+        }
+        .stop-info-box p {
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem; /* leading-5 */
+            color: var(--gray-600);
+            margin-top: var(--spacing-1); /* mt-1 */
+        }
+
+        /* Form elements (select, textarea) */
+        .form-group label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: var(--gray-700);
+            margin-bottom: var(--spacing-1); /* Adjusted margin for consistency */
+        }
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: var(--spacing-2) var(--spacing-4); /* px-4 py-2 */
+            margin-top: var(--spacing-1); /* mt-1 */
+            background-color: #fff;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            font-size: 0.875rem; /* sm:text-sm */
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* transition ease-in-out duration-150 */
+            -webkit-appearance: none; /* appearance-none for select */
+            -moz-appearance: none;
+            appearance: none;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2); /* focus:ring-2 focus:ring-primary */
+        }
+        .form-control::placeholder {
+            color: var(--gray-500);
+        }
+
+        /* Submit button styling */
+        .submit-button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-3) var(--spacing-4); /* py-3 px-4 */
+            border: 1px solid transparent;
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
+            font-size: 1rem; /* text-base */
+            font-weight: 500; /* font-medium */
+            color: #fff;
+            background-color: var(--primary-color);
+            transition: all 0.3s ease-in-out; /* transition-all duration-300 ease-in-out */
+            cursor: pointer;
+        }
+        .submit-button:hover {
+            background-color: var(--primary-dark-color);
+            transform: translateY(-0.125rem) scale(1.02); /* hover:-translate-y-0.5 hover:scale-105 */
+            box-shadow: 0 8px 10px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .submit-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(211, 47, 47, 0.5); /* focus:ring-2 focus:ring-offset-2 focus:ring-primary */
+        }
+        .submit-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .submit-button svg {
+            width: 1.25rem; /* w-5 */
+            height: 1.25rem; /* h-5 */
+            margin-right: var(--spacing-2); /* mr-2 */
+            margin-left: -0.25rem; /* -ml-1 */
+        }
+
+        /* Spinner animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Message area styling */
+        .message-container {
+            margin-top: var(--spacing-4); /* mt-4 */
+        }
+        .message-alert {
+            padding: var(--spacing-4); /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        }
+        .message-alert.success {
+            background-color: var(--green-100);
+            color: var(--green-800);
+            border: 1px solid var(--green-200);
+        }
+        .message-alert.error {
+            background-color: var(--red-100);
+            color: var(--red-800);
+            border: 1px solid var(--red-200);
+        }
+
+        /* Responsive adjustments for small screens (sm breakpoint at 640px) */
+        @media (min-width: 640px) {
+            body {
+                padding: var(--spacing-6); /* sm:p-6 */
+            }
+            .container {
+                padding: var(--spacing-8); /* sm:p-8 */
+            }
+            .space-y-6 > *:not(:last-child) {
+                margin-bottom: var(--spacing-8); /* sm:space-y-8 */
+            }
+            .space-y-5 > *:not(:last-child) { /* Form's space-y-5 will still be 5 on sm, if no sm:space-y-X is specified */
+                margin-bottom: var(--spacing-6); /* Applying sm:space-y-6 to the form */
+            }
+            .header h1 {
+                font-size: 2.25rem; /* sm:text-4xl */
+                line-height: 2.5rem; /* leading-10 */
+            }
+            .header p {
+                font-size: 1.125rem; /* sm:text-lg */
+                line-height: 1.75rem; /* leading-7 */
+            }
+            .stop-info-box {
+                padding: var(--spacing-5); /* sm:p-5 */
+            }
+            .stop-info-box h2 {
+                font-size: 1.5rem; /* sm:text-2xl */
+                line-height: 2rem; /* leading-8 */
+            }
+            .form-control {
+                font-size: 0.875rem; /* sm:text-sm */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container">
+        
+        <!-- Header -->
+        <div class="header">
+            <h1>Report an Issue</h1>
+            <p>Help us improve our service by reporting issues.</p>
+        </div>
+
+        <!-- Form -->
+        <form id="report-form" class="space-y-5">
+            
+            <!-- Displaying the selected stop -->
+            <div class="stop-info">
+                <label>Reporting Issue For</label>
+                <div class="stop-info-box">
+                    <h2>{{ stop.name }}</h2>
+                    {% if stop.district %}
+                    <p>District: {{ stop.district }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Hidden input to store the stop_id for the form submission -->
+            <input type="hidden" id="stop-id-input" name="stop_id" value="{{ stop.id }}">
+            
+            <!-- Issue Type Selection -->
+            <div class="form-group">
+                <label for="issue-type-select">Issue Type</label>
+                <select id="issue-type-select" name="issue_type" required class="form-control">
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="5" required class="form-control" placeholder="Please provide as much detail as possible, including date, time, and specific observations..."></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit" id="submit-button" class="submit-button">
+                    <svg class="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Submit Report
+                </button>
+            </div>
+        </form>
+
+        <!-- Message Area for Success/Error -->
+        <div id="message-container" class="message-container"></div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const issueTypeSelect = document.getElementById('issue-type-select');
+            const reportForm = document.getElementById('report-form');
+            const messageContainer = document.getElementById('message-container');
+            const submitButton = document.getElementById('submit-button');
+            const stopIdInput = document.getElementById('stop-id-input'); // Get the hidden input
+
+            // Define issue types based on the backend enum
+            const issueTypes = {
+                "incorrect_location": "Incorrect Location",
+                "stop_damaged": "Stop Damaged / Not Maintained",
+                "stop_name_incorrect": "Stop Name Incorrect",
+                "other": "Other"
+            };
+
+            // Populate issue types dropdown
+            issueTypeSelect.innerHTML = '<option value="" disabled selected>-- Select an issue type --</option>';
+            for (const [key, value] of Object.entries(issueTypes)) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = value;
+                issueTypeSelect.appendChild(option);
+            }
+
+            // Handle form submission
+            reportForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                clearMessage();
+                submitButton.disabled = true;
+                // Update button content with spinner
+                submitButton.innerHTML = '<svg class="animate-spin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; color: white;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" class="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path></svg>Submitting...';
+
+                const data = {
+                    // Read the stop ID from our hidden input field
+                    stop_id: parseInt(stopIdInput.value, 10),
+                    issue_type: issueTypeSelect.value,
+                    description: document.getElementById('description').value.trim()
+                };
+
+                // Basic client-side validation
+                if (isNaN(data.stop_id) || !data.issue_type || !data.description) {
+                    showMessage('Please ensure all fields are filled correctly, especially the stop ID.', 'error');
+                    submitButton.disabled = false;
+                    // Restore button content with original icon
+                    submitButton.innerHTML = '<svg class="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Submit Report';
+                    return;
+                }
+
+                try {
+                    // The POST endpoint URL remains the same
+                    const response = await fetch('/report-issue', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.detail || 'An unknown error occurred.');
+                    }
+                    
+                    showMessage('Thank you! Your report has been submitted successfully.', 'success');
+                    reportForm.reset();
+                    issueTypeSelect.selectedIndex = 0; // Reset dropdown to initial state
+
+                } catch (error) {
+                    console.error('Error submitting report:', error);
+                    showMessage(`Submission failed: ${error.message}`, 'error');
+                } finally {
+                    submitButton.disabled = false;
+                    // Restore button content with original icon
+                    submitButton.innerHTML = '<svg class="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Submit Report';
+                }
+            });
+
+            /**
+             * Displays a message to the user (success or error).
+             * @param {string} text - The message text.
+             * @param {'success'|'error'} type - The type of message ('success' or 'error').
+             */
+            function showMessage(text, type) {
+                clearMessage(); // Clear any existing messages
+                const alertDiv = document.createElement('div');
+                alertDiv.textContent = text;
+                // Apply custom classes based on message type
+                alertDiv.className = `message-alert ${type}`;
+                messageContainer.appendChild(alertDiv);
+            }
+
+            /**
+             * Clears all messages from the message container.
+             */
+            function clearMessage() {
+                messageContainer.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
