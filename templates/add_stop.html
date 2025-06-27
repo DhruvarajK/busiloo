@@ -1,613 +1,753 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stop Management</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        /* CSS Variables for easier theme management */
-        :root {
-            --primary-color: #3b82f6; /* Blue 500 */
-            --primary-color-dark: #2563eb; /* Blue 600 */
-            --danger-color: #ef4444; /* Red 500 */
-            --danger-color-dark: #dc2626; /* Red 600 */
-            --background-color: #f9fafb; /* Gray 50 */
-            --surface-color: #ffffff;
-            --text-primary: #1f2937; /* Gray 800 */
-            --text-secondary: #4b5563; /* Gray 600 */
-            --text-muted: #6b7280; /* Gray 500 */
-            --border-color: #e5e7eb; /* Gray 200 */
-            --border-focus-color: var(--primary-color);
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --border-radius: 1rem; /* 12px */
-            --transition: all 0.3s ease-in-out;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerala Bus Stop Locator</title>
 
-        /* General Body Styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
-            color: var(--text-primary);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+    <!-- LeafletJS CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Base and Layout Styles --- */
+        body, html {
             margin: 0;
             padding: 0;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            overflow: hidden; /* Prevent body scroll */
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-
-        /* Header */
-        .header {
-            margin-bottom: 2.5rem;
-        }
-        
-        .header h1 {
-            font-size: 2.25rem; /* 36px */
-            font-weight: 700;
-            margin: 0;
-            color: var(--text-primary);
-        }
-        
-        .header p {
-            font-size: 1.125rem; /* 18px */
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-
-        /* Card styles for form and table containers */
-        .card {
-            background-color: var(--surface-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-        }
-        
-        .card-header {
-            font-size: 1.5rem; /* 24px */
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Form Styles */
-        #stop-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.875rem; /* 14px */
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem; /* 8px */
-            font-size: 1rem;
-            transition: var(--transition);
-            box-sizing: border-box; /* Important for padding */
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--border-focus-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-        }
-
-        .form-actions {
+        #app-container {
             display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 1rem;
+            flex-direction: column; /* Mobile first */
+            height: 100vh;
         }
 
-        /* Button Styles */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 1.5rem;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
+        #sidebar {
             width: 100%;
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-color-dark);
-        }
-        
-        .btn-secondary {
-            background-color: #e5e7eb; /* Gray 200 */
-            color: var(--text-secondary);
-        }
-        
-        .btn-secondary:hover {
-            background-color: #d1d5db; /* Gray 300 */
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: var(--danger-color-dark);
-        }
-        
-        #cancel-edit-btn.hidden {
-            display: none;
-        }
-
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto; /* For mobile responsiveness */
-        }
-
-        .stops-table {
-            width: 100%;
-            min-width: 340px; /* Ensure table has min-width for scrolling */
-            border-collapse: collapse;
-        }
-        td.table-actions {
+            height: 40vh; /* Height for mobile view */
+            background: #ffffff;
+            z-index: 1000;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
-        .stops-table th, .stops-table td {
-            padding:6px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .stops-table thead {
-            background-color: var(--background-color);
-        }
-
-        .stops-table th {
-            font-size: 0.75rem; /* 12px */
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .stops-table tbody tr:hover {
-            background-color: #f9fafb; /* Gray 50 */
-        }
-
-        .stops-table td {
-            font-size: 0.875rem; /* 14px */
+        #map-container {
+            position: relative; /* Needed for positioning the add button */
+            flex-grow: 1;
+            height: 60vh; /* Height for mobile view */
         }
         
-        .table-actions button {
+        #map {
+            height: 100%;
+            width: 100%;
+            cursor: grab;
+            background-color: #f0f0f0;
+        }
+
+        #map.pin-mode {
+            cursor: crosshair;
+        }
+
+        #map:active {
+            cursor: grabbing;
+        }
+        
+        /* --- Media Query for Desktop --- */
+        @media (min-width: 768px) {
+            #app-container {
+                flex-direction: row;
+            }
+            #sidebar {
+                width: 384px; /* 96 * 4px */
+                height: 100vh;
+            }
+            #map-container {
+                height: 100vh;
+            }
+        }
+        
+        /* --- Sidebar Content Styles --- */
+        #header {
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        #header h1 {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        #header p {
+            font-size: 0.875rem; /* 14px */
+            color: #6b7280;
+        }
+
+        #search-container {
+            position: relative;
+            padding: 16px 0;
+        }
+
+        #stopName {
+            width: 100%;
+            padding: 8px 40px 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        #stopName:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        }
+
+        #searchBtn {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
             background: none;
             border: none;
-            padding: 0;
-            font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
+            color: #6b7280;
+        }
+        #searchBtn:hover {
+            color: #3b82f6;
         }
         
-        .table-actions .edit-btn {
-            color: var(--primary-color);
+        /* --- Stop List --- */
+        #stopListContainer {
+            flex-grow: 1;
+            overflow-y: auto;
         }
         
-        .table-actions .edit-btn:hover {
-            color: var(--primary-color-dark);
-        }
-        
-        .table-actions .delete-btn {
-            color: var(--danger-color);
-            margin-left: 1rem;
-        }
-        
-        .table-actions .delete-btn:hover {
-            color: var(--danger-color-dark);
-        }
-        
-        #search-input {
-            max-width: 400px;
-            margin-bottom: 1.5rem;
+        #stopListContainer h2 {
+            font-size: 1.125rem; /* 18px */
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
         }
 
-        /* Toast Notification */
+        .stop-item {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            margin-bottom: 8px;
+        }
+        .stop-item:hover, .stop-item.highlighted {
+            background-color: #eff6ff;
+            border-color: #60a5fa;
+        }
+        .stop-item h3 {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .stop-item p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 4px 0 0 0;
+        }
+        
+        #list-placeholder {
+            color: #6b7280;
+            text-align: center;
+            padding: 16px;
+        }
+
+        /* --- Add Stop Button --- */
+        #addStopMapBtn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        #addStopMapBtn:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.05);
+        }
+
+        /* Custom scrollbar for the stops list */
+        #stopListContainer::-webkit-scrollbar { width: 6px; }
+        #stopListContainer::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        #stopListContainer::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        #stopListContainer::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* --- Loader --- */
+        #loader {
+            text-align: center;
+            padding: 16px;
+        }
+        #loader .spinner {
+            display: inline-block;
+            height: 32px;
+            width: 32px;
+            animation: spin 1s linear infinite;
+            border: 4px solid #3b82f6;
+            border-right-color: transparent;
+            border-radius: 50%;
+        }
+        #loader p {
+            margin-top: 8px;
+            color: #4b5563;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Notification Toast --- */
         #toast {
             position: fixed;
-            bottom: 1.25rem;
-            right: 1.25rem;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow-lg);
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ef4444;
             color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transform: translate(-50%, 40px);
+            transition: all 0.3s ease-in-out;
             z-index: 2000;
         }
-        
-        .toast-success {
-            background-color: #22c55e; /* Green 500 */
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        #toast.success {
+            background-color: #10B981; /* Green for success */
         }
         
-        .toast-error {
-            background-color: var(--danger-color);
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
+        /* --- Add Stop Modal --- */
+        #modal-backdrop {
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            display: none; /* Hidden by default */
             align-items: center;
             justify-content: center;
         }
-
-        .modal-content {
-            background-color: var(--surface-color);
-            margin: auto;
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-lg);
-            max-width: 450px;
+        #modal {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
             width: 90%;
-            animation: fadeIn 0.3s ease-in-out;
+            max-width: 400px;
+            z-index: 2000;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-content h3 {
-            font-size: 1.25rem; /* 20px */
-            font-weight: 600;
+        #modal h2 {
             margin-top: 0;
-            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            color: #1f2937;
         }
-        
-        .modal-content p {
-            margin-bottom: 1.5rem;
-            color: var(--text-secondary);
+        #modal .form-group {
+            margin-bottom: 16px;
         }
-        
-        .modal-actions {
+        #modal label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        #modal input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        #modal .modal-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 1rem;
+            gap: 12px;
+            margin-top: 24px;
         }
-
-        /* Responsive Design */
-        @media (min-width: 768px) {
-            .container {
-                padding: 2rem;
-            }
-
-            #stop-form {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .form-group-full {
-                grid-column: 1 / -1;
-            }
-            
-            .form-actions {
-                grid-column: 1 / -1;
-            }
+        #modal button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
         }
-
+        #modal #saveStopBtn {
+            background-color: #2563eb;
+            color: white;
+        }
+        #modal #saveStopBtn:hover {
+             background-color: #1d4ed8;
+        }
+        #modal #cancelBtn {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+        #modal #cancelBtn:hover {
+            background-color: #d1d5db;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header class="header">
-            <h1>Stop Management</h1>
-            <p>Add, view, edit, and delete bus stops.</p>
-        </header>
+    <div id="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar">
+            <header id="header">
+                <h1>Kerala Bus Stop Locator</h1>
+                <p>Long-press on map or use the '+' button to add a new stop.</p>
+            </header>
 
-        <main id="main-content">
-            <!-- Form for Adding and Editing Stops -->
-            <div class="card">
-                <h2 id="form-title" class="card-header">Add New Stop</h2>
-                <form id="stop-form">
-                    <input type="hidden" id="stop-id" name="stop-id" />
-                    <div class="form-group">
-                        <label for="name">Stop Name</label>
-                        <input type="text" id="name" name="name" required class="form-input" placeholder="e.g., Central Bus Terminal" />
-                    </div>
-                    <div class="form-group">
-                        <label for="district">District</label>
-                        <input type="text" id="district" name="district" class="form-input" placeholder="e.g., Thiruvananthapuram" />
-                    </div>
-                    <div class="form-group">
-                        <label for="latitude">Latitude</label>
-                        <input type="text" id="latitude" name="latitude" class="form-input" placeholder="e.g., 8.5241" />
-                    </div>
-                    <div class="form-group">
-                        <label for="longitude">Longitude</label>
-                        <input type="text" id="longitude" name="longitude" class="form-input" placeholder="e.g., 76.9366" />
-                    </div>
-                    <div class="form-group form-group-full">
-                        <label for="loc_link">Location Link (Google Maps)</label>
-                        <input type="url" id="loc_link" name="loc_link" class="form-input" placeholder="https://maps.app.goo.gl/..." />
-                    </div>
-                    <div class="form-actions form-group-full">
-                        <button type="button" id="cancel-edit-btn" class="btn btn-secondary hidden">Cancel</button>
-                        <button type="submit" id="submit-btn" class="btn btn-primary">Save Stop</button>
-                    </div>
-                </form>
-        
-                <h2 class="card-header">Existing Stops</h2>
-                <input type="text" id="search-input" placeholder="Search stops by name..." class="form-input" oninput="handleSearch()" />
-                <div class="table-container">
-                    <table class="stops-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>District</th>
-                                <th>Coordinates</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stops-table-body">
-                            <tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading stops...</td></tr>
-                        </tbody>
-                    </table>
+            <!-- Search and Location Controls -->
+            <div id="search-container">
+                <input type="text" id="stopName" placeholder="Search for a bus stop...">
+                <button id="searchBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </div>
+
+            <!-- Stop List -->
+            <div id="stopListContainer">
+                <h2>Nearby Stops</h2>
+                <div id="stopList">
+                    <p id="list-placeholder">Pan the map or search to find stops.</p>
+                </div>
+                 <div id="loader" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Fetching stops...</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Map Area -->
+        <main id="map-container">
+            <div id="map"></div>
+            <button id="addStopMapBtn" title="Pin a new stop on the map">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
         </main>
     </div>
-
-    <!-- Toast Notification -->
-    <div id="toast">
-        <span id="toast-message"></span>
-    </div>
-
-    <!-- Custom Confirmation Modal -->
-    <div id="confirm-modal" class="modal">
-        <div class="modal-content">
-            <h3>Confirm Action</h3>
-            <p id="confirm-message">Are you sure?</p>
-            <div class="modal-actions">
-                <button id="confirm-cancel-btn" class="btn btn-secondary">Cancel</button>
-                <button id="confirm-ok-btn" class="btn btn-danger">OK</button>
-            </div>
+    
+    <!-- Add Stop Modal -->
+    <div id="modal-backdrop">
+        <div id="modal">
+            <h2>Add New Bus Stop</h2>
+            <form id="addStopForm">
+                <div class="form-group">
+                    <label for="modalStopName">Stop Name</label>
+                    <input type="text" id="modalStopName" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalDistrict">District</label>
+                    <input type="text" id="modalDistrict">
+                </div>
+                <div class="form-group">
+                    <label for="modalLat">Latitude</label>
+                    <input type="text" id="modalLat" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="modalLon">Longitude</label>
+                    <input type="text" id="modalLon" readonly>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelBtn">Cancel</button>
+                    <button type="submit" id="saveStopBtn">Save Stop</button>
+                </div>
+            </form>
         </div>
     </div>
 
 
+    <!-- Notification Toast -->
+    <div id="toast">
+        <p id="toast-message">Error message</p>
+    </div>
+
+    <!-- LeafletJS JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script>
-        // --- Backend JavaScript (Unaltered) ---
-        const API_BASE_URL = '/union'; // Ensure this matches your FastAPI base path
-        const stopsTableBody = document.getElementById('stops-table-body');
-        const stopForm = document.getElementById('stop-form');
-        const formTitle = document.getElementById('form-title');
-        const stopIdInput = document.getElementById('stop-id');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-        const mainContent = document.getElementById('main-content');
-
-        // Modal elements
-        const confirmModal = document.getElementById('confirm-modal');
-        const confirmMessage = document.getElementById('confirm-message');
-        const confirmOkBtn = document.getElementById('confirm-ok-btn');
-        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
-
-        let lastSearchTerm = '';
-        let confirmCallback = null;
-
-        // --- Utility Functions ---
-        function getAuthToken() {
-            return localStorage.getItem('token');
-        }
-
-        function showToast(message, isError = false) {
-            toastMessage.textContent = message;
-            toast.className = isError ? 'toast-error' : 'toast-success';
-            toast.style.opacity = '1';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-            }, 3000);
-        }
-
-        function showConfirmModal(message, callback) {
-            confirmMessage.textContent = message;
-            confirmCallback = callback;
-            confirmModal.style.display = 'flex';
-        }
-
-        function hideConfirmModal() {
-            confirmModal.style.display = 'none';
-            confirmCallback = null;
-        }
-
-        confirmOkBtn.addEventListener('click', () => {
-            if (confirmCallback) {
-                confirmCallback(true);
-            }
-            hideConfirmModal();
-        });
-
-        confirmCancelBtn.addEventListener('click', () => {
-            if (confirmCallback) {
-                confirmCallback(false);
-            }
-            hideConfirmModal();
-        });
-
-        async function fetchAPI(endpoint, options = {}) {
-            const token = getAuthToken();
-            const headers = { 'Content-Type': 'application/json', ...options.headers };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        showToast('Unauthorized: Please ensure a valid token is in local storage.', true);
-                    }
-                    const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
-                    throw new Error(errorData.detail || `API request failed with status ${response.status}`);
-                }
-                return response.status === 204 ? null : response.json();
-            } catch (error) {
-                console.error('API call failed:', error);
-                throw error;
-            }
-        }
-
-        const renderStops = (stops) => {
-            stopsTableBody.innerHTML = '';
-            if (stops.length === 0) {
-                stopsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No stops found. Add one using the form above.</td></tr>';
-                return;
-            }
-            stops.forEach(stop => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${stop.id}</td>
-                    <td>${stop.name}</td>
-                    <td>${stop.district || 'N/A'}</td>
-                    <td>${stop.latitude && stop.longitude ? `${stop.latitude}, ${stop.longitude}` : 'N/A'}</td>
-                    <td class="table-actions">
-                        <button onclick="handleEdit(${stop.id})" class="edit-btn">Edit</button>
-                        <button onclick="handleDelete(${stop.id})" class="delete-btn">Delete</button>
-                    </td>
-                `;
-                stopsTableBody.appendChild(row);
-            });
-        };
-
-        const loadStops = async (search = '') => {
-            lastSearchTerm = search;
-            stopsTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading stops...</td></tr>';
-            try {
-                const query = search ? `?search=${encodeURIComponent(search)}` : '';
-                const stops = await fetchAPI(`/stops${query}`);
-                renderStops(stops);
-            } catch (error) {
-                console.error('Failed to load stops:', error);
-                showToast(`Error: ${error.message}`, true);
-                stopsTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--danger-color);">Failed to load stops. Make sure a valid token is in local storage if required.</td></tr>`;
-            }
-        };
-
-        let searchTimeout = null;
-        function handleSearch() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const searchValue = document.getElementById('search-input').value.trim();
-                loadStops(searchValue);
-            }, 300);
-        }
-
-        const resetForm = () => {
-            stopForm.reset();
-            stopIdInput.value = '';
-            formTitle.textContent = 'Add New Stop';
-            cancelEditBtn.classList.add('hidden');
-            document.getElementById('submit-btn').textContent = 'Save Stop';
-        };
-
-        stopForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(stopForm);
-            const stopData = Object.fromEntries(formData.entries());
-            const id = stopIdInput.value;
-            Object.keys(stopData).forEach(key => {
-                if (stopData[key] === '') delete stopData[key];
-            });
-            delete stopData['stop-id'];
-
-            try {
-                if (id) {
-                    await fetchAPI(`/stops/${id}`, { method: 'PUT', body: JSON.stringify(stopData) });
-                    showToast('Stop updated successfully!');
-                } else {
-                    await fetchAPI('/stops', { method: 'POST', body: JSON.stringify(stopData) });
-                    showToast('Stop added successfully!');
-                }
-                resetForm();
-                loadStops(lastSearchTerm);
-            } catch (error) {
-                console.error('Failed to save stop:', error);
-                showToast(`Error: ${error.message}`, true);
-            }
-        });
-
-        const handleEdit = async (id) => {
-            try {
-                const stop = await fetchAPI(`/stops/${id}`);
-                formTitle.textContent = `Editing Stop: ${stop.name}`;
-                stopIdInput.value = stop.id;
-                document.getElementById('name').value = stop.name;
-                document.getElementById('district').value = stop.district || '';
-                document.getElementById('latitude').value = stop.latitude || '';
-                document.getElementById('longitude').value = stop.longitude || '';
-                document.getElementById('loc_link').value = stop.loc_link || '';
-                cancelEditBtn.classList.remove('hidden');
-                document.getElementById('submit-btn').textContent = 'Update Stop';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (error) {
-                console.error('Failed to fetch stop for editing:', error);
-                showToast(`Error: ${error.message}`, true);
-            }
-        };
-
-        cancelEditBtn.addEventListener('click', resetForm);
-
-        const handleDelete = async (id) => {
-            showConfirmModal(`Are you sure you want to delete stop #${id}?`, async (confirmed) => {
-                if (confirmed) {
-                    try {
-                        await fetchAPI(`/stops/${id}`, { method: 'DELETE' });
-                        showToast('Stop deleted successfully!');
-                        loadStops(lastSearchTerm);
-                    } catch (error) {
-                        console.error('Failed to delete stop:', error);
-                        showToast(`Error: ${error.message}`, true);
-                    }
-                }
-            });
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
-            loadStops();
+            // --- DOM Element References ---
+            const mapElement = document.getElementById('map');
+            const stopList = document.getElementById('stopList');
+            const searchInput = document.getElementById('stopName');
+            const searchBtn = document.getElementById('searchBtn');
+            const loader = document.getElementById('loader');
+            const listPlaceholder = document.getElementById('list-placeholder');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const addStopMapBtn = document.getElementById('addStopMapBtn');
+            // Modal elements
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const addStopForm = document.getElementById('addStopForm');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const modalStopName = document.getElementById('modalStopName');
+            const modalDistrict = document.getElementById('modalDistrict');
+            const modalLat = document.getElementById('modalLat');
+            const modalLon = document.getElementById('modalLon');
+
+            // --- App State ---
+            let isPinMode = false;
+
+            // --- Map Initialization ---
+            const map = L.map(mapElement).setView([10.8505, 76.2711], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                minZoom: 7,
+                maxZoom: 19
+            }).addTo(map);
+
+            const stopMarkersLayer = L.layerGroup().addTo(map);
+            const dbMarkersLayer = L.layerGroup().addTo(map); // Layer for our DB stops
+            let highlightedMarker = null;
+            let debounceTimer;
+
+            // --- Custom Icons ---
+            const busStopIcon = L.divIcon({
+                html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#1D4ED8" stroke="white" stroke-width="1"><path d="M18 6V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2H4v4c0 1.1.9 2 2 2h1v4H5v2h2v2h10v-2h2v-2h-2v-4h1c1.1 0 2-.9 2-2V6h-2zm-4 8H9v-2h5v2zm2-4H7V4h10v6z"></path></svg>`,
+                className: '', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28]
+            });
+            const highlightedIcon = L.divIcon({
+                 html: `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#D97706" stroke="white" stroke-width="1"><path d="M18 6V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2H4v4c0 1.1.9 2 2 2h1v4H5v2h2v2h10v-2h2v-2h-2v-4h1c1.1 0 2-.9 2-2V6h-2zm-4 8H9v-2h5v2zm2-4H7V4h10v6z"></path></svg>`,
+                className: '', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -36]
+            });
+             const dbStopIcon = L.divIcon({
+                html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#059669" stroke="white" stroke-width="1"><path d="M18 6V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2H4v4c0 1.1.9 2 2 2h1v4H5v2h2v2h10v-2h2v-2h-2v-4h1c1.1 0 2-.9 2-2V6h-2zm-4 8H9v-2h5v2zm2-4H7V4h10v6z"></path></svg>`,
+                className: '', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28]
+            });
+            
+            // --- API Communication ---
+            const API_BASE_URL = '/union'; 
+            const OVERPASS_API_URL = 'https://overpass-api.de/api/interpreter';
+            const NOMINATIM_API_URL = 'https://nominatim.openstreetmap.org/reverse';
+
+            function getAuthToken() {
+                return localStorage.getItem('token');
+            }
+
+            async function fetchAPI(endpoint, options = {}) {
+                const token = getAuthToken();
+                const headers = { 'Content-Type': 'application/json', ...options.headers };
+
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            showToast('Unauthorized access. Please log in.');
+                        }
+                        const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
+                        throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+                    }
+                    return response.status === 204 ? null : response.json();
+                } catch (error) {
+                    console.error('API call failed:', error);
+                    throw error;
+                }
+            }
+            
+            async function fetchOverpass(query) {
+                setLoading(true);
+                try {
+                    const response = await fetch(OVERPASS_API_URL, {
+                        method: 'POST', body: `[out:json][timeout:25];${query}`
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            async function getDistrictFromCoords(lat, lon) {
+                if (!lat || !lon) return '';
+                const url = `${NOMINATIM_API_URL}?format=jsonv2&lat=${lat}&lon=${lon}`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    const district = data.address.state_district || data.address.county || data.address.city_district || '';
+                    return district.replace(' District', '').trim();
+                } catch (error) {
+                    console.error("Reverse geocoding failed:", error);
+                    return ''; 
+                }
+            }
+            
+            async function addStopToDB(stopData) {
+                try {
+                    const newStop = await fetchAPI('/stops', {
+                        method: 'POST',
+                        body: JSON.stringify(stopData)
+                    });
+
+                    showToast('Stop added successfully!', true);
+                    hideAddStopModal();
+                    
+                    L.marker([newStop.latitude, newStop.longitude], { icon: dbStopIcon })
+                        .addTo(dbMarkersLayer)
+                        .bindPopup(`<b>${newStop.name}</b><br>District: ${newStop.district || 'N/A'}`);
+
+                } catch (error) {
+                    console.error('Error adding stop to DB:', error);
+                    showToast(error.message || 'Failed to save the stop. Please try again.');
+                }
+            }
+
+            // --- UI Update Functions ---
+            function displayStops(stops, isSearchResult = false) {
+                stopMarkersLayer.clearLayers();
+                stopList.innerHTML = '';
+                listPlaceholder.style.display = stops.length > 0 ? 'none' : 'block';
+
+                if (stops.length === 0) {
+                    listPlaceholder.textContent = isSearchResult ? "No stop found with that name." : "No stops found in this area.";
+                } else {
+                    if (isSearchResult) {
+                        const firstStop = stops[0];
+                        map.setView([firstStop.lat, firstStop.lon], 16);
+                    }
+                }
+
+                stops.forEach(stop => {
+                    if (!stop.lat || !stop.lon) return;
+
+                    const name = stop.tags.name || 'Unnamed Stop';
+                    const lat = stop.lat;
+                    const lon = stop.lon;
+
+                    const popupContent = `<b>${name}</b><br><button class="add-db-btn" data-name="${name}" data-lat="${lat}" data-lon="${lon}">Add to DB</button>`;
+
+                    const marker = L.marker([lat, lon], { icon: busStopIcon })
+                        .addTo(stopMarkersLayer)
+                        .bindPopup(popupContent);
+                    
+                    marker.stopData = { id: stop.id, element: null };
+
+                    const listItem = document.createElement('div');
+                    listItem.className = 'stop-item';
+                    listItem.innerHTML = `<h3>${name}</h3><p>Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}</p>`;
+                    
+                    listItem.addEventListener('click', () => {
+                        map.setView([lat, lon], 16);
+                        marker.openPopup();
+                        highlightStop(marker, listItem);
+                    });
+                    listItem.addEventListener('mouseenter', () => highlightStop(marker, listItem));
+                    listItem.addEventListener('mouseleave', () => unhighlightStop());
+                    marker.on('click', () => highlightStop(marker, listItem));
+                    
+                    stopList.appendChild(listItem);
+                    marker.stopData.element = listItem;
+                });
+            }
+
+            function highlightStop(marker, listItem) {
+                unhighlightStop();
+                highlightedMarker = marker;
+                marker.setIcon(highlightedIcon);
+                marker.setZIndexOffset(1000);
+                listItem.classList.add('highlighted');
+            }
+
+            function unhighlightStop() {
+                if(highlightedMarker) {
+                    highlightedMarker.setIcon(busStopIcon);
+                    highlightedMarker.setZIndexOffset(0);
+                    if (highlightedMarker.stopData.element) {
+                         highlightedMarker.stopData.element.classList.remove('highlighted');
+                    }
+                }
+                highlightedMarker = null;
+            }
+
+            function setLoading(isLoading) {
+                loader.style.display = isLoading ? 'block' : 'none';
+                if (isLoading) {
+                    stopList.innerHTML = '';
+                    listPlaceholder.style.display = 'none';
+                }
+            }
+            
+            function showToast(message, isSuccess = false) {
+                toastMessage.textContent = message;
+                toast.className = 'show';
+                if(isSuccess) toast.classList.add('success');
+                
+                setTimeout(() => {
+                    toast.className = toast.className.replace('show', '');
+                    if(isSuccess) toast.classList.remove('success');
+                }, 3000);
+            }
+            
+            // --- Modal Functions ---
+            async function showAddStopModal(data = {}) {
+                modalStopName.value = data.name || '';
+                modalLat.value = data.lat || '';
+                modalLon.value = data.lon || '';
+                modalDistrict.value = 'Fetching district...';
+                modalBackdrop.style.display = 'flex';
+
+                try {
+                    const district = await getDistrictFromCoords(data.lat, data.lon);
+                    modalDistrict.value = district;
+                } catch (error) {
+                    console.error("Could not fetch district:", error);
+                    modalDistrict.value = ''; // Clear if error
+                    showToast("Could not auto-detect district.");
+                }
+            }
+
+            function hideAddStopModal() {
+                 modalBackdrop.style.display = 'none';
+                 addStopForm.reset();
+            }
+
+            // --- Event Handlers & Core Logic ---
+            async function searchStopsInView() {
+                if (map.getZoom() < 13) {
+                    stopMarkersLayer.clearLayers();
+                    stopList.innerHTML = '';
+                    listPlaceholder.textContent = "Zoom in to see bus stops.";
+                    listPlaceholder.style.display = 'block';
+                    setLoading(false);
+                    return;
+                }
+
+                const bounds = map.getBounds();
+                const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
+                const query = `node["highway"="bus_stop"](${bbox});out 500;`;
+                try {
+                    const data = await fetchOverpass(query);
+                    displayStops(data.elements, false);
+                } catch(error) {
+                    console.error('Overpass API fetch error:', error);
+                    showToast('Failed to fetch bus stops. Please try again later.');
+                    displayStops([]);
+                }
+            }
+            
+            async function handleSearch() {
+                const searchTerm = searchInput.value.trim();
+                if (!searchTerm) {
+                    showToast("Please enter a bus stop name.");
+                    return;
+                }
+                const query = `area[name="Kerala"]->.searchArea;
+                                 (node["highway"="bus_stop"]["name"~"${searchTerm}",i](area.searchArea););
+                                 out;`;
+                try {
+                    const data = await fetchOverpass(query);
+                    displayStops(data.elements, true);
+                } catch(error) {
+                    console.error('Overpass API fetch error:', error);
+                    showToast('Failed to fetch bus stops. Please try again later.');
+                    displayStops([], true);
+                }
+            }
+
+            function togglePinMode() {
+                isPinMode = !isPinMode;
+                mapElement.classList.toggle('pin-mode', isPinMode);
+                if (isPinMode) {
+                    showToast("Click on the map to place the new stop.", true);
+                }
+            }
+
+            // --- Event Listeners ---
+            map.on('moveend', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(searchStopsInView, 500);
+            });
+
+            map.on('contextmenu', (e) => { // For long-press on mobile and right-click on desktop
+                 showAddStopModal({
+                    lat: e.latlng.lat.toFixed(5),
+                    lon: e.latlng.lng.toFixed(5)
+                });
+            });
+
+            map.on('click', (e) => {
+                if(isPinMode) {
+                    showAddStopModal({
+                        lat: e.latlng.lat.toFixed(5),
+                        lon: e.latlng.lng.toFixed(5)
+                    });
+                    togglePinMode(); // Exit pin mode after placing
+                }
+            });
+
+
+            addStopMapBtn.addEventListener('click', togglePinMode);
+
+            searchBtn.addEventListener('click', handleSearch);
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleSearch();
+            });
+
+            // Modal listeners
+            addStopForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const stopData = {
+                    name: modalStopName.value,
+                    latitude: modalLat.value,
+                    longitude: modalLon.value,
+                    district: modalDistrict.value,
+                    loc_link: `https://www.google.com/maps?q=${modalLat.value},${modalLon.value}`
+                };
+                addStopToDB(stopData);
+            });
+            cancelBtn.addEventListener('click', hideAddStopModal);
+            modalBackdrop.addEventListener('click', (e) => {
+                if(e.target === modalBackdrop) {
+                    hideAddStopModal();
+                }
+            });
+            
+            // Event delegation for "Add to DB" buttons inside popups
+            document.addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('add-db-btn')) {
+                    const { name, lat, lon } = e.target.dataset;
+                    showAddStopModal({ name, lat, lon });
+                }
+            });
+
+            // --- Initial Load ---
+            searchStopsInView();
         });
     </script>
 </body>
