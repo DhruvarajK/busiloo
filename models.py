@@ -23,19 +23,61 @@ class Weekday(enum.Enum):
     saturday = 5
     sunday = 6
 
+
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = {'extend_existing': True}  # Add this line
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
     buses = relationship("Bus", back_populates="owner")
     crowd_submissions = relationship("CrowdSubmission", back_populates="user")
     app_feedback = relationship("AppFeedback", back_populates="user", cascade="all, delete-orphan")
+    # Add new relationship to StopIssue
+    stop_issues = relationship("StopIssue", back_populates="user")
 
+# --- NEW: Enum for Stop Issue Types ---
+class StopIssueType(str, enum.Enum):
+    """Enumeration for the type of issue being reported for a stop."""
+    INCORRECT_LOCATION = "incorrect_location"
+    STOP_DAMAGED = "stop_damaged"
+    STOP_NAME_INCORRECT = "stop_name_incorrect"
+    OTHER = "other"
+
+class Stop(Base):
+    __tablename__ = "stops"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, index=True)
+    latitude = Column(String, nullable=True)
+    longitude = Column(String, nullable=True)
+    district = Column(String, nullable=True, index=True)
+    loc_link = Column(String, nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    stop_times = relationship("StopTime", back_populates="stop")
+    traffic_blocks = relationship("TrafficBlock", back_populates="nearest_stop")
+    # Add new relationship to StopIssue
+    issues = relationship("StopIssue", back_populates="stop", cascade="all, delete-orphan")
+
+# --- NEW: StopIssue Model ---
+class StopIssue(Base):
+    """Represents an issue reported by a user for a specific bus stop."""
+    __tablename__ = "stop_issues"
+    id = Column(Integer, primary_key=True, index=True)
+    stop_id = Column(Integer, ForeignKey("stops.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Optional for anonymous reports
+    issue_type = Column(SQLEnum(StopIssueType), nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String, default="reported", nullable=False) # e.g., reported, in_progress, resolved
+    reported_at = Column(DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Kolkata")))
+
+    stop = relationship("Stop", back_populates="issues")
+    user = relationship("User", back_populates="stop_issues")
+    
 class Bus(Base):
     __tablename__ = "buses"
     id = Column(Integer, primary_key=True, index=True)
@@ -61,18 +103,7 @@ class BusExclusion(Base):
     bus = relationship("Bus", back_populates="bus_exclusions") 
 
 
-class Stop(Base):
-    __tablename__ = "stops"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, index=True)
-    latitude = Column(String, nullable=True)
-    longitude = Column(String, nullable=True)
-    district = Column(String, nullable=True, index=True)
-    loc_link = Column(String, nullable=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
-    stop_times = relationship("StopTime", back_populates="stop")
-    traffic_blocks = relationship("TrafficBlock", back_populates="nearest_stop")
 
 class Trip(Base):
     __tablename__ = "trips"
