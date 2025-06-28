@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Current Trip for {{ bus_name }}</title>
+    <link rel="icon" href="/static/busiloo.svg" type="image/svg+xml">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* RedBus Inspired UI by Gemini */
@@ -25,7 +26,7 @@
             padding: 0;
             background-color: var(--color-background);
             color: var(--color-text-primary);
-            padding-bottom:75px;
+            padding-bottom: 80px;
         }
 
         /* --- Header --- */
@@ -95,7 +96,7 @@
             width: inherit;
             padding-top: 6px;
             align-items: center;
-            gap: 80px;      
+            gap: 80px;     
         }
         
         /* --- Timeline Card --- */
@@ -114,7 +115,7 @@
 
         .timeline-line {
             position: absolute;
-            left: 20px;
+            left: 18.4px;
             top: 20px;
             bottom: 20px;
             width: 4px;
@@ -409,8 +410,8 @@
                                     <div class="stop-time" data-time="${st.arrival_time}">${formatTime(st.arrival_time, false)}</div>
                                     <div class="traffic-alert-container" data-traffic-for-sequence="${st.sequence}"></div>
                                     <div class="a1-las">
-                                      <div class="eta-time" data-eta-for-sequence="${st.sequence}"></div>
-                                      ${st.loc_link ? `<div><a href="${st.loc_link}" target="_blank" rel="noopener" class="loc-link">View on Map</a></div>` : ''}
+                                        <div class="eta-time" data-eta-for-sequence="${st.sequence}"></div>
+                                        ${st.loc_link ? `<div><a href="${st.loc_link}" target="_blank" rel="noopener" class="loc-link">View on Map</a></div>` : ''}
                                     </div>
                                 </div>
                             </div>`;
@@ -521,11 +522,23 @@
                         document.getElementById('submit-crowd-btn').addEventListener('click', submitCrowdData);
                     }
 
+                    // --- Scroll to bus marker AFTER content is fully rendered ---
+                    // Using a small setTimeout to ensure the element is painted to the DOM
+                    setTimeout(() => {
+                        const busMarker = document.getElementById('bus-marker');
+                        if (busMarker) {
+                            busMarker.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                    }, 0); // 0ms delay pushes it to the end of the current task queue
+
                     updateBusPosition();
                     setInterval(updateBusPosition, 2000);
                     setupEventListeners();
                     loadCrowdPrediction();
-                    loadTrafficNotifications(); // <-- NEW: Call the traffic function
+                    loadTrafficNotifications(); 
                 })
                 .catch(() => {
                     tripInfo.innerHTML = '<p style="text-align: center; padding-top: 50px;">No current trip found for this bus or an error occurred.</p>';
@@ -535,9 +548,8 @@
         // --- NEW: Traffic Notification Function ---
         function loadTrafficNotifications() {
             fetch(`/api/bus/${BUS_ID}/traffic_notifications`)
-                .then(res => res.ok ? res.json() : Promise.resolve([])) // Resolve to empty array on error
+                .then(res => res.ok ? res.json() : Promise.resolve([]))
                 .then(notifications => {
-                    // Clear previous notifications
                     document.querySelectorAll('.traffic-alert-container').forEach(el => el.innerHTML = '');
 
                     notifications.forEach(notif => {
