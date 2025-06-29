@@ -2,1018 +2,1026 @@
 
 {% block content %}
 <style>
-    /* Custom CSS Variables */
-    :root {
-        --primary-red: #D32F2F;
-        --primary-red-dark: #be123c;
-        --light-red-bg: #fef2f2;
-        --light-red-border: #fecaca;
-        --gray-100: #f3f4f6;
-        --gray-200: #e5e7eb;
-        --gray-300: #d1d5db;
-        --gray-500: #6b7280;
-        --gray-600: #4b5563;
-        --gray-700: #374151;
-        --gray-800: #1f2937;
-        --green-100: #dcfce7;
-        --green-700: #16a34a;
-        --red-100: #fee2e2;
-        --red-700: #dc2626;
-        --blue-100: #dbeafe;
-        --blue-700: #1d4ed8;
-        --primary-color: #D32F2F; /* Bold Red */
-        --primary-dark: #B71C1C;
-        --accent-color: #FFC107; /* Yellow Accent */
-        --background-color: #F5F5F5;
-        --card-background: #FFFFFF;
-        --text-primary: #212121;
-        --text-secondary: #757575;
-        --border-color: #E0E0E0;
-        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        --border-radius: 12px;
-    }
-
-
-    /* General Body & Layout */
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: var(--gray-100);
-        color: var(--gray-700);
-        margin: 0;
-        box-sizing: border-box;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-    #page-loader {
-        position: fixed; /* Covers the entire viewport */
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: transparent; /* Updated background color */
-        backdrop-filter: blur(5px); /* Added blur effect */
-        display: flex; /* Centers the loader content */
-        justify-content: center;
-        align-items: center;
-        z-index: 9999; /* Ensures it's on top of everything */
-        opacity: 1; /* Initially fully visible */
-        transition: opacity 0.5s ease-out; /* Smooth fade-out transition */
-        /* Add pointer-events: none to prevent clicks on content once it's faded out */
-        pointer-events: all;
-        border-radius: 8px; /* Rounded corners for the overlay itself */
-    }
-
-    /* Class to fade out and hide the loader (added by JavaScript) */
-    #page-loader.fade-out {
-        opacity: 0 !important; /* Force opacity to 0 */
-        pointer-events: none; /* Prevent interaction with elements beneath */
-    }
-
-
-    .loader-spinner {
-        border: 6px solid #e0e0e000;
-        border-top: 6px solid #e24a4a;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1.2s linear infinite;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Keyframe animation for the spinner */
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    .main-container {
-        width: 100%;
-        max-width: 64rem; /* Equivalent to max-w-4xl */
-        background-color: #ffffff;
-        border-radius: 1rem; /* rounded-xl */
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
-        min-height: 100vh;
-        display: contents;
-    }
-
-    @media (min-width: 768px) { /* md breakpoint */
-        .main-container {
-            margin-top: 2rem; /* my-8 */
-            margin-bottom: 2rem; /* my-8 */
+        /* Custom CSS Variables */
+        :root {
+            --primary-red: #D32F2F;
+            --primary-red-dark: #be123c;
+            --light-red-bg: #fef2f2;
+            --light-red-border: #fecaca;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --green-100: #dcfce7;
+            --green-700: #16a34a;
+            --red-100: #fee2e2;
+            --red-700: #dc2626;
+            --blue-100: #dbeafe;
+            --blue-700: #1d4ed8;
+            --primary-color: #D32F2F; /* Bold Red */
+            --primary-dark: #B71C1C;
+            --accent-color: #FFC107; /* Yellow Accent */
+            --background-color: #F5F5F5;
+            --card-background: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #E0E0E0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
         }
-    }
-
-    /* Header Styling */
-    .app-header {
-        background-color: var(--primary-red);
-        padding: 20px;
-        color: white;
-        text-align: center;
-    }
-    .app-header h1 {
-        font-size: 1.5em;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
 
 
-    .nav-link {
-        padding: 0.5rem 1rem; /* px-4 py-2 */
-        font-weight: 600; /* font-semibold */
-        color: var(--gray-700);
-        text-decoration: none;
-        border-radius: 0.5rem; /* rounded-lg */
-        transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
-    }
-
-    .nav-link:hover {
-        background-color: var(--light-red-bg);
-        color: var(--primary-red-dark);
-    }
-
-    .nav-link.active {
-        background-color: var(--primary-red);
-        color: #ffffff;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
-    }
-
-    .nav-link.active:hover {
-        background-color: var(--primary-red-dark);
-    }
-
-    /* Main Content Area */
-    .content-area {
-        background: var(--card-background);
-        margin: 12px 15px 20px 15px;
-        position: relative;
-        z-index: 10;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 12px 12px;
-    }
-
-
-
-    .content-area p {
-        text-align: center;
-        font-size: 1.125rem; /* text-lg */
-        color: var(--gray-600);
-        margin-top: 1rem; /* mt-4 */
-    }
-
-    /* List Styling (Buses & Trips) */
-    .content-area h3 {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--gray-800);
-        margin: 10px 10px 10px 0px;
-        text-align: left;
-        display: flex;
-        gap: 10px;
-        align-items: flex-end;
-    }
-    .content-area svg{
-        color: var(--primary-color);
-    }
-
-    .item-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem; /* space-y-4 */
-    }
-
-    .list-item {
-        background-color: #fff;
-        border: 1px solid var(--gray-200);
-        border-radius: 0.75rem; /* rounded-xl */
-        padding: 15px; /* p-5 */
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-        display: flex;
-        flex-direction: column; /* flex-col */
-        justify-content: space-between;
-        align-items: flex-start; /* items-start */
-        gap: 0.75rem; /* gap-3 */
-        transition: box-shadow 0.2s ease-in-out; /* transition-shadow duration-200 */
-    }
-
-    .list-item:hover {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* hover:shadow-md */
-    }
-
-    @media (min-width: 768px) { /* md breakpoint */
-        .list-item {
-            flex-direction: row; /* md:flex-row */
-            align-items: center; /* md:items-center */
-        }
-    }
-
-
-        .list-item-content {
-            flex-grow: 1;
-            color: var(--gray-800);
+        /* General Body & Layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+            margin: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 6px;
-            width: 100%;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        #page-loader {
+            position: fixed; /* Covers the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: transparent; /* Updated background color */
+            backdrop-filter: blur(5px); /* Added blur effect */
+            display: flex; /* Centers the loader content */
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
+            z-index: 9999; /* Ensures it's on top of everything */
+            opacity: 1; /* Initially fully visible */
+            transition: opacity 0.5s ease-out; /* Smooth fade-out transition */
+            /* Add pointer-events: none to prevent clicks on content once it's faded out */
+            pointer-events: all;
+            border-radius: 8px; /* Rounded corners for the overlay itself */
         }
 
-    .list-item-content strong {
-        font-size: 1.125rem; /* text-lg */
-        font-weight: 600; /* font-semibold */
-    }
-
-    .list-item-content span {
-        display: block; /* block */
-        font-size: 0.875rem; /* text-sm */
-        color: var(--gray-500);
-    }
-
-    @media (min-width: 640px) { /* sm breakpoint */
-        .list-item-content span {
-            display: inline-block; /* sm:inline-block */
+        /* Class to fade out and hide the loader (added by JavaScript) */
+        #page-loader.fade-out {
+            opacity: 0 !important; /* Force opacity to 0 */
+            pointer-events: none; /* Prevent interaction with elements beneath */
         }
-    }
-    
-    /* Back button container */
-    .back-button-container {
-        display: flex;
-        justify-content: flex-start;
-        margin-bottom: 1.5rem; /* mb-6 */
-    }
 
-    /* Form Element Styling */
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1.5rem; /* gap-6 */
-    }
 
-    @media (min-width: 768px) { /* md breakpoint */
-        .form-grid {
-            grid-template-columns: 1fr 1fr; /* md:grid-cols-2 */
-        }
-    }
-
-    .form-label {
-        display: block;
-        font-size: 0.875rem; /* text-sm */
-        font-weight: 500; /* font-medium */
-        color: var(--gray-700);
-        margin-bottom: 0.25rem; /* mb-1 */
-    }
-
-    .form-input-custom {
-        width: 100%;
-        padding: 0.75rem; /* p-3 */
-        border: 1px solid var(--gray-300);
-        border-radius: 0.5rem; /* rounded-lg */
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-        outline: none;
-        transition: all 0.2s ease-in-out; /* transition-all duration-200 */
-        box-sizing: border-box;
-    }
-
-    .form-input-custom:focus {
-        border-color: transparent;
-        box-shadow: 0 0 0 2px var(--primary-red), 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* focus:ring-2 focus:ring-primary-red */
-    }
-
-    .form-input-custom[readonly] {
-        background-color: var(--gray-100);
-        cursor: not-allowed;
-    }
-
-    .service-day-label {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem; /* gap-3 */
-        padding: 0.75rem; /* p-3 */
-        background-color: #fff;
-        border: 1px solid var(--gray-200);
-        border-radius: 0.5rem; /* rounded-lg */
-        cursor: pointer;
-        transition: all 0.2s ease-in-out; /* transition-all duration-200 */
-        margin-bottom: 5px;
-    }
-
-    .service-day-label:hover {
-        background-color: var(--light-red-bg);
-        border-color: var(--primary-red-dark);
-    }
-
-    .form-checkbox-custom {
-        height: 1.25rem; /* h-5 */
-        width: 1.25rem; /* w-5 */
-        color: var(--primary-red);
-        border-color: var(--gray-300);
-        border-radius: 0.25rem; /* rounded */
-        outline: none;
-        cursor: pointer;
-        appearance: none; /* Hide default checkbox */
-        flex-shrink: 0;
-        position: relative; /* For custom checkmark */
-        transition: all 0.2s ease-in-out;
-        box-shadow: 0 0 0 2px transparent, inset 0 0 0 1px var(--gray-300);
-    }
-
-    .form-checkbox-custom:checked {
-        background-color: var(--primary-red);
-        border-color: var(--primary-red);
-        box-shadow: 0 0 0 2px var(--primary-red), inset 0 0 0 1px var(--primary-red);
-    }
-
-    .form-checkbox-custom:checked::after {
-        content: '';
-        position: absolute;
-        left: 6px;
-        top: 1px;
-        width: 6px;
-        height: 12px;
-        border: solid white;
-        border-width: 0 2px 2px 0;
-        transform: rotate(45deg);
-    }
-
-    .form-checkbox-custom:focus {
-        box-shadow: 0 0 0 2px var(--primary-red); /* focus:ring-2 focus:ring-primary-red */
-    }
-
-    /* Stop Entry Styling */
-    .stops-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem; /* space-y-4 */
-    }
-
-    .stop-entry {
-        background-color: var(--gray-50);
-        padding: 1rem; /* p-4 */
-        border-radius: 0.5rem; /* rounded-lg */
-        border: 1px solid var(--gray-200);
-        display: grid;
-        grid-template-columns: 1fr; /* grid-cols-1 */
-        gap: 1rem; /* gap-4 */
-        align-items: center;
-    }
-    .secondary-actions {
-        padding: 0 15px;
-        margin-top: 15px;
-    }
-    .action-link {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 2px 15px;
-        background: var(--card-background);
-        border-radius: var(--border-radius);
-        margin-bottom: 15px;
-        text-decoration: none;
-        color: var(--text-primary);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .action-link:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    .action-link .icon { color: var(--primary-color); }
-    .action-link .icon svg { width: auto; height: auto; }
-    .action-link .text h3 { font-size: 1em; margin-bottom: 2px; }
-    .action-link .text p { font-size: 0.8em; color: var(--text-secondary); }
-
-    
-    /* Base style for the expanding box */
-    .hover-link {
-        display: flex;
-        flex-direction: column; /* Stack content and buttons vertically */
-        align-items: flex-start; /* Align content to the left */
-        gap: 5px; /* Gap between the hover-link-content and hover-buttons-inside */
-        padding: 2px 15px; /* Adjust as needed for overall box padding */
-        background: var(--card-background);
-        border-radius: var(--border-radius);
-        margin-bottom: 15px;
-        text-decoration: none;
-        color: var(--text-primary);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        cursor: pointer;
-        overflow: hidden; /* CRITICAL: Hides content exceeding max-height during transition */
-    
-        /* Initial collapsed state using max-height */
-        max-height: var(--initial-hover-link-height);
-        /* Transition max-height and padding. All property for smooth transition on every chaning property */
-        transition: max-height .4s linear, opacity .2s linear, padding-top .4s linear;
-        
-        /* Ensure the padding doesn't get messed up by transition */
-        padding-bottom: 2px; /* Initial padding-bottom matches padding-top */
-    }
-    
-    /* Hover effect for the overall link */
-    .hover-link:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    
-    /* Style for the top content (icon and text) */
-    .hover-link-content {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        width: 100%; /* Ensures this content takes full width */
-        /* No transitions or overflow here, it's always visible */
-    }
-    
-    .hover-link .icon { color: var(--primary-color); }
-    .hover-link .icon svg { width: auto; height: auto; }
-    .hover-link .text h3 { font-size: 1em; margin-bottom: 2px; }
-    .hover-link .text p { font-size: 0.8em; color: var(--text-secondary); }
-    
-    /* Styles for the buttons container inside the expanding box */
-    .hover-buttons-inside {
-        display: flex;
-        gap: 12px;
-        width: 100%; /* Ensure buttons take full available width */
-    
-        /* Initially hide and collapse the buttons within the box */
-        max-height: 0;
-        opacity: 0;
-        /* This padding-top will animate in */
-        padding-top: 0; 
-        
-        /* Transition for these properties */
-        transition: max-height .4s linear, opacity .2s linear, padding-top .4s linear;
-        overflow: hidden; /* Hides content exceeding max-height during transition */
-    }
-    
-    /* Class added by JavaScript when the box is clicked */
-    .hover-link.expanded {
-        /* Set a generous max-height that will definitely contain all content + buttons + gaps */
-        /* Calculate: initial content height + gap + buttons section height + bottom padding */
-        max-height: calc(var(--initial-hover-link-height) + var(--buttons-section-height) + 15px + 15px); /* Added an extra 15px for padding-bottom in expanded state */
-        
-        /* Adjust bottom padding when expanded */
-        padding-bottom: 15px; 
-    }
-    
-    .hover-link.expanded .hover-buttons-inside {
-        max-height: var(--buttons-section-height); /* Make buttons visible */
-        opacity: 1;
-        padding-top: 9px; /* Add desired padding above buttons when shown */
-    }
-    
-
-    
-
-    @media (min-width: 768px) { /* md breakpoint */
-        .stop-entry {
-            grid-template-columns: 2fr 1fr; /* md:grid-cols-3, using 2fr 1fr for stop name and time */
-        }
-    }
-
-    .stop-entry div:first-child { /* Adjust for stop name/ID column */
-        grid-column: span 1;
-        color: var(--gray-800);
-    }
-    @media (min-width: 768px) {
-        .stop-entry div:first-child {
-            grid-column: span 2; /* md:col-span-2 */
-        }
-    }
-
-    /* Button Styling */
-    .button-container-end {
-        display: flex;
-        justify-content: flex-end; /* justify-end */
-        padding-top: 1.5rem; /* pt-6 */
-    }
-
-    .btn-primary-custom {
-        background-color: var(--primary-red);
-        color: #ffffff;
-        font-weight: 700; /* font-bold */
-        padding: 8px 15px; /* py-2 px-4 */
-        border-radius: 1.5rem; /* rounded-lg */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
-        transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
-        transform: translateY(0);
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary-custom:hover {
-        background-color: var(--primary-red-dark);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
-        transform: translateY(-0.125rem); /* hover:-translate-y-0.5 */
-    }
-
-    .btn-secondary-custom {
-        background-color: var(--gray-600);
-        color: #ffffff;
-        font-weight: 700; /* font-bold */
-        padding: 9px 15px; /* py-2 px-4 */
-        border-radius: 2.5rem; /* rounded-lg */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
-        transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
-        transform: translateY(0);
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-secondary-custom:hover {
-        background-color: var(--gray-700);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
-        transform: translateY(-0.125rem); /* hover:-translate-y-0.5 */
-    }
-
-    /* Message/Feedback Styling */
-    .message {
-        margin-top: 1rem; /* mt-4 */
-        padding: 0.75rem; /* p-3 */
-        border-radius: 0.5rem; /* rounded-lg */
-        font-weight: 600; /* font-semibold */
-        text-align: center;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-        transition: opacity 0.3s ease-in-out; /* transition-opacity duration-300 */
-        opacity: 0; /* opacity-0 by default */
-    }
-
-    .message.visible {
-        opacity: 1;
-    }
-
-    .message.success {
-        background-color: var(--green-100);
-        color: var(--green-700);
-    }
-
-    .message.error {
-        background-color: var(--red-100);
-        color: var(--red-700);
-    }
-
-    .message.info { /* For 'Saving...' state */
-        background-color: var(--blue-100);
-        color: var(--blue-700);
-    }
-
-</style>
-
-<div id="page-loader">
-    <div class="loader-spinner"></div>
-</div>
-
-<div class="min-h-screen">
-    <div class="main-container">
-        <!-- Header -->
-        <header class="app-header">
-            <h1 class="page-header-title">Dashboard</h1>
-        </header>
-
-        <!-- Navigation -->
-        <section class="secondary-actions">
-            <a href="/add_bus" class="action-link">
-                <div class="icon">
-                    <svg fill="currentColor" height="24" width="24" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-	 viewBox="0 0 512.003 512.003" xml:space="preserve">
-<g>
-	<g>
-		<g>
-			<path d="M102.4,337.069c-9.429,0-17.067,7.637-17.067,17.067c0,9.421,7.637,17.067,17.067,17.067s17.067-7.646,17.067-17.067
-				C119.467,344.707,111.829,337.069,102.4,337.069z"/>
-			<path d="M401.067,234.669c-61.167,0-110.933,49.766-110.933,110.933S339.9,456.536,401.067,456.534s512,406.77,512,345.603
-				S462.234,234.669,401.067,234.669z M452.267,354.136H409.6v42.667c0,4.719-3.823,8.533-8.533,8.533s-8.533-3.814-8.533-8.533
-				v-42.667h-42.667c-4.71,0-8.533-3.814-8.533-8.533c0-4.719,3.823-8.533,8.533-8.533h42.667v-42.667
-				c0-4.719,3.823-8.533,8.533-8.533s8.533,3.814,8.533,8.533v42.667h42.667c4.71,0,8.533,3.814,8.533,8.533
-				C460.8,350.322,456.977,354.136,452.267,354.136z"/>
-			<path d="M504.554,146.386l-36.105-39.714h-75.913v85.333h119.467V165.62C512.003,158.486,509.358,151.651,504.554,146.386z"/>
-			<path d="M76.8,190.403v-82.133c0-0.887-0.717-1.604-1.596-1.604H0v85.333h75.204C76.083,191.998,76.8,191.29,76.8,190.403z"/>
-			<path d="M201.334,106.669h-61.329c-1.92,0-3.473,1.562-3.473,3.465v78.404c0,1.903,1.553,3.465,3.473,3.465h61.329
-				c1.911,0,3.465-1.562,3.465-3.465v-78.404C204.798,108.231,203.245,106.669,201.334,106.669z"/>
-			<path d="M329.334,106.669h-61.329c-1.92,0-3.473,1.562-3.473,3.465v78.404c0,1.903,1.553,3.465,3.473,3.465h61.329
-				c1.911,0,3.465-1.562,3.465-3.465v-78.404C332.798,108.231,331.245,106.669,329.334,106.669z"/>
-			<path d="M375.467,194.399V104.27c0-8.081,6.579-14.669,14.669-14.669h62.805l-22.528-24.772
-				c-5.402-5.948-13.116-9.361-21.154-9.361h-383.3C11.639,55.468,0,67.116,0,81.426v8.175h75.196c10.3,0,18.671,8.38,18.671,18.671
-				v82.133c0,10.291-8.371,18.662-18.671,18.662H0v17.067h238.933c4.71,0,8.533,3.823,8.533,8.533c0,4.719-3.823,8.533-8.533,8.533
-				H0v17.067h273.067c4.71,0,8.533,3.823,8.533,8.533c0,4.719-3.823,8.533-8.533,8.533H0v59.375
-				c0,14.319,11.639,25.958,25.958,25.958h17.391c4.164,28.894,29.022,51.2,59.051,51.2s54.886-22.306,59.051-51.2h112.887
-				c-0.751-5.598-1.271-11.264-1.271-17.067c0-70.579,57.421-128,128-128c47.428,0,88.823,25.993,110.933,64.418v-72.951H390.135
-				C382.046,209.068,375.467,202.488,375.467,194.399z M221.867,188.536c0,11.324-9.216,20.531-20.531,20.531h-61.338
-				c-11.315,0-20.531-9.207-20.531-20.531v-78.404c0-11.324,9.216-20.531,20.531-20.531h61.338c11.315,0,20.531,9.208,20.531,20.531
-				V188.536z M102.4,396.801c-23.526,0-42.667-19.14-42.667-42.667c0-23.526,19.14-42.667,42.667-42.667
-				c23.526,0,42.667,19.14,42.667,42.667C145.067,377.661,125.926,396.801,102.4,396.801z M349.867,188.536
-				c0,11.324-9.216,20.531-20.531,20.531h-61.338c-11.315,0-20.531-9.207-20.531-20.531v-78.404
-				c0-11.324,9.216-20.531,20.531-20.531h61.338c11.315,0,20.531,9.208,20.531,20.531V188.536z"/>
-		</g>
-	</g>
-</g>
-</svg>
-                </div>
-                <div class="text">
-                    <h3>Add Bus</h3>
-                    <p>Add new buses</p>
-                </div>
-            </a>
-            <a href="/add_trip" class="action-link">
-                <div class="icon">
-                    <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.844 20H6.5C5.121 20 4 18.879 4 17.5S5.121 15 6.5 15h7c1.93 0 3.5-1.57 3.5-3.5S15.43 8 13.5 8H8.639a9.812 9.812 0 0 1-1.354 2H13.5c.827 0 1.5.673 1.5 1.5s-.673 1.5-1.5 1.5h-7C4.019 13 2 15.019 2 17.5S4.019 22 6.5 22h9.593a10.415 10.415 0 0 1-1.249-2zM5 2C3.346 2 2 3.346 2 5c0 3.188 3 5 3 5s3-1.813 3-5c0-1.654-1.346-3-3-3zm0 4.5a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5 6.5z"/><path d="M19 14c-1.654 0-3 1.346-3 3 0 3.188 3 5 3 5s3-1.813 3-5c0-1.654-1.346-3-3-3zm0 4.5a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 19 18.5z"/></svg>
-                </div>
-                <div class="text">
-                    <h3>Add Trip</h3>
-                    <p>Add new trips</p>
-                </div>
-            </a>
+        .loader-spinner {
+            border: 6px solid #e0e0e000;
+            border-top: 6px solid #e24a4a;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1.2s linear infinite;
            
+        }
 
-            <a href="/union/app_feedback" class="action-link">
-                <div class="icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g id="User / User_Voice">
-                        <path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </g>
-                        </svg>
-                </div>
-                <div class="text">
-                    <h3>Feedback</h3>
-                    <p>Send a feedback</p>
-                </div>
-            </a>
-            <a href="/union/add_stop" class="action-link">
-                <div class="icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g id="User / User_Voice">
-                        <path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </g>
-                        </svg>
-                </div>
-                <div class="text">
-                    <h3>Add stop</h3>
-                    <p>Send a feedback</p>
-                </div>
-            </a>
+        /* Keyframe animation for the spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 64rem; /* Equivalent to max-w-4xl */
+            background-color: #ffffff;
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            min-height: 100vh;
+            display: contents;
+        }
+
+        @media (min-width: 768px) { /* md breakpoint */
+            .main-container {
+                margin-top: 2rem; /* my-8 */
+                margin-bottom: 2rem; /* my-8 */
+            }
+        }
+
+        /* Header Styling */
+        .app-header {
+            background-color: var(--primary-red);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .app-header h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+
+        .nav-link {
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            font-weight: 600; /* font-semibold */
+            color: var(--gray-700);
+            text-decoration: none;
+            border-radius: 0.5rem; /* rounded-lg */
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
+        }
+
+        .nav-link:hover {
+            background-color: var(--light-red-bg);
+            color: var(--primary-red-dark);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-red);
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+        }
+
+        .nav-link.active:hover {
+            background-color: var(--primary-red-dark);
+        }
+
+        /* Main Content Area */
+        .content-area {
+            background: var(--card-background);
+            margin: 12px 15px 20px 15px;
+            position: relative;
+            z-index: 10;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 12px 12px;
+        }
+
+
+
+        .content-area p {
+            text-align: center;
+            font-size: 1.125rem; /* text-lg */
+            color: var(--gray-600);
+            margin-top: 1rem; /* mt-4 */
+        }
+
+        /* List Styling (Buses & Trips) */
+        .content-area h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin: 10px 10px 10px 0px;
+            text-align: left;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .content-area svg{
+            color: var(--primary-color);
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* space-y-4 */
+        }
+
+        .list-item {
+            background-color: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 15px; /* p-5 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            display: flex;
+            flex-direction: column; /* flex-col */
+            justify-content: space-between;
+            align-items: flex-start; /* items-start */
+            gap: 0.75rem; /* gap-3 */
+            transition: box-shadow 0.2s ease-in-out; /* transition-shadow duration-200 */
+        }
+
+        .list-item:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* hover:shadow-md */
+        }
+
+        @media (min-width: 768px) { /* md breakpoint */
+            .list-item {
+                flex-direction: row; /* md:flex-row */
+                align-items: center; /* md:items-center */
+            }
+        }
+
+
+            .list-item-content {
+                flex-grow: 1;
+                color: var(--gray-800);
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 6px;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+        .list-item-content strong {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+        }
+
+        .list-item-content span {
+            display: block; /* block */
+            font-size: 0.875rem; /* text-sm */
+            color: var(--gray-500);
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            .list-item-content span {
+                display: inline-block; /* sm:inline-block */
+            }
+        }
+        
+        /* Back button container */
+        .back-button-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        /* Form Element Styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+
+        @media (min-width: 768px) { /* md breakpoint */
+            .form-grid {
+                grid-template-columns: 1fr 1fr; /* md:grid-cols-2 */
+            }
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: var(--gray-700);
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+
+        .form-input-custom {
+            width: 100%;
+            padding: 0.75rem; /* p-3 */
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            outline: none;
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 */
+            box-sizing: border-box;
+        }
+
+        .form-input-custom:focus {
+            border-color: transparent;
+            box-shadow: 0 0 0 2px var(--primary-red), 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* focus:ring-2 focus:ring-primary-red */
+        }
+
+        .form-input-custom[readonly] {
+            background-color: var(--gray-100);
+            cursor: not-allowed;
+        }
+
+        .service-day-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* gap-3 */
+            padding: 0.75rem; /* p-3 */
+            background-color: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem; /* rounded-lg */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 */
+            margin-bottom: 5px;
+        }
+
+        .service-day-label:hover {
+            background-color: var(--light-red-bg);
+            border-color: var(--primary-red-dark);
+        }
+
+        .form-checkbox-custom {
+            height: 1.25rem; /* h-5 */
+            width: 1.25rem; /* w-5 */
+            color: var(--primary-red);
+            border-color: var(--gray-300);
+            border-radius: 0.25rem; /* rounded */
+            outline: none;
+            cursor: pointer;
+            appearance: none; /* Hide default checkbox */
+            flex-shrink: 0;
+            position: relative; /* For custom checkmark */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 0 2px transparent, inset 0 0 0 1px var(--gray-300);
+        }
+
+        .form-checkbox-custom:checked {
+            background-color: var(--primary-red);
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px var(--primary-red), inset 0 0 0 1px var(--primary-red);
+        }
+
+        .form-checkbox-custom:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 1px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .form-checkbox-custom:focus {
+            box-shadow: 0 0 0 2px var(--primary-red); /* focus:ring-2 focus:ring-primary-red */
+        }
+
+        /* Stop Entry Styling */
+        .stops-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* space-y-4 */
+        }
+
+        .stop-entry {
+            background-color: var(--gray-50);
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid var(--gray-200);
+            display: grid;
+            grid-template-columns: 1fr; /* grid-cols-1 */
+            gap: 1rem; /* gap-4 */
+            align-items: center;
+        }
+        .secondary-actions {
+            padding: 0 15px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: auto;
+            gap: 15px;            /* space between all items */
+          }
+          
+          /* Make the first child span both columns */
+          .secondary-actions > *:first-child {
+            grid-column: 1 / -1;  /* from column 1 to the last column */
+          }
+          
+        .action-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 2px 15px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .action-link .icon { color: var(--primary-color); }
+        .action-link .icon svg { width: auto; height: auto; }
+        .action-link .text h3 { font-size: 1em; margin-bottom: 2px; }
+        .action-link .text p { font-size: 0.8em; color: var(--text-secondary); }
+
+        
+        /* Base style for the expanding box */
+        .hover-link {
+            display: flex;
+            flex-direction: column; /* Stack content and buttons vertically */
+            align-items: flex-start; /* Align content to the left */
+            gap: 5px; /* Gap between the hover-link-content and hover-buttons-inside */
+            padding: 2px 15px; /* Adjust as needed for overall box padding */
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            overflow: hidden; /* CRITICAL: Hides content exceeding max-height during transition */
+        
+            /* Initial collapsed state using max-height */
+            max-height: var(--initial-hover-link-height);
+            /* Transition max-height and padding. All property for smooth transition on every chaning property */
+            transition: max-height .4s linear, opacity .2s linear, padding-top .4s linear;
             
-            <div class="hover-link" id="exclusionLink">
-                <div class="hover-link-content">
+            /* Ensure the padding doesn't get messed up by transition */
+            padding-bottom: 2px; /* Initial padding-bottom matches padding-top */
+        }
+        
+        /* Hover effect for the overall link */
+        .hover-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        /* Style for the top content (icon and text) */
+        .hover-link-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%; /* Ensures this content takes full width */
+            /* No transitions or overflow here, it's always visible */
+        }
+        
+        .hover-link .icon { color: var(--primary-color); }
+        .hover-link .icon svg { width: auto; height: auto; }
+        .hover-link .text h3 { font-size: 1em; margin-bottom: 2px; }
+        .hover-link .text p { font-size: 0.8em; color: var(--text-secondary); }
+        
+        /* Styles for the buttons container inside the expanding box */
+        .hover-buttons-inside {
+            display: flex;
+            gap: 12px;
+            width: 100%; /* Ensure buttons take full available width */
+        
+            /* Initially hide and collapse the buttons within the box */
+            max-height: 0;
+            opacity: 0;
+            /* This padding-top will animate in */
+            padding-top: 0; 
+            
+            /* Transition for these properties */
+            transition: max-height .4s linear, opacity .2s linear, padding-top .4s linear;
+            overflow: hidden; /* Hides content exceeding max-height during transition */
+        }
+        
+        /* Class added by JavaScript when the box is clicked */
+        .hover-link.expanded {
+            /* Set a generous max-height that will definitely contain all content + buttons + gaps */
+            /* Calculate: initial content height + gap + buttons section height + bottom padding */
+            max-height: calc(var(--initial-hover-link-height) + var(--buttons-section-height) + 15px + 15px); /* Added an extra 15px for padding-bottom in expanded state */
+            
+            /* Adjust bottom padding when expanded */
+            padding-bottom: 15px; 
+        }
+        
+        .hover-link.expanded .hover-buttons-inside {
+            max-height: var(--buttons-section-height); /* Make buttons visible */
+            opacity: 1;
+            padding-top: 9px; /* Add desired padding above buttons when shown */
+        }
+        
+
+        
+
+        @media (min-width: 768px) { /* md breakpoint */
+            .stop-entry {
+                grid-template-columns: 2fr 1fr; /* md:grid-cols-3, using 2fr 1fr for stop name and time */
+            }
+        }
+
+        .stop-entry div:first-child { /* Adjust for stop name/ID column */
+            grid-column: span 1;
+            color: var(--gray-800);
+        }
+        @media (min-width: 768px) {
+            .stop-entry div:first-child {
+                grid-column: span 2; /* md:col-span-2 */
+            }
+        }
+
+        /* Button Styling */
+        .button-container-end {
+            display: flex;
+            justify-content: flex-end; /* justify-end */
+            padding-top: 1.5rem; /* pt-6 */
+        }
+
+        .btn-primary-custom {
+            background-color: var(--primary-red);
+            color: #ffffff;
+            font-weight: 700; /* font-bold */
+            padding: 8px 15px; /* py-2 px-4 */
+            border-radius: 1.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
+            transform: translateY(0);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--primary-red-dark);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
+            transform: translateY(-0.125rem); /* hover:-translate-y-0.5 */
+        }
+
+        .btn-secondary-custom {
+            background-color: var(--gray-600);
+            color: #ffffff;
+            font-weight: 700; /* font-bold */
+            padding: 9px 15px; /* py-2 px-4 */
+            border-radius: 2.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
+            transform: translateY(0);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary-custom:hover {
+            background-color: var(--gray-700);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
+            transform: translateY(-0.125rem); /* hover:-translate-y-0.5 */
+        }
+
+        /* Message/Feedback Styling */
+        .message {
+            margin-top: 1rem; /* mt-4 */
+            padding: 0.75rem; /* p-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            text-align: center;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            transition: opacity 0.3s ease-in-out; /* transition-opacity duration-300 */
+            opacity: 0; /* opacity-0 by default */
+        }
+
+        .message.visible {
+            opacity: 1;
+        }
+
+        .message.success {
+            background-color: var(--green-100);
+            color: var(--green-700);
+        }
+
+        .message.error {
+            background-color: var(--red-100);
+            color: var(--red-700);
+        }
+
+        .message.info { /* For 'Saving...' state */
+            background-color: var(--blue-100);
+            color: var(--blue-700);
+        }
+
+        /* Ensures the loader is positioned correctly within the content area */
+        .content-area {
+            position: relative;
+            min-height: 300px; /* Give it some minimum height */
+        }
+    
+        /* Styles for the new content loader */
+        #content-loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex; /* Hidden by default, shown by JS */
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7); /* A semi-transparent overlay */
+            z-index: 10;
+            backdrop-filter: blur(2px); /* Modern blur effect */
+            border-radius: var(--border-radius-lg, 12px); /* Match your container's border-radius */
+        }
+    
+        /* The animated spinner element (reusing your existing class name for consistency) */
+        #content-loader .loader-spinner {
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary-color, #007bff); /* Use a theme variable if you have one */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <div class="min-h-screen">
+        <div class="main-container">
+            <header class="app-header">
+                <h1 class="page-header-title">Dashboard</h1>
+            </header>
+    
+            <section class="secondary-actions">
+                <a href="/add_bus" class="action-link">
                     <div class="icon">
-                        <svg width="22" height="22" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none">
-                            <g fill="currentColor">
-                                <path d="M8 1.5A6.5 6.5 0 001.5 8 .75.75 0 010 8a8 8 0 0113.5-5.81v-.94a.75.75 0 011.5 0v3a.75.75 0 01-.75.75h-3a.75.75 0 010-1.5h1.44A6.479 6.479 0 008 1.5zM15.25 7.25A.75.75 0 0116 8a8 8 0 01-13.5 5.81v.94a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75h3a.75.75 0 010 1.5H3.31A6.5 6.5 0 0014.5 8a.75.75 0 01.75-.75z"/>
-                                <path d="M7 11a1 1 0 011-1h.007a1 1 0 110 2H8a1 1 0 01-1-1zM8.75 4.75a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"/>
-                            </g>
+                        <svg fill="currentColor" height="24" width="24" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+       viewBox="0 0 512.003 512.003" xml:space="preserve">
+    <g><g><g><path d="M102.4,337.069c-9.429,0-17.067,7.637-17.067,17.067c0,9.421,7.637,17.067,17.067,17.067s17.067-7.646,17.067-17.067   C119.467,344.707,111.829,337.069,102.4,337.069z"/><path d="M401.067,234.669c-61.167,0-110.933,49.766-110.933,110.933S339.9,456.536,401.067,456.534s512,406.77,512,345.603   S462.234,234.669,401.067,234.669z M452.267,354.136H409.6v42.667c0,4.719-3.823,8.533-8.533,8.533s-8.533-3.814-8.533-8.533   v-42.667h-42.667c-4.71,0-8.533-3.814-8.533-8.533c0-4.719,3.823-8.533,8.533-8.533h42.667v-42.667   c0-4.719,3.823-8.533,8.533-8.533s8.533,3.814,8.533,8.533v42.667h42.667c4.71,0,8.533,3.814,8.533,8.533   C460.8,350.322,456.977,354.136,452.267,354.136z"/><path d="M504.554,146.386l-36.105-39.714h-75.913v85.333h119.467V165.62C512.003,158.486,509.358,151.651,504.554,146.386z"/><path d="M76.8,190.403v-82.133c0-0.887-0.717-1.604-1.596-1.604H0v85.333h75.204C76.083,191.998,76.8,191.29,76.8,190.403z"/><path d="M201.334,106.669h-61.329c-1.92,0-3.473,1.562-3.473,3.465v78.404c0,1.903,1.553,3.465,3.473,3.465h61.329   c1.911,0,3.465-1.562,3.465-3.465v-78.404C204.798,108.231,203.245,106.669,201.334,106.669z"/><path d="M329.334,106.669h-61.329c-1.92,0-3.473,1.562-3.473,3.465v78.404c0,1.903,1.553,3.465,3.473,3.465h61.329   c1.911,0,3.465-1.562,3.465-3.465v-78.404C332.798,108.231,331.245,106.669,329.334,106.669z"/><path d="M375.467,194.399V104.27c0-8.081,6.579-14.669,14.669-14.669h62.805l-22.528-24.772   c-5.402-5.948-13.116-9.361-21.154-9.361h-383.3C11.639,55.468,0,67.116,0,81.426v8.175h75.196c10.3,0,18.671,8.38,18.671,18.671   v82.133c0,10.291-8.371,18.662-18.671,18.662H0v17.067h238.933c4.71,0,8.533,3.823,8.533,8.533c0,4.719-3.823,8.533-8.533,8.533   H0v17.067h273.067c4.71,0,8.533,3.823,8.533,8.533c0,4.719-3.823,8.533-8.533,8.533H0v59.375   c0,14.319,11.639,25.958,25.958,25.958h17.391c4.164,28.894,29.022,51.2,59.051,51.2s54.886-22.306,59.051-51.2h112.887   c-0.751-5.598-1.271-11.264-1.271-17.067c0-70.579,57.421-128,128-128c47.428,0,88.823,25.993,110.933,64.418v-72.951H390.135   C382.046,209.068,375.467,202.488,375.467,194.399z M221.867,188.536c0,11.324-9.216,20.531-20.531,20.531h-61.338   c-11.315,0-20.531-9.207-20.531-20.531v-78.404c0-11.324,9.216-20.531,20.531-20.531h61.338c11.315,0,20.531,9.208,20.531,20.531   V188.536z M102.4,396.801c-23.526,0-42.667-19.14-42.667-42.667c0-23.526,19.14-42.667,42.667-42.667   c23.526,0,42.667,19.14,42.667,42.667C145.067,377.661,125.926,396.801,102.4,396.801z M349.867,188.536   c0,11.324-9.216,20.531-20.531,20.531h-61.338c-11.315,0-20.531-9.207-20.531-20.531v-78.404   c0-11.324,9.216-20.531,20.531-20.531h61.338c11.315,0,20.531,9.208,20.531,20.531V188.536z"/></g></g></g>
+    </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Add Bus</h3>
+                        <p>Add new buses</p>
+                    </div>
+                </a>
+                <a href="/add_trip" class="action-link">
+                    <div class="icon">
+                        <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.844 20H6.5C5.121 20 4 18.879 4 17.5S5.121 15 6.5 15h7c1.93 0 3.5-1.57 3.5-3.5S15.43 8 13.5 8H8.639a9.812 9.812 0 0 1-1.354 2H13.5c.827 0 1.5.673 1.5 1.5s-.673 1.5-1.5 1.5h-7C4.019 13 2 15.019 2 17.5S4.019 22 6.5 22h9.593a10.415 10.415 0 0 1-1.249-2zM5 2C3.346 2 2 3.346 2 5c0 3.188 3 5 3 5s3-1.813 3-5c0-1.654-1.346-3-3-3zm0 4.5a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5 6.5z"/><path d="M19 14c-1.654 0-3 1.346-3 3 0 3.188 3 5 3 5s3-1.813 3-5c0-1.654-1.346-3-3-3zm0 4.5a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 19 18.5z"/></svg>
+                    </div>
+                    <div class="text">
+                        <h3>Add Trip</h3>
+                        <p>Add new trips</p>
+                    </div>
+                </a>
+                
+                <a href="/union/app_feedback" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g id="User / User_Voice"><path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
                         </svg>
                     </div>
                     <div class="text">
-                        <h3>Exclusion</h3>
-                        <p>Add to Exclusion</p>
+                        <h3>Feedback</h3>
+                        <p>Send a feedback</p>
+                    </div>
+                </a>
+    
+                <a href="/union/add_stop" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g id="User / User_Voice"><path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                        </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Add stop</h3>
+                        <p>Send a feedback</p>
+                    </div>
+                </a>
+                
+                <div class="hover-link" id="exclusionLink">
+                    <div class="hover-link-content">
+                        <div class="icon">
+                            <svg width="22" height="22" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none"><g fill="currentColor"><path d="M8 1.5A6.5 6.5 0 001.5 8 .75.75 0 010 8a8 8 0 0113.5-5.81v-.94a.75.75 0 011.5 0v3a.75.75 0 01-.75.75h-3a.75.75 0 010-1.5h1.44A6.479 6.479 0 008 1.5zM15.25 7.25A.75.75 0 0116 8a8 8 0 01-13.5 5.81v.94a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75h3a.75.75 0 010 1.5H3.31A6.5 6.5 0 0014.5 8a.75.75 0 01.75-.75z"/><path d="M7 11a1 1 0 011-1h.007a1 1 0 110 2H8a1 1 0 01-1-1zM8.75 4.75a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"/></g></svg>
+                        </div>
+                        <div class="text">
+                            <h3>Exclusion</h3>
+                            <p>Add to Exclusion</p>
+                        </div>
+                    </div>
+                
+                    <div class="hover-buttons-inside">
+                        <div><a href="/union/exclusion" ><button class="btn-primary-custom" >Trip Exclusion</button></a></div>
+                        <div><a href="#" ><button class="btn-primary-custom">Bus Exclusion</button></a></div>
                     </div>
                 </div>
-            
-                <div class="hover-buttons-inside">
-                    <div><a href="/union/exclusion" ><button class="btn-primary-custom" >Trip Exclusion</button></a></div>
-                    <div><a href="#" ><button class="btn-primary-custom">Bus Exclusion</button></a></div>
+            </section>
+    
+            <div id="content" class="content-area">
+                <div id="content-loader" style="display: none;">
+                    <div class="loader-spinner"></div>
+                </div>
+                
+                <div id="dynamic-content">
+                    <p>Welcome to your dashboard. Select an option above to get started.</p>
                 </div>
             </div>
-
-
-
-        </section>
-
-        <!-- Main Content Area -->
-        <div id="content" class="content-area">
-            <!-- Dynamic content will appear here -->
-            <p>Welcome to your dashboard. Select an option above to get started.</p>
         </div>
     </div>
-</div>
-
-<script>
-    // Helper to add 'active' class to current nav link
-    document.addEventListener('DOMContentLoaded', () => {
-        const currentPath = window.location.pathname;
-        document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.getAttribute('href') === currentPath) {
-                link.classList.add('active');
+    
+    <script>
+        // Helper to add 'active' class to current nav link
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+            const exclusionLink = document.getElementById('exclusionLink');
+    
+            if (exclusionLink) {
+                exclusionLink.addEventListener('click', function(event) {
+                    if (event.target.closest('.hover-buttons-inside')) {
+                        return;
+                    }
+                    this.classList.toggle('expanded');
+                });
             }
-        });
-        const exclusionLink = document.getElementById('exclusionLink');
-
-        if (exclusionLink) {
-            exclusionLink.addEventListener('click', function(event) {
-                // Check if the click originated from one of the buttons
-                // If so, let the default link behavior happen without toggling the box
-                if (event.target.closest('.hover-buttons-inside')) {
-                    return;
-                }
-                
-                // Toggle the 'expanded' class on the main hover-link
-                this.classList.toggle('expanded');
-            });
-        }
-        const pageLoader = document.getElementById('page-loader');
-        window.addEventListener('load', () => {
-            console.log('Window loaded. Hiding initial page loader.');
-            pageLoader.classList.add('fade-out'); // Start fading out the loader
-            pageLoader.addEventListener('transitionend', function handler() {
-                if (pageLoader.classList.contains('fade-out')) {
-                    pageLoader.style.display = 'none';
-                    pageLoader.removeEventListener('transitionend', handler);
-                }
-            });
-        });
-
-        // --- 2. Show loader when <a> links are clicked ---
-        const allLinks = document.querySelectorAll('a');
-        allLinks.forEach(link => {
-            link.addEventListener('click', (event) => {
-                if (
-                    link.hostname === window.location.hostname && // Same domain
-                    link.target !== '_blank' && // Not opening in a new tab
-                    link.href.indexOf('#') === -1 // Not an internal anchor link
-                ) {
-                    console.log('Link clicked. Showing loader.');
-                    pageLoader.style.display = 'flex'; // Ensure it's visible
-                    pageLoader.classList.remove('fade-out'); // Remove fade-out class
-                    pageLoader.style.opacity = '1'; // Ensure full visibility
-                }
-            });
-        });
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) {
-                pageLoader.classList.add('fade-out'); // Fade out
+            
+            const pageLoader = document.getElementById('page-loader');
+            window.addEventListener('load', () => {
+                pageLoader.classList.add('fade-out');
                 pageLoader.addEventListener('transitionend', function handler() {
                     if (pageLoader.classList.contains('fade-out')) {
                         pageLoader.style.display = 'none';
                         pageLoader.removeEventListener('transitionend', handler);
                     }
                 });
-            }
+            });
+    
+            const allLinks = document.querySelectorAll('a');
+            allLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    if (
+                        link.hostname === window.location.hostname &&
+                        link.target !== '_blank' &&
+                        link.href.indexOf('#') === -1
+                    ) {
+                        pageLoader.style.display = 'flex';
+                        pageLoader.classList.remove('fade-out');
+                        pageLoader.style.opacity = '1';
+                    }
+                });
+            });
+    
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    pageLoader.classList.add('fade-out');
+                    pageLoader.addEventListener('transitionend', function handler() {
+                        if (pageLoader.classList.contains('fade-out')) {
+                            pageLoader.style.display = 'none';
+                            pageLoader.removeEventListener('transitionend', handler);
+                        }
+                    });
+                }
+            });
         });
-    });
-
-</script>
-
-<script>
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login';
-    }
-
-    const contentArea = document.getElementById('content');
-
-    // --- Utility Functions ---
-    const clearContent = () => {
-        contentArea.innerHTML = '';
-    };
-
-    const showMessage = (text, type = 'error', container) => {
-        let msgDiv = container.querySelector('.message');
-        if (!msgDiv) {
-            msgDiv = document.createElement('div');
-            msgDiv.className = 'message';
-            container.appendChild(msgDiv);
+    </script>
+    
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
         }
-        msgDiv.textContent = text;
-        
-        // Remove existing type classes and add the new one
-        msgDiv.classList.remove('success', 'error', 'info');
-        msgDiv.classList.add(type);
-        msgDiv.classList.add('visible'); // Make sure it's visible
-
-        setTimeout(() => { 
-            msgDiv.classList.remove('visible'); // Fade out by removing 'visible'
-        }, 4000);
-    };
-
-    // --- Content Loaders ---
-
-    // Load and display list of buses
-    async function loadBuses() {
-        clearContent();
-        try {
-            const res = await fetch('/union/buses', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (!res.ok) throw new Error('Error fetching buses.');
-
-            const buses = await res.json();
-            contentArea.innerHTML = `<h3 class="content-area-title"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M11.9436 1.25H12.0564C13.8942 1.24998 15.3498 1.24997 16.489 1.40314C17.6614 1.56076 18.6104 1.89288 19.3588 2.64124C20.1071 3.38961 20.4392 4.33856 20.5969 5.51098C20.6996 6.27504 20.7334 7.18144 20.7445 8.25H21C21.9665 8.25 22.75 9.0335 22.75 10V11C22.75 11.5508 22.4907 12.0695 22.05 12.4L20.7475 13.3768C20.7402 14.6093 20.7113 15.6375 20.5969 16.489C20.4392 17.6614 20.1071 18.6104 19.3588 19.3588C19.1689 19.5486 18.9661 19.7117 18.75 19.852V21C18.75 21.9665 17.9665 22.75 17 22.75H15.5C14.5335 22.75 13.75 21.9665 13.75 21V20.7445C13.2253 20.75 12.6616 20.75 12.0564 20.75H11.9436C11.3384 20.75 10.7747 20.75 10.25 20.7445V21C10.25 21.9665 9.4665 22.75 8.5 22.75H7C6.0335 22.75 5.25 21.9665 5.25 21V19.852C5.03392 19.7117 4.83112 19.5486 4.64124 19.3588C3.89288 18.6104 3.56076 17.6614 3.40313 16.489C3.28866 15.6375 3.25975 14.6093 3.25246 13.3768L1.95 12.4C1.50934 12.0695 1.25 11.5508 1.25 11V10C1.25 9.0335 2.0335 8.25 3 8.25H3.25546C3.26659 7.18144 3.30041 6.27504 3.40313 5.51098C3.56076 4.33856 3.89288 3.38961 4.64124 2.64124C5.38961 1.89288 6.33855 1.56076 7.51098 1.40314C8.65019 1.24997 10.1058 1.24998 11.9436 1.25ZM3.25 9.75H3C2.86193 9.75 2.75 9.86193 2.75 10V11C2.75 11.0787 2.78705 11.1528 2.85 11.2L3.25 11.5L3.25 9.94359C3.25 9.87858 3.25 9.81405 3.25 9.75ZM4.75573 13.75C4.76662 14.7836 4.79821 15.6082 4.88976 16.2892C5.02502 17.2952 5.27869 17.8749 5.7019 18.2981C6.12511 18.7213 6.70476 18.975 7.71085 19.1102C8.73851 19.2484 10.0932 19.25 12 19.25C13.9068 19.25 15.2615 19.2484 16.2892 19.1102C17.2952 18.975 17.8749 18.7213 18.2981 18.2981C18.7213 17.8749 18.975 17.2952 19.1102 16.2892C19.2018 15.6082 19.2334 14.7836 19.2443 13.75H4.75573ZM19.25 12.25H4.75002C4.75 12.1677 4.75 12.0844 4.75 12V10C4.75 8.1173 4.75155 6.77287 4.88458 5.75H19.1154C19.2484 6.77287 19.25 8.1173 19.25 10V12C19.25 12.0844 19.25 12.1677 19.25 12.25ZM20.75 11.5L21.15 11.2C21.213 11.1528 21.25 11.0787 21.25 11V10C21.25 9.86193 21.1381 9.75 21 9.75H20.75C20.75 9.81405 20.75 9.87858 20.75 9.94359V11.5ZM18.701 4.25C18.5882 4.03672 18.4548 3.85859 18.2981 3.7019C17.8749 3.27869 17.2952 3.02502 16.2892 2.88976C15.2615 2.75159 13.9068 2.75 12 2.75C10.0932 2.75 8.73851 2.75159 7.71085 2.88976C6.70476 3.02502 6.12511 3.27869 5.7019 3.7019C5.54522 3.85859 5.41177 4.03672 5.29896 4.25H18.701ZM6.75 20.4605V21C6.75 21.1381 6.86193 21.25 7 21.25H8.5C8.63807 21.25 8.75 21.1381 8.75 21V20.7042C8.30066 20.6815 7.88845 20.6476 7.51098 20.5969C7.24599 20.5612 6.99242 20.5167 6.75 20.4605ZM15.25 20.7042V21C15.25 21.1381 15.3619 21.25 15.5 21.25H17C17.1381 21.25 17.25 21.1381 17.25 21V20.4605C17.0076 20.5167 16.754 20.5612 16.489 20.5969C16.1116 20.6476 15.6993 20.6815 15.25 20.7042ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM14.75 16C14.75 15.5858 15.0858 15.25 15.5 15.25H17C17.4142 15.25 17.75 15.5858 17.75 16C17.75 16.4142 17.4142 16.75 17 16.75H15.5C15.0858 16.75 14.75 16.4142 14.75 16Z" fill="currentColor"/>
-</svg>My Buses</h3>`;
-
-            if (buses.length === 0) {
-                contentArea.innerHTML += '<p class="content-area-text">No buses found. You can add one using the link above.</p>';
-                return;
-            }
-
-            const ul = document.createElement('ul');
-            ul.className = 'item-list'; 
-            buses.forEach(bus => {
-                const li = document.createElement('li');
-                li.className = 'list-item';
-                li.innerHTML = `
-                    <div class="list-item-content">
-                        <strong>${bus.name}</strong> <span class="bus-reg-no">(Reg: ${bus.registration_no})</span>
-                    </div>
-                    <button data-bus-id="${bus.id}" class="btn-primary-custom">View Trips</button>
-                `;
-                ul.appendChild(li);
-            });
-            contentArea.appendChild(ul);
-
-            contentArea.querySelectorAll('.btn-primary-custom').forEach(btn => {
-                btn.addEventListener('click', (e) => loadTrips(e.currentTarget.dataset.busId));
-            });
-        } catch (error) {
-            contentArea.innerHTML = `<p class="message error visible">${error.message}</p>`;
-        }
-    }
-
-    // Load trips for a given bus
-    async function loadTrips(busId) {
-        clearContent();
-        try {
-            const res = await fetch(`/union/buses/${busId}/trips`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (!res.ok) throw new Error('Error fetching trips.');
-
-            const trips = await res.json();
-            
-            contentArea.innerHTML = `
-                <div class="back-button-container">
-                    <button class="btn-secondary-custom" id="back-to-buses">Back</button>
-                </div>
-                <h3 class="content-area-title">Trips for Bus ${busId}</h3>`;
-
-            if (trips.length === 0) {
-                contentArea.innerHTML += '<p class="content-area-text">No trips found for this bus.</p>';
-                document.getElementById('back-to-buses').addEventListener('click', loadBuses);
-                return;
-            }
-
-            const ul = document.createElement('ul');
-            ul.className = 'item-list';
-            trips.forEach(trip => {
-                const li = document.createElement('li');
-                li.className = 'list-item';
-                li.innerHTML = `
-                    <div class="list-item-content">
-                        <strong>${trip.route_name}</strong> <span class="trip-details-separator">|</span> <span class="trip-details">${trip.direction}</span> <span class="trip-details-separator">|</span> Departs at <span class="trip-details-time">${trip.departure_time}</span>
-                    </div>
-                    <button data-trip-id="${trip.id}" class="btn-primary-custom">Edit</button>
-                `;
-                ul.appendChild(li);
-            });
-            contentArea.appendChild(ul);
-            
-            document.getElementById('back-to-buses').addEventListener('click', loadBuses);
-            contentArea.querySelectorAll('.btn-primary-custom').forEach(btn => {
-                btn.addEventListener('click', (e) => loadTripDetail(e.currentTarget.dataset.tripId));
-            });
-
-        } catch (error) {
-            contentArea.innerHTML = `<p class="message error visible">${error.message}</p>`;
-        }
-    }
-
-    // Load trip details and render the edit form
-    async function loadTripDetail(tripId) {
-        clearContent();
-        try {
-            const res = await fetch(`/union/trips/${tripId}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (!res.ok) throw new Error('Error fetching trip details.');
-            
-            const trip = await res.json();
-
-            // Form structure using template literals for readability
-            contentArea.innerHTML = `
-                <div class="back-button-container">
-                    <button class="btn-secondary-custom" id="back-to-buses-from-edit">← Back to Buses</button>
-                </div>
-                <h3 class="content-area-title">Edit Trip: ${trip.route_name} (${trip.direction})</h3>
-                <form id="edit-trip-form" class="form-container">
-                    <div class="form-grid">
-                        <div>
-                            <label class="form-label">Route Name</label>
-                            <input type="text" class="form-input-custom" value="${trip.route_name}" readonly />
-                        </div>
-                        <div>
-                            <label class="form-label">Direction</label>
-                            <input type="text" class="form-input-custom" value="${trip.direction}" readonly />
-                        </div>
-                        <div>
-                            <label for="edit-departure-time" class="form-label">Departure Time</label>
-                            <input type="time" id="edit-departure-time" name="departure_time" class="form-input-custom" value="${trip.departure_time}" required />
-                        </div>
-                    </div>
-                    
-                    <h4 class="form-section-title">Service Days</h4>
-                    <div class="service-days-grid" id="service-days-container"></div>
-                    
-                    <h4 class="form-section-title">Stops</h4>
-                    <div class="stops-container" id="stops-container"></div>
-                    
-                    <div class="button-container-end">
-                        <button type="submit" class="btn-primary-custom">Save Changes</button>
-                    </div>
-                    <div id="message" class="message"></div>
-                </form>
-            `;
-
-            // Populate Service Days
-            const serviceDaysContainer = contentArea.querySelector('#service-days-container');
-            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-            weekdays.forEach(day => {
-                const checked = trip.service_days.some(sd => sd.weekday === day) ? 'checked' : '';
-                const label = document.createElement('label');
-                label.className = 'service-day-label';
-                label.innerHTML = `
-                    <input type="checkbox" name="service_days" class="form-checkbox-custom" value="${day}" ${checked}>
-                    <span>${day.charAt(0).toUpperCase() + day.slice(1)}</span>`;
-                serviceDaysContainer.appendChild(label);
-            });
-
-            // Populate Stops
-            const stopsContainer = contentArea.querySelector('#stops-container');
-            trip.stop_times.sort((a,b) => a.sequence - b.sequence).forEach(st => {
-                const stopLabel = st.stop_name ? `<strong class="stop-name">${st.stop_name}</strong> <span class="stop-id">(ID: ${st.stop_id})</span>` : `Stop ID: <span class="stop-id">${st.stop_id}</span>`;
-                const div = document.createElement('div');
-                div.className = 'stop-entry';
-                div.innerHTML = `
-                    <input type="hidden" name="stop_id" value="${st.stop_id}">
-                    <input type="hidden" name="sequence" value="${st.sequence}">
-                    <div class="stop-entry-content">${st.sequence}. ${stopLabel}</div>
-                    <div>
-                        <label class="form-label">Arrival Time</label>
-                        <input type="time" name="arrival_time" class="form-input-custom" value="${st.arrival_time}" required>
-                    </div>
-                `;
-                stopsContainer.appendChild(div);
-            });
-
-            // Add event listeners
-            document.getElementById('back-to-buses-from-edit').addEventListener('click', loadBuses);
-            contentArea.querySelector('#edit-trip-form').addEventListener('submit', (e) => handleFormSubmit(e, tripId));
-
-        } catch (error) {
-            contentArea.innerHTML = `<p class="message error visible">${error.message}</p>`;
-        }
-    }
-
-    // Handle the edit form submission
-    async function handleFormSubmit(e, tripId) {
-        e.preventDefault();
-        const form = e.target;
-        const msgDiv = form.querySelector('#message');
-        showMessage('Saving...', 'info', form);
-        
-        const payload = {
-            departure_time: form.querySelector('input[name="departure_time"]').value,
-            service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: cb.value })),
-            stop_times: Array.from(form.querySelectorAll('.stop-entry')).map(div => ({
-                stop_id: parseInt(div.querySelector('input[name="stop_id"]').value),
-                arrival_time: div.querySelector('input[name="arrival_time"]').value,
-                sequence: parseInt(div.querySelector('input[name="sequence"]').value)
-            }))
+    
+        const contentLoader = document.getElementById('content-loader');
+        const dynamicContent = document.getElementById('dynamic-content'); // Main container for dynamic content
+    
+        // --- Utility Functions ---
+        const clearContent = () => {
+            dynamicContent.innerHTML = '';
         };
-        
-        try {
-            const resPut = await fetch(`/union/trips/${tripId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify(payload)
-            });
-
-            if (resPut.ok) {
-                showMessage('Trip updated successfully.', 'success', form);
-                setTimeout(loadBuses, 1500);
-            } else {
-                const err = await resPut.json().catch(() => ({ detail: 'Unknown error' }));
-                throw new Error(JSON.stringify(err.detail || err));
+    
+        const showMessage = (text, type = 'error', container) => {
+            let msgDiv = container.querySelector('.message');
+            if (!msgDiv) {
+                msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                container.appendChild(msgDiv);
             }
-        } catch (error) {
-            showMessage(`Error: ${error.message}`, 'error', form);
+            msgDiv.textContent = text;
+            msgDiv.classList.remove('success', 'error', 'info');
+            msgDiv.classList.add(type, 'visible');
+            setTimeout(() => { 
+                msgDiv.classList.remove('visible');
+            }, 4000);
+        };
+    
+        // --- Content Loaders ---
+    
+        // Load and display list of buses
+        async function loadBuses() {
+            clearContent();
+            contentLoader.style.display = 'flex'; // Show loader
+    
+            try {
+                const res = await fetch('/union/buses', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Error fetching buses.');
+    
+                const buses = await res.json();
+                
+                let html = `<h3 class="content-area-title"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9436 1.25H12.0564C13.8942 1.24998 15.3498 1.24997 16.489 1.40314C17.6614 1.56076 18.6104 1.89288 19.3588 2.64124C20.1071 3.38961 20.4392 4.33856 20.5969 5.51098C20.6996 6.27504 20.7334 7.18144 20.7445 8.25H21C21.9665 8.25 22.75 9.0335 22.75 10V11C22.75 11.5508 22.4907 12.0695 22.05 12.4L20.7475 13.3768C20.7402 14.6093 20.7113 15.6375 20.5969 16.489C20.4392 17.6614 20.1071 18.6104 19.3588 19.3588C19.1689 19.5486 18.9661 19.7117 18.75 19.852V21C18.75 21.9665 17.9665 22.75 17 22.75H15.5C14.5335 22.75 13.75 21.9665 13.75 21V20.7445C13.2253 20.75 12.6616 20.75 12.0564 20.75H11.9436C11.3384 20.75 10.7747 20.75 10.25 20.7445V21C10.25 21.9665 9.4665 22.75 8.5 22.75H7C6.0335 22.75 5.25 21.9665 5.25 21V19.852C5.03392 19.7117 4.83112 19.5486 4.64124 19.3588C3.89288 18.6104 3.56076 17.6614 3.40313 16.489C3.28866 15.6375 3.25975 14.6093 3.25246 13.3768L1.95 12.4C1.50934 12.0695 1.25 11.5508 1.25 11V10C1.25 9.0335 2.0335 8.25 3 8.25H3.25546C3.26659 7.18144 3.30041 6.27504 3.40313 5.51098C3.56076 4.33856 3.89288 3.38961 4.64124 2.64124C5.38961 1.89288 6.33855 1.56076 7.51098 1.40314C8.65019 1.24997 10.1058 1.24998 11.9436 1.25ZM3.25 9.75H3C2.86193 9.75 2.75 9.86193 2.75 10V11C2.75 11.0787 2.78705 11.1528 2.85 11.2L3.25 11.5L3.25 9.94359C3.25 9.87858 3.25 9.81405 3.25 9.75ZM4.75573 13.75C4.76662 14.7836 4.79821 15.6082 4.88976 16.2892C5.02502 17.2952 5.27869 17.8749 5.7019 18.2981C6.12511 18.7213 6.70476 18.975 7.71085 19.1102C8.73851 19.2484 10.0932 19.25 12 19.25C13.9068 19.25 15.2615 19.2484 16.2892 19.1102C17.2952 18.975 17.8749 18.7213 18.2981 18.2981C18.7213 17.8749 18.975 17.2952 19.1102 16.2892C19.2018 15.6082 19.2334 14.7836 19.2443 13.75H4.75573ZM19.25 12.25H4.75002C4.75 12.1677 4.75 12.0844 4.75 12V10C4.75 8.1173 4.75155 6.77287 4.88458 5.75H19.1154C19.2484 6.77287 19.25 8.1173 19.25 10V12C19.25 12.0844 19.25 12.1677 19.25 12.25ZM20.75 11.5L21.15 11.2C21.213 11.1528 21.25 11.0787 21.25 11V10C21.25 9.86193 21.1381 9.75 21 9.75H20.75C20.75 9.81405 20.75 9.87858 20.75 9.94359V11.5ZM18.701 4.25C18.5882 4.03672 18.4548 3.85859 18.2981 3.7019C17.8749 3.27869 17.2952 3.02502 16.2892 2.88976C15.2615 2.75159 13.9068 2.75 12 2.75C10.0932 2.75 8.73851 2.75159 7.71085 2.88976C6.70476 3.02502 6.12511 3.27869 5.7019 3.7019C5.54522 3.85859 5.41177 4.03672 5.29896 4.25H18.701ZM6.75 20.4605V21C6.75 21.1381 6.86193 21.25 7 21.25H8.5C8.63807 21.25 8.75 21.1381 8.75 21V20.7042C8.30066 20.6815 7.88845 20.6476 7.51098 20.5969C7.24599 20.5612 6.99242 20.5167 6.75 20.4605ZM15.25 20.7042V21C15.25 21.1381 15.3619 21.25 15.5 21.25H17C17.1381 21.25 17.25 21.1381 17.25 21V20.4605C17.0076 20.5167 16.754 20.5612 16.489 20.5969C16.1116 20.6476 15.6993 20.6815 15.25 20.7042ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM14.75 16C14.75 15.5858 15.0858 15.25 15.5 15.25H17C17.4142 15.25 17.75 15.5858 17.75 16C17.75 16.4142 17.4142 16.75 17 16.75H15.5C15.0858 16.75 14.75 16.4142 14.75 16Z" fill="currentColor"/>
+    </svg>My Buses</h3>`;
+                dynamicContent.innerHTML = html;
+    
+                if (buses.length === 0) {
+                    dynamicContent.innerHTML += '<p class="content-area-text">No buses found. You can add one using the link above.</p>';
+                    return;
+                }
+    
+                const ul = document.createElement('ul');
+                ul.className = 'item-list'; 
+                buses.forEach(bus => {
+                    const li = document.createElement('li');
+                    li.className = 'list-item';
+                    li.innerHTML = `
+                        <div class="list-item-content">
+                            <strong>${bus.name}</strong> <span class="bus-reg-no">(Reg: ${bus.registration_no})</span>
+                        </div>
+                        <button data-bus-id="${bus.id}" class="btn-primary-custom">View Trips</button>
+                    `;
+                    ul.appendChild(li);
+                });
+                dynamicContent.appendChild(ul);
+    
+                dynamicContent.querySelectorAll('.btn-primary-custom').forEach(btn => {
+                    btn.addEventListener('click', (e) => loadTrips(e.currentTarget.dataset.busId));
+                });
+            } catch (error) {
+                dynamicContent.innerHTML = `<p class="message error visible">${error.message}</p>`;
+            } finally {
+                contentLoader.style.display = 'none'; // Hide loader
+            }
         }
-    }
-
-
-    // --- Initial Event Listeners ---
-    function initializeBusListing() {
-        // Remove 'active' class from all navigation links
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-
-        // Load the buses
-        loadBuses();
-    }
-    document.addEventListener('DOMContentLoaded', initializeBusListing);
-</script>
-{% endblock %}
+    
+        // Load trips for a given bus
+        async function loadTrips(busId) {
+            clearContent();
+            contentLoader.style.display = 'flex'; // Show loader
+    
+            try {
+                const res = await fetch(`/union/buses/${busId}/trips`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Error fetching trips.');
+    
+                const trips = await res.json();
+                
+                let html = `
+                    <div class="back-button-container">
+                        <button class="btn-secondary-custom" id="back-to-buses">Back</button>
+                    </div>
+                    <h3 class="content-area-title">Trips for Bus ${busId}</h3>`;
+                dynamicContent.innerHTML = html;
+    
+                if (trips.length === 0) {
+                    dynamicContent.innerHTML += '<p class="content-area-text">No trips found for this bus.</p>';
+                    document.getElementById('back-to-buses').addEventListener('click', loadBuses);
+                    return;
+                }
+    
+                const ul = document.createElement('ul');
+                ul.className = 'item-list';
+                trips.forEach(trip => {
+                    const li = document.createElement('li');
+                    li.className = 'list-item';
+                    li.innerHTML = `
+                        <div class="list-item-content">
+                            <strong>${trip.route_name}</strong> <span class="trip-details-separator">|</span> <span class="trip-details">${trip.direction}</span> <span class="trip-details-separator">|</span> Departs at <span class="trip-details-time">${trip.departure_time}</span>
+                        </div>
+                        <button data-trip-id="${trip.id}" class="btn-primary-custom">Edit</button>
+                    `;
+                    ul.appendChild(li);
+                });
+                dynamicContent.appendChild(ul);
+                
+                document.getElementById('back-to-buses').addEventListener('click', loadBuses);
+                dynamicContent.querySelectorAll('.btn-primary-custom').forEach(btn => {
+                    btn.addEventListener('click', (e) => loadTripDetail(e.currentTarget.dataset.tripId));
+                });
+    
+            } catch (error) {
+                dynamicContent.innerHTML = `<p class="message error visible">${error.message}</p>`;
+            } finally {
+                contentLoader.style.display = 'none'; // Hide loader
+            }
+        }
+    
+        // Load trip details and render the edit form
+        async function loadTripDetail(tripId) {
+            clearContent();
+            contentLoader.style.display = 'flex'; // Show loader
+    
+            try {
+                const res = await fetch(`/union/trips/${tripId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Error fetching trip details.');
+                
+                const trip = await res.json();
+    
+                dynamicContent.innerHTML = `
+                    <div class="back-button-container">
+                        <button class="btn-secondary-custom" id="back-to-buses-from-edit">← Back to Buses</button>
+                    </div>
+                    <h3 class="content-area-title">Edit Trip: ${trip.route_name} (${trip.direction})</h3>
+                    <form id="edit-trip-form" class="form-container">
+                        <div class="form-grid">
+                            <div>
+                                <label class="form-label">Route Name</label>
+                                <input type="text" class="form-input-custom" value="${trip.route_name}" readonly />
+                            </div>
+                            <div>
+                                <label class="form-label">Direction</label>
+                                <input type="text" class="form-input-custom" value="${trip.direction}" readonly />
+                            </div>
+                            <div>
+                                <label for="edit-departure-time" class="form-label">Departure Time</label>
+                                <input type="time" id="edit-departure-time" name="departure_time" class="form-input-custom" value="${trip.departure_time}" required />
+                            </div>
+                        </div>
+                        
+                        <h4 class="form-section-title">Service Days</h4>
+                        <div class="service-days-grid" id="service-days-container"></div>
+                        
+                        <h4 class="form-section-title">Stops</h4>
+                        <div class="stops-container" id="stops-container"></div>
+                        
+                        <div class="button-container-end">
+                            <button type="submit" class="btn-primary-custom">Save Changes</button>
+                        </div>
+                        <div id="message" class="message"></div>
+                    </form>
+                `;
+    
+                // Populate Service Days
+                const serviceDaysContainer = dynamicContent.querySelector('#service-days-container');
+                const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                weekdays.forEach(day => {
+                    const checked = trip.service_days.some(sd => sd.weekday === day) ? 'checked' : '';
+                    const label = document.createElement('label');
+                    label.className = 'service-day-label';
+                    label.innerHTML = `
+                        <input type="checkbox" name="service_days" class="form-checkbox-custom" value="${day}" ${checked}>
+                        <span>${day.charAt(0).toUpperCase() + day.slice(1)}</span>`;
+                    serviceDaysContainer.appendChild(label);
+                });
+    
+                // Populate Stops
+                const stopsContainer = dynamicContent.querySelector('#stops-container');
+                trip.stop_times.sort((a,b) => a.sequence - b.sequence).forEach(st => {
+                    const stopLabel = st.stop_name ? `<strong class="stop-name">${st.stop_name}</strong> <span class="stop-id">(ID: ${st.stop_id})</span>` : `Stop ID: <span class="stop-id">${st.stop_id}</span>`;
+                    const div = document.createElement('div');
+                    div.className = 'stop-entry';
+                    div.innerHTML = `
+                        <input type="hidden" name="stop_id" value="${st.stop_id}">
+                        <input type="hidden" name="sequence" value="${st.sequence}">
+                        <div class="stop-entry-content">${st.sequence}. ${stopLabel}</div>
+                        <div>
+                            <label class="form-label">Arrival Time</label>
+                            <input type="time" name="arrival_time" class="form-input-custom" value="${st.arrival_time}" required>
+                        </div>
+                    `;
+                    stopsContainer.appendChild(div);
+                });
+    
+                // Add event listeners
+                document.getElementById('back-to-buses-from-edit').addEventListener('click', loadBuses);
+                dynamicContent.querySelector('#edit-trip-form').addEventListener('submit', (e) => handleFormSubmit(e, tripId));
+    
+            } catch (error) {
+                dynamicContent.innerHTML = `<p class="message error visible">${error.message}</p>`;
+            } finally {
+                contentLoader.style.display = 'none'; // Hide loader
+            }
+        }
+    
+        // Handle the edit form submission
+        async function handleFormSubmit(e, tripId) {
+            e.preventDefault();
+            const form = e.target;
+            const msgDiv = form.querySelector('#message');
+            showMessage('Saving...', 'info', form);
+            
+            const payload = {
+                departure_time: form.querySelector('input[name="departure_time"]').value,
+                service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: cb.value })),
+                stop_times: Array.from(form.querySelectorAll('.stop-entry')).map(div => ({
+                    stop_id: parseInt(div.querySelector('input[name="stop_id"]').value),
+                    arrival_time: div.querySelector('input[name="arrival_time"]').value,
+                    sequence: parseInt(div.querySelector('input[name="sequence"]').value)
+                }))
+            };
+            
+            try {
+                const resPut = await fetch(`/union/trips/${tripId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(payload)
+                });
+    
+                if (resPut.ok) {
+                    showMessage('Trip updated successfully.', 'success', form);
+                    setTimeout(loadBuses, 1500);
+                } else {
+                    const err = await resPut.json().catch(() => ({ detail: 'Unknown error' }));
+                    throw new Error(JSON.stringify(err.detail || err));
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error', form);
+            }
+        }
+    
+        // --- Initial Event Listeners ---
+        function initializeBusListing() {
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            loadBuses();
+        }
+        document.addEventListener('DOMContentLoaded', initializeBusListing);
+    </script>
+    {% endblock %}
