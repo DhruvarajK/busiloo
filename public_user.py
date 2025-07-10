@@ -141,104 +141,205 @@ def current_trip_page(request: Request, bus_id: int, bus_name: str):
 
 
 logger = logging.getLogger(__name__)
-@router.get("/api/find_route_results", response_model=list[schemas.RouteResult])
+
+
+
+MIN_TRANSFER_MINUTES = 5
+
+@router.get("/api/find_route_results", response_model=schemas.CombinedRouteResponse)
 def api_find_route_results(
     start_stop_id: int = Query(..., description="Starting stop ID"),
     end_stop_id: int = Query(..., description="Ending stop ID"),
     db: Session = Depends(database.get_db)
 ):
     """
-    Return all upcoming buses that:
-      - stop at start_stop_id at a time > now
-      - later stop at end_stop_id (sequence greater)
-      - run today (ServiceDay matches weekday), active bus, not excluded today.
+    Finds bus routes, prioritizing direct routes. If no direct routes are
+    available, it searches for routes with one transfer using a robust
+    Python-based connection logic.
     """
-    try:
-        now_dt = datetime.now(ZoneInfo("Asia/Kolkata"))
-        now_time = now_dt.time()
-        today_weekday = now_dt.weekday()  # 0=Monday ... 6=Sunday
-        weekday_enum = models.Weekday(today_weekday)
-        today_date = date.today()
-    except Exception:
-        logger.exception("Error determining current datetime/weekday")
-        raise HTTPException(status_code=500, detail="Error determining current datetime")
+    # --- Setup: Time and Date ---
+    # Get the current time in the correct timezone
+    now_dt = datetime.now(ZoneInfo("Asia/Kolkata"))
+    now_time = now_dt.time()
+    today_weekday = models.Weekday(now_dt.weekday())
+    today_date = now_dt.date()
 
-    st_start = aliased(models.StopTime)
-    st_end = aliased(models.StopTime)
-
-    # Base: trips that include both stops in correct order
-    base_q = (
-        db.query(
-            models.Trip.id.label("trip_id"),
-            models.Trip.route_name.label("route_name"),
-            models.Trip.direction.label("direction"),
-            st_start.sequence.label("start_seq"),
-            st_end.sequence.label("end_seq"),
-            st_start.arrival_time.label("start_time"),
-            st_end.arrival_time.label("end_time"),
-            models.Bus.id.label("bus_id"),
-            models.Bus.name.label("bus_name"),
-        )
-        .join(st_start, st_start.trip_id == models.Trip.id)
-        .join(st_end, st_end.trip_id == models.Trip.id)
+    # --- 1. First, try to find a direct route (Existing logic) ---
+    st_start_direct = aliased(models.StopTime)
+    st_end_direct = aliased(models.StopTime)
+    
+    direct_query = (
+        db.query(models.Trip, models.Bus, st_start_direct.arrival_time, st_end_direct.arrival_time)
         .join(models.Bus, models.Bus.id == models.Trip.bus_id)
+        .join(st_start_direct, st_start_direct.trip_id == models.Trip.id)
+        .join(st_end_direct, st_end_direct.trip_id == models.Trip.id)
         .join(models.ServiceDay, models.ServiceDay.trip_id == models.Trip.id)
         .filter(
-            st_start.stop_id == start_stop_id,
-            st_end.stop_id == end_stop_id,
-            st_start.sequence < st_end.sequence,
-        )
-    )
-
-    # Exclusion subquery: exclude trips with an exclusion record for today
-    ex_subq = select(models.Exclusion.id).where(
-        and_(
-            models.Exclusion.trip_id == models.Trip.id,
-            models.Exclusion.date == today_date
-        )
-    )
-
-    # Apply filters: active bus, correct weekday, upcoming at start_stop, no exclusion
-    filtered_q = (
-        base_q.filter(
+            st_start_direct.stop_id == start_stop_id,
+            st_end_direct.stop_id == end_stop_id,
+            st_start_direct.sequence < st_end_direct.sequence,
+            st_start_direct.arrival_time > now_time,
             models.Bus.is_active == True,
-            models.ServiceDay.weekday == weekday_enum,
-            st_start.arrival_time > now_time,   # strictly later than now; change to >= if inclusive
-            ~exists(ex_subq)
+            models.ServiceDay.weekday == today_weekday,
+            ~models.Trip.exclusions.any(models.Exclusion.date == today_date)
         )
-        .order_by(st_start.arrival_time)
+        .order_by(st_start_direct.arrival_time)
     )
+    
+    direct_results = direct_query.all()
 
-    try:
-        rows = filtered_q.all()
-    except Exception:
-        logger.exception("Error executing query for route results")
-        raise HTTPException(status_code=500, detail="Internal error finding routes")
-
-    logger.debug(
-        "api_find_route_results: found %d upcoming trips from stop %s to %s after %s",
-        len(rows), start_stop_id, end_stop_id, now_time
-    )
-    for r in rows:
-        logger.debug(
-            "  trip_id=%s route=%s dir=%s start_time=%s end_time=%s bus_id=%s bus_name=%s",
-            r.trip_id, r.route_name, r.direction, r.start_time, r.end_time, r.bus_id, r.bus_name
-        )
-
-    results: list[schemas.RouteResult] = []
-    for r in rows:
-        results.append(
+    if direct_results:
+        results_data = [
             schemas.RouteResult(
-                bus_id=r.bus_id,
-                bus_name=r.bus_name,
-                route_name=r.route_name,
-                direction=r.direction,
-                start_arrival=r.start_time,
-                end_arrival=r.end_time
-            )
-        )
+                bus_id=trip.bus.id, bus_name=trip.bus.name, route_name=trip.route_name,
+                direction=trip.direction, start_arrival=start_time, end_arrival=end_time
+            ) for trip, bus, start_time, end_time in direct_results
+        ]
+        return schemas.CombinedRouteResponse(type="direct", results=results_data)
 
-    return results
+    # --- 2. If no direct routes, search for transfer routes (Updated Logic) ---
+    
+    # Get names for start and end stops for the response schema
+    start_stop = db.query(models.Stop).filter(models.Stop.id == start_stop_id).first()
+    end_stop = db.query(models.Stop).filter(models.Stop.id == end_stop_id).first()
+    if not start_stop or not end_stop:
+        return schemas.CombinedRouteResponse(type="none", results=None)
+
+    # STEP A: Find all possible first legs departing from the start stop
+    outbound_trips = {}
+    st_start = aliased(models.StopTime)
+    
+    possible_first_leg_trips = (
+        db.query(models.Trip, st_start.arrival_time, st_start.sequence)
+        .join(models.Bus, models.Bus.id == models.Trip.bus_id)
+        .join(models.ServiceDay, models.ServiceDay.trip_id == models.Trip.id)
+        .join(st_start, st_start.trip_id == models.Trip.id)
+        .filter(
+            st_start.stop_id == start_stop_id,
+            st_start.arrival_time > now_time,
+            models.Bus.is_active == True,
+            models.ServiceDay.weekday == today_weekday,
+            ~models.Trip.exclusions.any(models.Exclusion.date == today_date)
+        ).all()
+    )
+
+    for trip, start_time, start_seq in possible_first_leg_trips:
+        subsequent_stops = (
+            db.query(models.StopTime)
+            .filter(models.StopTime.trip_id == trip.id, models.StopTime.sequence > start_seq)
+            .all()
+        )
+        outbound_trips[trip.id] = {
+            "trip": trip,
+            "start_time": start_time,
+            "transfers": {st.stop_id: st.arrival_time for st in subsequent_stops}
+        }
+
+    # STEP B: Find all possible second legs arriving at the end stop
+    inbound_trips = {}
+    st_end = aliased(models.StopTime)
+    
+    possible_second_leg_trips = (
+        db.query(models.Trip, st_end.arrival_time, st_end.sequence)
+        .join(models.Bus, models.Bus.id == models.Trip.bus_id)
+        .join(models.ServiceDay, models.ServiceDay.trip_id == models.Trip.id)
+        .join(st_end, st_end.trip_id == models.Trip.id)
+        .filter(
+            st_end.stop_id == end_stop_id,
+            models.Bus.is_active == True,
+            models.ServiceDay.weekday == today_weekday,
+            ~models.Trip.exclusions.any(models.Exclusion.date == today_date)
+        ).all()
+    )
+    
+    for trip, end_time, end_seq in possible_second_leg_trips:
+        preceding_stops = (
+            db.query(models.StopTime)
+            .filter(models.StopTime.trip_id == trip.id, models.StopTime.sequence < end_seq)
+            .all()
+        )
+        inbound_trips[trip.id] = {
+            "trip": trip,
+            "end_time": end_time,
+            "origins": {st.stop_id: st.arrival_time for st in preceding_stops}
+        }
+    
+    # STEP C: Connect the legs in Python
+    valid_transfers = []
+    min_transfer_delta = timedelta(minutes=MIN_TRANSFER_MINUTES)
+    today = date.today()
+
+    for trip1_id, leg1_data in outbound_trips.items():
+        for transfer_stop_id, leg1_arrival_time in leg1_data["transfers"].items():
+            for trip2_id, leg2_data in inbound_trips.items():
+                if trip1_id == trip2_id: continue
+
+                if transfer_stop_id in leg2_data["origins"]:
+                    leg2_departure_time = leg2_data["origins"][transfer_stop_id]
+                    
+                    arrival_dt = datetime.combine(today, leg1_arrival_time)
+                    departure_dt = datetime.combine(today, leg2_departure_time)
+                    
+                    # The transfer bus must depart AFTER the first bus arrives (+ buffer).
+                    # The departure time of the second leg must also be after the current time.
+                    if departure_dt > datetime.combine(today, now_time) and departure_dt >= arrival_dt + min_transfer_delta:
+                        valid_transfers.append({
+                            "leg1_trip": leg1_data["trip"],
+                            "leg2_trip": leg2_data["trip"],
+                            "leg1_start_time": leg1_data["start_time"],
+                            "leg1_arrival_at_transfer": leg1_arrival_time,
+                            "leg2_departure_from_transfer": leg2_departure_time,
+                            "leg2_end_time": leg2_data["end_time"],
+                            "transfer_stop_id": transfer_stop_id
+                        })
+
+    if valid_transfers:
+        # Sort results by final arrival time
+        valid_transfers.sort(key=lambda x: x["leg2_end_time"])
+
+        results_data = []
+        all_transfer_stop_ids = {vt['transfer_stop_id'] for vt in valid_transfers}
+        transfer_stops_map = {s.id: s for s in db.query(models.Stop).filter(models.Stop.id.in_(all_transfer_stop_ids))}
+
+        for vt in valid_transfers[:5]: # Limit to the best 5 results
+            t1 = vt["leg1_trip"]
+            t2 = vt["leg2_trip"]
+            transfer_stop = transfer_stops_map.get(vt["transfer_stop_id"])
+            
+            wait_delta = datetime.combine(today, vt["leg2_departure_from_transfer"]) - datetime.combine(today, vt["leg1_arrival_at_transfer"])
+            
+            leg1 = schemas.TransferLeg(
+                bus_id=t1.bus.id, # <-- ADDED
+                bus_name=t1.bus.name, 
+                route_name=t1.route_name, 
+                direction=t1.direction,
+                start_stop_name=start_stop.name, 
+                end_stop_name=transfer_stop.name,
+                departure_time=vt["leg1_start_time"], 
+                arrival_time=vt["leg1_arrival_at_transfer"]
+            )
+            leg2 = schemas.TransferLeg(
+                bus_id=t2.bus.id, # <-- ADDED
+                bus_name=t2.bus.name, 
+                route_name=t2.route_name, 
+                direction=t2.direction,
+                start_stop_name=transfer_stop.name, 
+                end_stop_name=end_stop.name,
+                departure_time=vt["leg2_departure_from_transfer"], 
+                arrival_time=vt["leg2_end_time"]
+            )
+            results_data.append(schemas.TransferRouteResult(
+                first_leg=leg1, 
+                second_leg=leg2,
+                transfer_at_stop_name=transfer_stop.name,
+                transfer_wait_time=f"{int(wait_delta.total_seconds() // 60)} min"
+            ))
+            
+        return schemas.CombinedRouteResponse(type="transfer", results=results_data)
+
+    # --- 3. If no routes found at all ---
+    return schemas.CombinedRouteResponse(type="none", results=None)
+
 
 
 @router.post("/api/bus/{bus_id}/submit_crowd", response_model=schemas.CrowdSubmissionOut)
@@ -364,7 +465,7 @@ def crowd_prediction(bus_id: int, db: Session = Depends(database.get_db)):
             return schemas.CrowdPredictionOut(
                 bus_id=bus_id,
                 predicted_level=None,
-                description="Insufficient historical data",
+                description="Have a nice Day",
                 based_on_count=count,
                 recommended_action=None
             )
