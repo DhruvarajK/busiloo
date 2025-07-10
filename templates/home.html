@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+
         /* --- App Theme & Variables --- */
         :root {
             --primary-color: #D32F2F; /* Bold Red */
@@ -31,6 +32,208 @@
             background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
             color: var(--text-primary);
         }
+
+        /* Hidden Utility Class */
+.hidden {
+    display: none !important;
+}
+
+/* --- Options List View --- */
+#options-container h3 {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 16px;
+    margin: 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.route-option {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.route-option:hover {
+    background-color: #f0f0f0;
+}
+
+.route-option:last-child {
+    border-bottom: none;
+}
+
+.route-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.route-summary .time {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.route-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.route-icons .icon {
+    width: 20px;
+    height: 20px;
+    color: #5f6368;
+}
+
+.route-icons .chevron-right {
+    width: 16px;
+    height: 16px;
+    color: #5f6368;
+}
+
+.route-details-summary {
+    font-size: 13px;
+    color: #5f6368;
+
+}
+
+/* --- Detailed Route View --- */
+#details-header {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#back-btn svg {
+    width: 24px;
+    height: 24px;
+    color: #5f6368;
+}
+
+#details-header h4 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    margin-left: 16px;
+}
+
+.timeline {
+    padding: 0 16px;
+}
+
+.timeline-item {
+    display: flex;
+    position: relative;
+    padding: 16px 0;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 38px;
+    width: 2px;
+    height: calc(100% - 24px);
+    background-color: #e0e0e0;
+}
+
+.timeline-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #dfdfdf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    z-index: 1;
+}
+
+.timeline-icon svg {
+    width: 16px;
+    height: 16px;
+    color: #5f6368;
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-content p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.timeline-content p strong {
+    font-weight: 500;
+}
+
+#details-back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#details-back-btn svg {
+    width: 24px;
+    height: 24px;
+    color: #5f6368;
+}
+
+.bus-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.bus-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #d32f2f; /* Bus color */
+}
+
+.view-trip-btn {
+    font-size: 12px;
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.transfer-info, .destination-info {
+    font-size: 14px;
+    padding: 4px 0;
+}
+
+.wait-details {
+    font-size: 13px;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+.wait-details svg {
+    width: 14px;
+    height: 14px;
+}
         #page-loader {
             position: fixed; /* Covers the entire viewport */
             top: 0;
@@ -294,6 +497,7 @@
             transition: background-color 0.2s;
         }
         .results-overlay .view-trip-btn:hover { background-color: var(--primary-dark); }
+    
     </style>
 </head>
 <body>
@@ -442,12 +646,15 @@
             </button>
             <h2>Available Buses</h2>
         </div>
-        <div class="results-content" id="results-content"></div>
+        <div class="results-content" id="results-content">
+            
+        </div>
+        <div id="details-container" class="hidden"></div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-
+    
             const pageLoader = document.getElementById('page-loader');
             window.addEventListener('load', () => {
                 console.log('Window loaded. Hiding initial page loader.');
@@ -459,7 +666,7 @@
                     }
                 });
             });
-
+    
             // --- 2. Show loader when <a> links are clicked ---
             const allLinks = document.querySelectorAll('a');
             allLinks.forEach(link => {
@@ -487,13 +694,13 @@
                     });
                 }
             });
-
+    
             // --- TIME & DATE LOGIC ---
             const currentTimeElem = document.getElementById('current-time');
             const journeyDateElem = document.getElementById('journey-date');
             const timeToggleBtn = document.getElementById('time-toggle-btn');
             let is24Hour = false; // Default to 12-hour format
-
+    
             function formatTime(dateOrString) {
                 let date;
                 if (typeof dateOrString === 'string') {
@@ -510,17 +717,17 @@
             }
             
             function updateCurrentTime() {
-                 const now = new Date();
-                 const options = {
+                const now = new Date();
+                const options = {
                     timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
                     hour: 'numeric', minute: '2-digit', hour12: !is24Hour
-                 };
-                 currentTimeElem.textContent = new Intl.DateTimeFormat('en-US', options).format(now).replace(' at', ',');
+                };
+                currentTimeElem.textContent = new Intl.DateTimeFormat('en-US', options).format(now).replace(' at', ',');
             }
             
             function setJourneyDate() {
-                 const today = new Date();
-                 journeyDateElem.value = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const today = new Date();
+                journeyDateElem.value = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             }
             
             timeToggleBtn.addEventListener('click', () => {
@@ -533,19 +740,19 @@
                     el.textContent = formatTime(el.getAttribute('data-time'));
                 });
             });
-
+    
             setInterval(updateCurrentTime, 60000); // Update every minute
             updateCurrentTime();
             setJourneyDate();
-
+    
             // --- OVERLAY LOGIC ---
             const searchOverlay = document.getElementById('search-overlay');
             const overlaySearchInput = document.getElementById('overlay-search-input');
             const searchResults = document.getElementById('search-results');
-            const backBtn = document.getElementById('back-btn');
+            const backBtn = document.getElementById('back-btn'); // This is the search overlay back button
             
             let currentSearchType = '', currentTargetInput = null, currentHiddenInput = null, searchTimeout = null, allStops = [];
-
+    
             function openSearchOverlay(type, target, hidden = null) {
                 currentSearchType = type;
                 currentTargetInput = target;
@@ -556,12 +763,12 @@
                 searchResults.innerHTML = '<div class="no-results">Start typing to search...</div>';
                 setTimeout(() => overlaySearchInput.focus(), 100);
             }
-
+    
             function closeSearchOverlay() {
                 searchOverlay.classList.remove('active');
             }
             backBtn.addEventListener('click', closeSearchOverlay);
-
+    
             overlaySearchInput.addEventListener('input', () => {
                 const q = overlaySearchInput.value.trim().toLowerCase();
                 clearTimeout(searchTimeout);
@@ -603,36 +810,139 @@
                     }
                 }, 300);
             });
-
+    
             // --- FETCH STOPS & SETUP INPUTS ---
             fetch('/union/stops?skip=0&limit=1000')
-               .then(r => r.json())
-               .then(data => allStops = data)
-               .catch(err => console.error("Failed to fetch stops:", err));
-
+                .then(r => r.json())
+                .then(data => allStops = data)
+                .catch(err => console.error("Failed to fetch stops:", err));
+    
             document.getElementById('start-stop-search').addEventListener('click', (e) => openSearchOverlay('stops', e.target, document.getElementById('start-stop-id')));
             document.getElementById('end-stop-search').addEventListener('click', (e) => openSearchOverlay('stops', e.target, document.getElementById('end-stop-id')));
             document.getElementById('bus-search-action').addEventListener('click', () => openSearchOverlay('buses', null, null));
-
+    
             // --- SWAP BUTTON LOGIC ---
             document.getElementById('swap-btn').addEventListener('click', () => {
                 const startInput = document.getElementById('start-stop-search');
                 const endInput = document.getElementById('end-stop-search');
                 const startIdInput = document.getElementById('start-stop-id');
                 const endIdInput = document.getElementById('end-stop-id');
-
+    
                 [startInput.value, endInput.value] = [endInput.value, startInput.value];
                 [startIdInput.value, endIdInput.value] = [endIdInput.value, startIdInput.value];
             });
-
-
+    
+    
             // --- RESULTS OVERLAY LOGIC ---
             const resultsOverlay = document.getElementById('results-overlay');
             const resultsContent = document.getElementById('results-content');
             const resultsClose = document.getElementById('results-close-btn');
-
+            const detailsContainer = document.getElementById('details-container');
+    
             resultsClose.addEventListener('click', () => resultsOverlay.classList.remove('active'));
-
+    
+            const displayRouteData = (data) => {
+                
+                    // 1. Build the Options List View
+                    let optionsHtml="";
+                    data.results.forEach((r, index) => {
+                        optionsHtml += `
+                            <div class="route-option" data-index="${index}">
+                                <div class="route-summary">
+                                    <span class="time">${formatTime(r.first_leg.departure_time)} - ${formatTime(r.second_leg.arrival_time)}</span>
+                                    <div class="route-icons">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C8.22876 2 6.34315 2 5.17157 3.17157C4.10848 4.23467 4.01004 5.8857 4.00093 9H3C2.44772 9 2 9.44772 2 10V11C2 11.3148 2.14819 11.6111 2.4 11.8L4 13C4.00911 16.1143 4.10848 17.7653 5.17157 18.8284C5.41375 19.0706 5.68645 19.2627 6 19.4151V20.9999C6 21.5522 6.44772 21.9999 7 21.9999H8.5C9.05228 21.9999 9.5 21.5522 9.5 20.9999V19.9815C10.2271 20 11.0542 20 12 20C12.9458 20 13.7729 20 14.5 19.9815V20.9999C14.5 21.5522 14.9477 21.9999 15.5 21.9999H17C17.5523 21.9999 18 21.5522 18 20.9999V19.4151C18.3136 19.2627 18.5862 19.0706 18.8284 18.8284C19.8915 17.7653 19.9909 16.1143 20 13L21.6 11.8C21.8518 11.6111 22 11.3148 22 11V10C22 9.44772 21.5523 9 21 9H19.9991C19.99 5.8857 19.8915 4.23467 18.8284 3.17157C17.6569 2 15.7712 2 12 2ZM5.5 9.5C5.5 10.9142 5.5 11.6213 5.93934 12.0607C6.37868 12.5 7.08579 12.5 8.5 12.5H12H15.5C16.9142 12.5 17.6213 12.5 18.0607 12.0607C18.5 11.6213 18.5 10.9142 18.5 9.5V7C18.5 5.58579 18.5 4.87868 18.0607 4.43934C17.6213 4 16.9142 4 15.5 4H12H8.5C7.08579 4 6.37868 4 5.93934 4.43934C5.5 4.87868 5.5 5.58579 5.5 7V9.5ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM17.75 16C17.75 15.5858 17.4142 15.25 17 15.25H15.5C15.0858 15.25 14.75 15.5858 14.75 16C14.75 16.4142 15.0858 16.75 15.5 16.75H17C17.4142 16.75 17.75 16.4142 17.75 16Z" fill="currentColor"/></svg>
+                                        <svg class="chevron-right" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C8.22876 2 6.34315 2 5.17157 3.17157C4.10848 4.23467 4.01004 5.8857 4.00093 9H3C2.44772 9 2 9.44772 2 10V11C2 11.3148 2.14819 11.6111 2.4 11.8L4 13C4.00911 16.1143 4.10848 17.7653 5.17157 18.8284C5.41375 19.0706 5.68645 19.2627 6 19.4151V20.9999C6 21.5522 6.44772 21.9999 7 21.9999H8.5C9.05228 21.9999 9.5 21.5522 9.5 20.9999V19.9815C10.2271 20 11.0542 20 12 20C12.9458 20 13.7729 20 14.5 19.9815V20.9999C14.5 21.5522 14.9477 21.9999 15.5 21.9999H17C17.5523 21.9999 18 21.5522 18 20.9999V19.4151C18.3136 19.2627 18.5862 19.0706 18.8284 18.8284C19.8915 17.7653 19.9909 16.1143 20 13L21.6 11.8C21.8518 11.6111 22 11.3148 22 11V10C22 9.44772 21.5523 9 21 9H19.9991C19.99 5.8857 19.8915 4.23467 18.8284 3.17157C17.6569 2 15.7712 2 12 2ZM5.5 9.5C5.5 10.9142 5.5 11.6213 5.93934 12.0607C6.37868 12.5 7.08579 12.5 8.5 12.5H12H15.5C16.9142 12.5 17.6213 12.5 18.0607 12.0607C18.5 11.6213 18.5 10.9142 18.5 9.5V7C18.5 5.58579 18.5 4.87868 18.0607 4.43934C17.6213 4 16.9142 4 15.5 4H12H8.5C7.08579 4 6.37868 4 5.93934 4.43934C5.5 4.87868 5.5 5.58579 5.5 7V9.5ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM17.75 16C17.75 15.5858 17.4142 15.25 17 15.25H15.5C15.0858 15.25 14.75 15.5858 14.75 16C14.75 16.4142 15.0858 16.75 15.5 16.75H17C17.4142 16.75 17.75 16.4142 17.75 16Z" fill="currentColor"/></svg>
+                                    </div>
+                                </div>
+                                <p class="route-details-summary">Wait: ${r.transfer_wait_time} • Total: ${r.total_duration}</p>
+                            </div>
+                        `;
+                    });
+                    resultsContent.innerHTML = optionsHtml;
+            
+                    // 2. Add Event Listeners to switch to Detailed View
+                    document.querySelectorAll('.route-option').forEach(option => {
+                        option.addEventListener('click', (e) => {
+                            const index = e.currentTarget.dataset.index;
+                            const r = data.results[index];
+                            showDetailsView(r);
+                        });
+                    });
+            };
+            
+            // --- Function to build and show the Detailed View ---
+            const showDetailsView = (r) => {
+                let detailsHtml = `
+                    <div id="details-header">
+                        <button id="details-back-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"></path></svg>
+                        </button>
+                        <h4>${formatTime(r.first_leg.departure_time)} - ${formatTime(r.second_leg.arrival_time)}</h4>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon" style="background-color: #dfdfdf;">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C8.22876 2 6.34315 2 5.17157 3.17157C4.10848 4.23467 4.01004 5.8857 4.00093 9H3C2.44772 9 2 9.44772 2 10V11C2 11.3148 2.14819 11.6111 2.4 11.8L4 13C4.00911 16.1143 4.10848 17.7653 5.17157 18.8284C5.41375 19.0706 5.68645 19.2627 6 19.4151V20.9999C6 21.5522 6.44772 21.9999 7 21.9999H8.5C9.05228 21.9999 9.5 21.5522 9.5 20.9999V19.9815C10.2271 20 11.0542 20 12 20C12.9458 20 13.7729 20 14.5 19.9815V20.9999C14.5 21.5522 14.9477 21.9999 15.5 21.9999H17C17.5523 21.9999 18 21.5522 18 20.9999V19.4151C18.3136 19.2627 18.5862 19.0706 18.8284 18.8284C19.8915 17.7653 19.9909 16.1143 20 13L21.6 11.8C21.8518 11.6111 22 11.3148 22 11V10C22 9.44772 21.5523 9 21 9H19.9991C19.99 5.8857 19.8915 4.23467 18.8284 3.17157C17.6569 2 15.7712 2 12 2ZM5.5 9.5C5.5 10.9142 5.5 11.6213 5.93934 12.0607C6.37868 12.5 7.08579 12.5 8.5 12.5H12H15.5C16.9142 12.5 17.6213 12.5 18.0607 12.0607C18.5 11.6213 18.5 10.9142 18.5 9.5V7C18.5 5.58579 18.5 4.87868 18.0607 4.43934C17.6213 4 16.9142 4 15.5 4H12H8.5C7.08579 4 6.37868 4 5.93934 4.43934C5.5 4.87868 5.5 5.58579 5.5 7V9.5ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM17.75 16C17.75 15.5858 17.4142 15.25 17 15.25H15.5C15.0858 15.25 14.75 15.5858 14.75 16C14.75 16.4142 15.0858 16.75 15.5 16.75H17C17.4142 16.75 17.75 16.4142 17.75 16Z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="timeline-content">
+                                <p><strong>${r.first_leg.start_stop_name}</strong> at <strong>${formatTime(r.first_leg.departure_time)}</strong></p>
+                                <div class="bus-details">
+                                    <span class="bus-name">${r.first_leg.bus_name}</span>
+                                    <a href="/redirect_to_current_trip/${r.first_leg.bus_id}" class="view-trip-btn">View Trip</a>
+                                </div>
+                                <p style="font-size:13px; color:#5f6368;">Route: ${r.first_leg.route_name}</p>
+                            </div>
+                        </div>
+            
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.9292 9.26719C11.129 9.25636 11.3217 9.25 11.5 9.25C12.0541 9.25 12.6539 9.31157 13.1938 9.38912C14.7153 9.60766 15.8674 10.7305 16.3278 12.1117C16.4321 12.4245 16.7484 12.6149 17.0736 12.5607L18.8767 12.2602C19.2853 12.1921 19.6717 12.4681 19.7398 12.8767C19.8079 13.2853 19.5319 13.6717 19.1233 13.7398L17.3202 14.0403C16.2669 14.2159 15.2424 13.599 14.9048 12.586C14.5975 11.6642 13.8619 11.0005 12.9805 10.8739C12.7129 10.8354 12.4404 10.8029 12.1757 10.7809L11.9045 13.4923C11.8205 14.332 11.8107 14.5537 11.8674 14.7518C11.9241 14.9498 12.0497 15.1328 12.5652 15.8009L16.9942 21.5419C17.2472 21.8698 17.1865 22.3408 16.8585 22.5938C16.5306 22.8468 16.0596 22.7861 15.8066 22.4581L11.3775 16.7172C11.3536 16.6862 11.33 16.6556 11.3066 16.6254C10.896 16.0941 10.5711 15.6738 10.4253 15.1645C10.2796 14.6551 10.3329 14.1265 10.4003 13.4585C10.4042 13.4205 10.4081 13.382 10.412 13.3431L10.666 10.8023C8.99272 11.076 7.75 12.6491 7.75 14.5C7.75 14.9142 7.41421 15.25 7 15.25C6.58579 15.25 6.25 14.9142 6.25 14.5C6.25 11.8593 8.1638 9.41706 10.9292 9.26719Z" fill="currentColor"/><g opacity="1"><path d="M15 4.5C15 5.88071 13.8807 7 12.5 7C11.1193 7 10 5.88071 10 4.5C10 3.11929 11.1193 2 12.5 2C13.8807 2 15 3.11929 15 4.5Z" fill="currentColor"/><path d="M10.1471 16.7647C10.5533 16.8459 10.8167 17.2411 10.7355 17.6472C10.3779 19.435 9.4014 21.0395 7.97772 22.1785L7.46855 22.5858C7.1451 22.8446 6.67313 22.7921 6.41438 22.4687C6.15562 22.1452 6.20806 21.6732 6.53151 21.4145L7.04067 21.0072C8.18877 20.0887 8.97625 18.7948 9.26459 17.3531C9.34583 16.9469 9.74094 16.6835 10.1471 16.7647Z" fill="currentColor"/></g></svg>
+                            </div>
+                            <div class="timeline-content">
+                                <p class="transfer-info">Arrive at <strong>${r.first_leg.end_stop_name}</strong></p>
+                                <p class="wait-details">Wait for ${r.transfer_wait_time}</p>
+                            </div>
+                        </div>
+            
+                        <div class="timeline-item">
+                            <div class="timeline-icon" style="background-color: #dfdfdf;">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C8.22876 2 6.34315 2 5.17157 3.17157C4.10848 4.23467 4.01004 5.8857 4.00093 9H3C2.44772 9 2 9.44772 2 10V11C2 11.3148 2.14819 11.6111 2.4 11.8L4 13C4.00911 16.1143 4.10848 17.7653 5.17157 18.8284C5.41375 19.0706 5.68645 19.2627 6 19.4151V20.9999C6 21.5522 6.44772 21.9999 7 21.9999H8.5C9.05228 21.9999 9.5 21.5522 9.5 20.9999V19.9815C10.2271 20 11.0542 20 12 20C12.9458 20 13.7729 20 14.5 19.9815V20.9999C14.5 21.5522 14.9477 21.9999 15.5 21.9999H17C17.5523 21.9999 18 21.5522 18 20.9999V19.4151C18.3136 19.2627 18.5862 19.0706 18.8284 18.8284C19.8915 17.7653 19.9909 16.1143 20 13L21.6 11.8C21.8518 11.6111 22 11.3148 22 11V10C22 9.44772 21.5523 9 21 9H19.9991C19.99 5.8857 19.8915 4.23467 18.8284 3.17157C17.6569 2 15.7712 2 12 2ZM5.5 9.5C5.5 10.9142 5.5 11.6213 5.93934 12.0607C6.37868 12.5 7.08579 12.5 8.5 12.5H12H15.5C16.9142 12.5 17.6213 12.5 18.0607 12.0607C18.5 11.6213 18.5 10.9142 18.5 9.5V7C18.5 5.58579 18.5 4.87868 18.0607 4.43934C17.6213 4 16.9142 4 15.5 4H12H8.5C7.08579 4 6.37868 4 5.93934 4.43934C5.5 4.87868 5.5 5.58579 5.5 7V9.5ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM17.75 16C17.75 15.5858 17.4142 15.25 17 15.25H15.5C15.0858 15.25 14.75 15.5858 14.75 16C14.75 16.4142 15.0858 16.75 15.5 16.75H17C17.4142 16.75 17.75 16.4142 17.75 16Z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="timeline-content">
+                                <p>Depart from <strong>${r.second_leg.start_stop_name}</strong> at <strong>${formatTime(r.second_leg.departure_time)}</strong></p>
+                                <div class="bus-details">
+                                    <span class="bus-name">${r.second_leg.bus_name}</span>
+                                    <a href="/redirect_to_current_trip/${r.second_leg.bus_id}" class="view-trip-btn">View Trip</a>
+                                </div>
+                                <p style="font-size:13px; color:#5f6368;">Route: ${r.second_leg.route_name}</p>
+                            </div>
+                        </div>
+            
+                        <div class="timeline-item">
+                            <div class="timeline-icon" style="background-color: #dfdfdf;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" ><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" /></svg>
+                            </div>
+                            <div class="timeline-content">
+                                <p class="destination-info">Arrive at <strong>${r.second_leg.end_stop_name}</strong> at <strong>${formatTime(r.second_leg.arrival_time)}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                detailsContainer.innerHTML = detailsHtml;
+            
+                // Switch views
+                resultsContent.classList.add('hidden');
+                detailsContainer.classList.remove('hidden');
+            
+                // FIX: Add event listener for the new back button using its unique ID
+                document.getElementById('details-back-btn').addEventListener('click', () => {
+                    detailsContainer.classList.add('hidden');
+                    resultsContent.classList.remove('hidden');
+                });
+            };
+    
             document.getElementById('find-btn').addEventListener('click', () => {
                 const startId = document.getElementById('start-stop-id').value;
                 const endId = document.getElementById('end-stop-id').value;
@@ -646,16 +956,25 @@
                 }
                 resultsContent.innerHTML = '<div class="loading">Searching for buses...</div>';
                 resultsOverlay.classList.add('active');
-
+    
                 fetch(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (!data.length) {
-                            resultsContent.innerHTML = '<p class="no-results">No upcoming buses found for this route.</p>';
-                            return;
-                        }
-                        let html = '<table><thead><tr><th>Bus</th><th>Route</th><th>Depart</th><th>Arrive</th><th></th></tr></thead><tbody>';
-                        data.forEach(r => {
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Case 1: No routes found
+                    if (data.type === 'none' || !data.results || data.results.length === 0) {
+                        resultsContent.innerHTML = '<h3>No Routes Found</h3><p class="no-results">No direct or transfer routes are available for your selection at this time.</p>';
+                        return;
+                    }
+    
+                    // Case 2: Direct routes found
+                    if (data.type === 'direct') {
+                        let html = '<h3>Direct Buses</h3><table><thead><tr><th>Bus</th><th>Route</th><th>Depart</th><th>Arrive</th><th></th></tr></thead><tbody>';
+                        data.results.forEach(r => {
                             html += `<tr>
                                 <td>${r.bus_name}</td>
                                 <td>${r.route_name} (${r.direction})</td>
@@ -666,7 +985,17 @@
                         });
                         html += '</tbody></table>';
                         resultsContent.innerHTML = html;
-                    }).catch(() => resultsContent.innerHTML = '<p class="no-results">Error fetching data. Please try again.</p>');
+                    } 
+                    
+                    // Case 3: Transfer routes found (NEW UI)
+                    else if (data.type === 'transfer') {
+                        displayRouteData(data);
+                    }
+    
+                }).catch(error => {
+                    console.error("Error fetching route data:", error);
+                    resultsContent.innerHTML = '<h3>Error</h3><p class="no-results">An error occurred while fetching route data. Please try again.</p>';
+                });
             });
         });
     </script>
