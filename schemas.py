@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from typing import List, Optional
+from typing import List, Literal, Optional, Union
 from datetime import datetime, time, date
 from enum import Enum
 
@@ -281,5 +281,26 @@ class StopIssue(StopIssueBase):
     status: str
     reported_at: datetime
     user_id: Optional[int] = None
-
     model_config = ConfigDict(from_attributes=True)
+    
+
+
+class TransferLeg(BaseModel):
+    bus_id: int
+    bus_name: str
+    route_name: str
+    direction: str
+    start_stop_name: str
+    end_stop_name: str
+    departure_time: time
+    arrival_time: time
+
+class TransferRouteResult(BaseModel):
+    first_leg: TransferLeg
+    second_leg: TransferLeg
+    transfer_at_stop_name: str
+    transfer_wait_time: str
+
+class CombinedRouteResponse(BaseModel):
+    type: str # "direct", "transfer", or "none"
+    results: Optional[Union[List[RouteResult], List[TransferRouteResult]]] = None
