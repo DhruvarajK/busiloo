@@ -28,6 +28,66 @@
             color: var(--color-text-primary);
             padding-bottom: 80px;
         }
+        .crowd-tooltip {
+            position: absolute;
+            display: inline-block;
+            margin-left: 12px;
+            border: 1px solid #cfcfcf;
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #333;
+            font-family: monospace;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: help;
+            transition: all 0.2s ease-in-out;
+            max-width: 200px;
+            min-width: 169px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* Add this CSS to your stylesheet */
+        .warning-symbol {
+            color: orange; /* Or red, depending on your preference */
+            margin-right: -3px; /* Adjust spacing as needed */
+            font-size: 0.9em; /* Adjust size as needed */
+        }
+
+        .blinking {
+            animation: blinker 1s linear(0 0%, 0.22 2.1%, 0.86 6.5%, 1.11 8.6%, 1.3 10.7%, 1.35 11.8%, 1.37 12.9%, 1.37 13.7%, 1.36 14.5%, 1.32 16.2%, 1.03 21.8%, 0.94 24%, 0.89 25.9%, 0.88 26.85%, 0.87 27.8%, 0.87 29.25%, 0.88 30.7%, 0.91 32.4%, 0.98 36.4%, 1.01 38.3%, 1.04 40.5%, 1.05 42.7%, 1.05 44.1%, 1.04 45.7%, 1 53.3%, 0.99 55.4%, 0.98 57.5%, 0.99 60.7%, 1 68.1%, 1.01 72.2%, 1 86.7%, 1 100%) infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+            }
+        }
+        
+        /* Optional: Add a hover effect for more details, if needed */
+        .crowd-tooltip:hover {
+            overflow: visible;
+            white-space: normal;
+            max-width: none;
+            z-index: 10;
+        } 
+        
+        
+        .crowd-tooltip strong {
+            font-weight: bold;
+        }
+        
+        .crowd-tooltip em {
+            font-style: italic;
+        }
+        
+        .crowd-report-time {
+            display: block; /* Puts the time on a new line */
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 2px;
+        }
+        
 
         /* --- Header --- */
         .header {
@@ -157,13 +217,14 @@
         }
 
         .stop-details {
-            padding-left: 45px;
+            padding-left: 50px;
             padding-bottom: 20px; /* Spacing between items */
         }
         
         .stop-name {
             font-weight: 600;
-            font-size: 1.05em;
+            font-size: 15px;
+            font-family: system-ui;
         }
         .stop-time {
             font-size: 0.9em;
@@ -323,9 +384,6 @@
         #submit-crowd-btn:hover {
             background-color: #c5424b;
         }
-        .leaflet-bottom .leaflet-control {
-            margin-bottom: 75px;
-        }
     </style>
 </head>
 <body>
@@ -357,7 +415,6 @@
         const BUS_NAME = "{{ bus_name }}";
         const tripInfo = document.getElementById('trip-info');
         let is24Hour = true;
-
         // --- TIME FORMATTING UTILITIES ---
         function formatTime(input, showSeconds) {
             let date;
@@ -374,20 +431,19 @@
             if (showSeconds) options.second = '2-digit';
             return new Intl.DateTimeFormat('en-US', options).format(date);
         }
-        
+
         function timeToMinutes(timeStr) {
             if (!timeStr) return 0;
             const [h, m, s = 0] = timeStr.split(':').map(Number);
             return h * 60 + m + s / 60;
         }
-        
+
         function calculateETA(currentMinutes, stopTimeMinutes) {
             const diff = stopTimeMinutes - currentMinutes;
             if (diff <= 0) return 'Departed';
             if (diff < 1) return '< 1 min';
             return `~${Math.round(diff)} min`;
         }
-
         // --- MAIN FETCH AND RENDER LOGIC ---
         function fetchAndRenderTrip() {
             fetch(`/api/bus/${BUS_ID}/current_trip`)
@@ -395,21 +451,36 @@
                 .then(trip => {
                     const stopSpacing = 140; // Increased spacing for potential alerts
                     const totalHeight = (trip.stop_times.length - 1) * stopSpacing;
-                    
+                    console.log(trip.stop_times);
                     let stopsHtml = '';
                     trip.stop_times.forEach(st => {
                         const yPos = (st.sequence - 1) * stopSpacing;
+
+                        // NEW: Crowd report tooltip HTML
+                        let crowdTooltipHtml = '';
+                        if (st.crowd_report) {
+                            const crowdLevelMap = {
+                                1: 'Expected Light crowd',
+                                2: 'Expected Moderate crowd ',                           
+                                3: 'Expected High Crowd'                              
+                              };
+                              crowdTooltipHtml = `
+                              <div class="crowd-tooltip">
+                                  <strong> <svg class="warning-symbol blinking" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+                <path d="M12 2L1 21h22L12 2zm1 16h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg> ${crowdLevelMap[st.crowd_report.crowd_level]}</strong>
+                                  ${st.crowd_report.description ? `<br/><marquee>${st.crowd_report.description}</marquee>` : ''}
+                              </div>
+                          `;
+                        }
+
                         stopsHtml += `
                             <div class="stop" style="top:${yPos}px;" data-arrival-time="${st.arrival_time}" data-sequence="${st.sequence}">
                                 <div class="stop-dot"></div>
                                 <div class="stop-details">
-                                    <div class="stop-name">${st.stop_name}<a href="/report-issue-page/${st.stop_name}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 5px;
-    margin-left: 3px;
-    color: #717171;">
-<path d="M12 17V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-<circle cx="1" cy="1" r="1" transform="matrix(1 0 0 -1 11 9)" fill="currentColor"/>
-<path d="M7 3.33782C8.47087 2.48697 10.1786 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 10.1786 2.48697 8.47087 3.33782 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-</svg></a></div>
+                                    <div class="stop-name">${st.stop_name}
+                                        <a href="/report-issue-page/${st.stop_name}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 5px; margin-left: 3px; color: #717171;"><path d="M12 17V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="1" cy="1" r="1" transform="matrix(1 0 0 -1 11 9)" fill="currentColor"/><path d="M7 3.33782C8.47087 2.48697 10.1786 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 10.1786 2.48697 8.47087 3.33782 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+                                        ${crowdTooltipHtml} </div>
                                     <div class="stop-time" data-time="${st.arrival_time}">${formatTime(st.arrival_time, false)}</div>
                                     <div class="traffic-alert-container" data-traffic-for-sequence="${st.sequence}"></div>
                                     <div class="a1-las">
@@ -419,7 +490,6 @@
                                 </div>
                             </div>`;
                     });
-
                     const pageHtml = `
                         <div class="header">
                             <a href="/" class="back-btn" aria-label="Go back"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a>
@@ -455,24 +525,20 @@
                         </div>
                     `;
                     tripInfo.innerHTML = pageHtml;
-
                     const stops = trip.stop_times.map(st => ({
                         sequence: st.sequence,
                         arrival_time: st.arrival_time,
                         y: (st.sequence - 1) * stopSpacing
                     }));
-
                     function updateBusPosition() {
                         const now = new Date();
                         const localTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' });
                         const currentMinutes = timeToMinutes(localTimeStr);
                         document.getElementById('current-time').textContent = `Time: ${formatTime(now, true)}`;
-
                         const firstStopTime = stops[0].arrival_time;
                         const lastStopTime = stops[stops.length - 1].arrival_time;
                         const startMin = timeToMinutes(firstStopTime);
                         const endMin = timeToMinutes(lastStopTime);
-
                         let yBus;
                         if (currentMinutes <= startMin) yBus = 0;
                         else if (currentMinutes >= endMin) yBus = stops[stops.length - 1].y;
@@ -486,13 +552,11 @@
                             yBus = prevStop.y + fraction * (nextStop.y - prevStop.y);
                         }
                         document.getElementById('bus-marker').style.top = yBus + 'px';
-
                         document.querySelectorAll('.stop').forEach(stopEl => {
                             const stopTime = stopEl.getAttribute('data-arrival-time');
                             const stopTimeMins = timeToMinutes(stopTime);
                             const sequence = stopEl.dataset.sequence;
                             const etaEl = document.querySelector(`[data-eta-for-sequence="${sequence}"]`);
-
                             if (currentMinutes > stopTimeMins) {
                                 stopEl.classList.add('departed');
                                 if (etaEl) etaEl.textContent = 'Departed';
@@ -502,7 +566,7 @@
                             }
                         });
                     }
-                    
+
                     function setupEventListeners() {
                         const toggleBtn = document.getElementById('time-toggle');
                         toggleBtn.addEventListener('click', () => {
@@ -513,7 +577,6 @@
                             });
                             updateBusPosition();
                         });
-
                         const modal = document.getElementById('crowd-modal');
                         document.getElementById('confirm-travel-checkbox').addEventListener('change', e => {
                             modal.style.display = e.target.checked ? 'flex' : 'none';
@@ -524,7 +587,6 @@
                         });
                         document.getElementById('submit-crowd-btn').addEventListener('click', submitCrowdData);
                     }
-
                     // --- Scroll to bus marker AFTER content is fully rendered ---
                     // Using a small setTimeout to ensure the element is painted to the DOM
                     setTimeout(() => {
@@ -536,25 +598,22 @@
                             });
                         }
                     }, 0); // 0ms delay pushes it to the end of the current task queue
-
                     updateBusPosition();
                     setInterval(updateBusPosition, 2000);
                     setupEventListeners();
                     loadCrowdPrediction();
-                    loadTrafficNotifications(); 
+                    loadTrafficNotifications();
                 })
                 .catch(() => {
                     tripInfo.innerHTML = '<p style="text-align: center; padding-top: 50px;">No current trip found for this bus or an error occurred.</p>';
                 });
         }
-
         // --- NEW: Traffic Notification Function ---
         function loadTrafficNotifications() {
             fetch(`/api/bus/${BUS_ID}/traffic_notifications`)
                 .then(res => res.ok ? res.json() : Promise.resolve([]))
                 .then(notifications => {
                     document.querySelectorAll('.traffic-alert-container').forEach(el => el.innerHTML = '');
-
                     notifications.forEach(notif => {
                         const container = document.querySelector(`[data-traffic-for-sequence="${notif.stop_sequence}"]`);
                         if (container) {
@@ -570,7 +629,6 @@
                     console.error("Failed to load traffic notifications:", err);
                 });
         }
-
         // --- CROWD DATA FUNCTIONS ---
         function loadCrowdPrediction() {
             fetch(`/api/bus/${BUS_ID}/crowd_prediction`)
@@ -585,12 +643,11 @@
                     document.getElementById('crowd-prediction').innerHTML = '<p>Crowd prediction is currently unavailable.</p>';
                 });
         }
-        
+
         function submitCrowdData() {
             const crowdLevel = +document.getElementById('crowd-level').value;
             const statusEl = document.getElementById('submit-status');
             statusEl.textContent = 'Submitting...';
-
             fetch(`/api/bus/${BUS_ID}/submit_crowd`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -613,7 +670,6 @@
                 statusEl.textContent = 'Error during submission. Please try again.';
             });
         }
-
         // --- INITIALIZE ---
         fetchAndRenderTrip();
     </script>
