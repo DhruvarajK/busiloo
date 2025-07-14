@@ -1,24 +1,25 @@
 
+import random
+import string
 from fastapi import APIRouter, FastAPI, HTTPException, Request, Depends,Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import auth
 from database import engine
 import models
-import union
+import schemas
 from sqlalchemy.orm import Session, aliased
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import database
-from public_user import router as public_router
-import public_user
-
+import public_user,admin,union
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.include_router(union.router)
-app.include_router(public_router)
-
+app.include_router(public_user.router)
+app.include_router(admin.admin_router)
 
 # Mount static and templates
 templates = Jinja2Templates(directory="templates")
@@ -26,10 +27,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # after templates defined:
 public_user.templates = templates  # so the router can use the same templates instance
-
-@app.api_route("/health", methods=["GET", "HEAD"])
-async def health_check():
-    return {"status": "ok"}
 
 # Example HTML endpoints
 @app.get("/register")
@@ -42,8 +39,24 @@ def login_page(request: Request):
 
 @app.get("/dashboard")
 def dashboard(request: Request):
-    # In practice, redirect after login, include auth check via JS
     return templates.TemplateResponse("dashboard.html", {"request": request})
+
+@app.get("/api/admin/data", response_model=schemas.AdminData) # 
+def get_admin_data(current_user: models.User = Depends(auth.get_admin_user)):
+    # Because of Depends(auth.get_admin_user), this code will only run
+    # if the user is authenticated AND is an admin.
+    characters = string.ascii_letters + string.digits
+    random_code = ''.join(random.choices(characters, k=6))
+
+    return {
+        "message": f"Welcome Admin {current_user.username}!",
+        "sensitive_data": random_code
+    }
+
+
+@app.get("/admin/dashboard")
+def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin_dashboard.html", {"request": request})
 
 @app.get("/add_bus")
 def add_bus_page(request: Request):
