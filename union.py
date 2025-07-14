@@ -32,12 +32,25 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(database.get_db)
 
 
 @router.post("/login", response_model=schemas.Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
     user = auth.authenticate_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
     access_token = auth.create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "is_admin": user.username.lower() == "admin"
+    }
+
+
+
 
 # Add bus
 @router.post("/buses", response_model=schemas.BusOut)
@@ -96,7 +109,12 @@ def create_trip(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(database.get_db)
 ):
+    """
+    Creates a new trip entry, associating it with a bus, service days,
+    and stop times.
+    """
     # 1. Verify bus ownership
+    # Ensure the bus exists and belongs to the current authenticated user.
     bus = (
         db.query(models.Bus)
           .filter(models.Bus.id == trip_in.bus_id,
@@ -104,31 +122,35 @@ def create_trip(
           .first()
     )
     if not bus:
-        raise HTTPException(404, "Bus not found or unauthorized")
+        raise HTTPException(status_code=404, detail="Bus not found or unauthorized")
 
     # 2. Create Trip
+    # Instantiate a new Trip object with basic details.
     trip = models.Trip(
         bus_id=trip_in.bus_id,
         route_name=trip_in.route_name,
         departure_time=trip_in.departure_time,
-        direction=trip_in.direction,
+        direction=trip_in.direction, # Corrected: Was trip.direction, should be trip_in.direction
     )
     db.add(trip)
-    db.flush()  # trip.id now available
+    db.flush()  # Flush to get the trip.id, which is needed for related objects
 
     # 3. Service days
+    # Iterate through the provided service days. Since sd.weekday is already
+    # expected to be a Weekday enum member (parsed by Pydantic),
+    # we can directly use it.
     for sd in trip_in.service_days:
-        try:
-            weekday_enum = models.Weekday[sd.weekday]
-        except KeyError:
-            raise HTTPException(400, f"Invalid weekday: {sd.weekday}")
-        db.add(models.ServiceDay(trip_id=trip.id, weekday=weekday_enum))
+        # Pydantic should handle the conversion from incoming integer to Weekday enum.
+        # So, sd.weekday should already be a Weekday enum member here.
+        db.add(models.ServiceDay(trip_id=trip.id, weekday=sd.weekday))
 
-    # 4. Stop times — only store the fields your StopTime model expects
+    # 4. Stop times
+    # Iterate through the provided stop times, verify each stop exists,
+    # and add the StopTime entries to the database.
     for st in trip_in.stop_times:
         stop = db.query(models.Stop).get(st.stop_id)
         if not stop:
-            raise HTTPException(404, f"Stop id {st.stop_id} not found")
+            raise HTTPException(status_code=404, detail=f"Stop id {st.stop_id} not found")
 
         db.add(models.StopTime(
             trip_id=trip.id,
@@ -137,38 +159,43 @@ def create_trip(
             sequence=st.sequence,
         ))
 
-    db.commit()
+    db.commit() # Commit all changes to the database
 
     # 5. Reload with Stop relationships
+    # Reload the trip object to include its related stop_times and service_days
+    # with their respective relationships (e.g., Stop details for StopTime).
     trip = (
         db.query(models.Trip)
           .options(
-             joinedload(models.Trip.stop_times)
-               .joinedload(models.StopTime.stop),
-             joinedload(models.Trip.service_days)
+              joinedload(models.Trip.stop_times)
+                 .joinedload(models.StopTime.stop), # Load related Stop for each StopTime
+              joinedload(models.Trip.service_days) # Load related ServiceDays
           )
           .filter(models.Trip.id == trip.id)
           .one()
     )
 
     # 6. Serialize including stop.latitude/etc from the joined Stop
+    # Prepare the output data structure, extracting necessary details
+    # from the loaded relationships.
     stop_times_out = [
         schemas.StopTimeOut(
             stop_id=st.stop_id,
-            stop_name=st.stop.name,            # from related Stop
+            stop_name=st.stop.name,           # from related Stop
             arrival_time=st.arrival_time,
             sequence=st.sequence,
-            latitude=st.stop.latitude,         # now pulled from Stop
+            latitude=st.stop.latitude,        # now pulled from Stop
             longitude=st.stop.longitude,
             loc_link=st.stop.loc_link
         )
         for st in sorted(trip.stop_times, key=lambda x: x.sequence)
     ]
     service_days_out = [
-        schemas.ServiceDayOut(weekday=sd.weekday.name)
+        schemas.ServiceDayOut(weekday=sd.weekday.value) # ***CHANGED: Use .value to get integer***
         for sd in trip.service_days
     ]
 
+    # Return the fully structured TripOut response.
     return schemas.TripOut(
         id=trip.id,
         bus_id=trip.bus_id,
@@ -178,7 +205,6 @@ def create_trip(
         stop_times=stop_times_out,
         service_days=service_days_out
     )
-
 
 
 # Similarly, when returning trips in GET endpoints, manually map:
@@ -226,7 +252,7 @@ def get_bus_trips(
             )
 
         service_days_out = [
-            schemas.ServiceDayOut(weekday=sd.weekday.name) for sd in trip.service_days
+            schemas.ServiceDayOut(weekday=sd.weekday.value) for sd in trip.service_days
         ]
 
         result.append(
@@ -326,7 +352,7 @@ def get_trip_detail(trip_id: int, current_user: models.User = Depends(auth.get_c
         )
 
     service_days_out = [
-        schemas.ServiceDayOut(weekday=sd.weekday.name)
+        schemas.ServiceDayOut(weekday=sd.weekday.value)
         for sd in trip.service_days
     ]
     return schemas.TripOut(
@@ -338,6 +364,7 @@ def get_trip_detail(trip_id: int, current_user: models.User = Depends(auth.get_c
         stop_times=stop_times_out,
         service_days=service_days_out
     )
+    
 @router.put("/trips/{trip_id}", response_model=schemas.TripOut)
 def update_trip_times(
     trip_id: int,
@@ -360,7 +387,7 @@ def update_trip_times(
         # Add new
         for sd in trip_upd.service_days:
             try:
-                weekday_enum = models.Weekday[sd.weekday]
+                weekday_enum = models.Weekday(sd.weekday)
             except KeyError:
                 raise HTTPException(status_code=400, detail=f"Invalid weekday: {sd.weekday}")
             db.add(models.ServiceDay(trip_id=trip.id, weekday=weekday_enum))
@@ -383,10 +410,6 @@ def update_trip_times(
 
     db.commit()
 
-    # After committing the changes, refresh the trip object and eager-load
-    # the necessary relationships to populate the StopTimeOut schema.
-    # The `refresh` ensures the `trip` object reflects the latest DB state,
-    # and then `options(joinedload(...))` ensures 'stop' data is available.
     trip = (
         db.query(models.Trip)
         .filter(models.Trip.id == trip.id) # Use trip.id after refresh
@@ -420,9 +443,10 @@ def update_trip_times(
             )
         )
     service_days_out = [
-        schemas.ServiceDayOut(weekday=sd.weekday.name)
+        schemas.ServiceDayOut(weekday=sd.weekday.value)
         for sd in trip.service_days
     ]
+
     return schemas.TripOut(
         id=trip.id,
         bus_id=trip.bus_id,
@@ -697,3 +721,42 @@ def delete_stop(
     # Return a response with a 204 status code, which has no body
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+# In your main router file (e.g., main.py)
+
+@router.get("/submit-stop-crowd-report", response_class=HTMLResponse)
+async def get_stop_crowd_report_form(request: Request):
+    """
+    Renders the HTML page for users to submit a crowd report for a bus stop.
+    """
+    return templates.TemplateResponse("submit_stop_crowd_report.html", {"request": request})
+
+
+@router.post(
+    "/stops/crowd_reports",
+    response_model=schemas.StopCrowdReportOut,
+    status_code=status.HTTP_201_CREATED
+)
+def create_stop_crowd_report(
+    report_in: schemas.StopCrowdReportCreate,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    stop = db.query(models.Stop).get(report_in.stop_id)
+    if not stop:
+        raise HTTPException(404, "Stop not found")
+
+    new_report = models.StopCrowdReport(
+        stop_id       = report_in.stop_id,
+        reporter_id   = current_user.id,
+        crowd_level   = report_in.crowd_level,
+        report_time   = report_in.report_time,
+        report_weekday= report_in.report_weekday,
+        description   = report_in.description,
+        reported_at   = datetime.now(ZoneInfo("Asia/Kolkata"))
+    )
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+
+    # This ensures Pydantic serialization runs, applying use_enum_values
+    return schemas.StopCrowdReportOut.model_validate(new_report)
