@@ -368,7 +368,9 @@
                 </div>
                 <div class="form-group">
                     <label for="modalDistrict">District</label>
-                    <input type="text" id="modalDistrict">
+                    <select id="modalDistrict" name="district" class="form-control">
+                        <option value="">-- Select a District --</option>
+                        </select>
                 </div>
                 <div class="form-group">
                     <label for="modalLat">Latitude</label>
@@ -507,7 +509,27 @@
                     return ''; 
                 }
             }
+            const KERALA_DISTRICTS = [
+                "Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha",
+                "Kottayam", "Idukki", "Ernakulam", "Thrissur", "Palakkad",
+                "Malappuram", "Kozhikode", "Wayanad", "Kannur", "Kasaragod"
+            ];
+
+            // --- DOM Element References (add this line) ---
+            const modalDistrictSelect = document.getElementById('modalDistrict'); // New reference for the select element
+
+            // --- Add a new function to populate the dropdown ---
+            function populateDistrictDropdown() {
+                KERALA_DISTRICTS.forEach(districtName => {
+                    const option = document.createElement('option');
+                    option.value = districtName; // The string name of the enum
+                    option.textContent = districtName;
+                    modalDistrictSelect.appendChild(option);
+                });
+            }
             
+            populateDistrictDropdown();
+
             async function addStopToDB(stopData) {
                 try {
                     const newStop = await fetchAPI('/stops', {
@@ -619,16 +641,29 @@
                 modalStopName.value = data.name || '';
                 modalLat.value = data.lat || '';
                 modalLon.value = data.lon || '';
-                modalDistrict.value = 'Fetching district...';
+                modalDistrictSelect.value = ''; // Reset dropdown to default
                 modalBackdrop.style.display = 'flex';
 
                 try {
-                    const district = await getDistrictFromCoords(data.lat, data.lon);
-                    modalDistrict.value = district;
+                    // This is where we attempt to get the district from coordinates
+                    const detectedDistrict = await getDistrictFromCoords(data.lat, data.lon);
+                    
+                    // Check if the detected district is one of our valid enum values
+                    if (KERALA_DISTRICTS.includes(detectedDistrict)) {
+                        modalDistrictSelect.value = detectedDistrict;
+                    } else {
+                        // If not a valid enum, clear the selection
+                        modalDistrictSelect.value = '';
+                        if (detectedDistrict) {
+                            showToast(`Detected district "${detectedDistrict}" is not in the list. Please select manually.`);
+                        } else {
+                            showToast("Could not auto-detect district. Please select manually.");
+                        }
+                    }
                 } catch (error) {
                     console.error("Could not fetch district:", error);
-                    modalDistrict.value = ''; // Clear if error
-                    showToast("Could not auto-detect district.");
+                    modalDistrictSelect.value = ''; // Clear if error
+                    showToast("Could not auto-detect district. Please select manually.");
                 }
             }
 
@@ -722,12 +757,13 @@
             // Modal listeners
             addStopForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                const selectedDistrict = modalDistrictSelect.value;
                 const stopData = {
                     name: modalStopName.value,
                     latitude: modalLat.value,
                     longitude: modalLon.value,
-                    district: modalDistrict.value,
-                    loc_link: `https://www.google.com/maps?q=${modalLat.value},${modalLon.value}`
+                    district: selectedDistrict === "" ? null : KERALA_DISTRICTS.indexOf(selectedDistrict) + 1,
+                    loc_link: `http://googleusercontent.com/maps.google.com/?q=${modalLat.value},${modalLon.value}` // Corrected line
                 };
                 addStopToDB(stopData);
             });
