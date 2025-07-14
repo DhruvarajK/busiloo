@@ -37,7 +37,7 @@ class User(Base):
     buses = relationship("Bus", back_populates="owner")
     crowd_submissions = relationship("CrowdSubmission", back_populates="user")
     app_feedback = relationship("AppFeedback", back_populates="user", cascade="all, delete-orphan")
-    # Add new relationship to StopIssue
+    stop_crowd_reports = relationship("StopCrowdReport", back_populates="reporter", cascade="all, delete-orphan")
     stop_issues = relationship("StopIssue", back_populates="user")
 
 # --- NEW: Enum for Stop Issue Types ---
@@ -48,19 +48,38 @@ class StopIssueType(str, enum.Enum):
     STOP_NAME_INCORRECT = "stop_name_incorrect"
     OTHER = "other"
 
+class KeralaDistrict(enum.Enum):
+    Thiruvananthapuram = 1
+    Kollam = 2
+    Pathanamthitta = 3
+    Alappuzha = 4
+    Kottayam = 5
+    Idukki = 6
+    Ernakulam = 7
+    Thrissur = 8
+    Palakkad = 9
+    Malappuram = 10
+    Kozhikode = 11
+    Wayanad = 12
+    Kannur = 13
+    Kasaragod = 14
+    
+    def __str__(self):
+        return self.name
+
 class Stop(Base):
     __tablename__ = "stops"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
     latitude = Column(String, nullable=True)
     longitude = Column(String, nullable=True)
-    district = Column(String, nullable=True, index=True)
+    district = Column(SQLEnum(KeralaDistrict, name="kerala_district"), nullable=True, index=True)
     loc_link = Column(String, nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     stop_times = relationship("StopTime", back_populates="stop")
     traffic_blocks = relationship("TrafficBlock", back_populates="nearest_stop")
-    # Add new relationship to StopIssue
+    crowd_reports = relationship("StopCrowdReport", back_populates="stop", cascade="all, delete-orphan")
     issues = relationship("StopIssue", back_populates="stop", cascade="all, delete-orphan")
 
 # --- NEW: StopIssue Model ---
@@ -185,5 +204,22 @@ class TrafficBlock(Base):
     is_confirmed = Column(Boolean, default=False)
     nearest_stop_id = Column(Integer, ForeignKey("stops.id"), nullable=True)
     reported_time = Column(DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Kolkata")), nullable=False)
-
     nearest_stop = relationship("Stop", back_populates="traffic_blocks")
+
+class StopCrowdReport(Base):
+    """
+    Represents a crowd level report for a specific bus stop,
+    submitted by a user (union member) for a given time and weekday.
+    """
+    __tablename__ = "stop_crowd_reports"
+    id = Column(Integer, primary_key=True, index=True)
+    stop_id = Column(Integer, ForeignKey("stops.id"), nullable=False)
+    reporter_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # User who reported the crowd
+    crowd_level = Column(Integer, nullable=False)  # e.g., 1=Low, 2=Medium, 3=High
+    report_time = Column(Time, nullable=False)  # Time of day the crowd was observed
+    report_weekday = Column(SQLEnum(Weekday), nullable=False)  # Day of the week
+    description = Column(Text, nullable=True)  # Optional additional details
+    reported_at = Column(DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Kolkata"))) # Timestamp of report submission
+
+    stop = relationship("Stop", back_populates="crowd_reports")
+    reporter = relationship("User", back_populates="stop_crowd_reports")
