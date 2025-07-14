@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/busiloo.svg" type="image/svg+xml">
     <title>Login - Busiloo: Kerala Bus Tracking App</title>
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -278,24 +279,29 @@
                     },
                     body: payload
                 });
-
+            
                 // Check if the response was successful (status 200-299)
                 if (res.ok) {
                     const result = await res.json();
+                    console.log('API Response:', result); 
+            
                     // Store the access token in local storage
                     localStorage.setItem('token', result.access_token);
+            
                     // Display success message
                     messageDisplay.textContent = 'Login successful! Redirecting to dashboard...';
                     messageDisplay.classList.add('text-green-600');
-
-                    // Redirect to the dashboard after a short delay
+            
+                    // Determine dashboard based on admin status
+                    const redirectTo = result.is_admin ? '/admin/dashboard' : '/dashboard';
+            
+                    // Redirect after short delay
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = redirectTo;
                     }, 1000);
                 } else {
                     // Handle unsuccessful login attempts
                     const err = await res.json();
-                    // Display error message
                     messageDisplay.textContent = 'Error: ' + (err.detail || 'An unknown error occurred.');
                     messageDisplay.classList.add('text-red-600');
                 }
@@ -304,7 +310,7 @@
                 console.error('Login error:', error);
                 messageDisplay.textContent = 'An unexpected error occurred. Please try again.';
                 messageDisplay.classList.add('text-red-600');
-            }
+            }            
         });
     </script>
 </body>
