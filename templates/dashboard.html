@@ -374,9 +374,9 @@
           }
           
           /* Make the first child span both columns */
-          .secondary-actions > *:first-child {
-            grid-column: 1 / -1;  /* from column 1 to the last column */
-          }
+          .secondary-actions > *:last-child {
+           grid-column: 1 / -1;
+           }
           
         .action-link {
             display: flex;
@@ -669,6 +669,18 @@
                         <p>Send a feedback</p>
                     </div>
                 </a>
+
+                <a href="/union/submit-stop-crowd-report" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g id="User / User_Voice"><path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                        </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Add stop</h3>
+                        <p>Send a feedback</p>
+                    </div>
+                </a>
                 
                 <div class="hover-link" id="exclusionLink">
                     <div class="hover-link-content">
@@ -685,6 +697,8 @@
                         <div><a href="/union/exclusion" ><button class="btn-primary-custom" >Trip Exclusion</button></a></div>
                         <div><a href="#" ><button class="btn-primary-custom">Bus Exclusion</button></a></div>
                     </div>
+
+                    
                 </div>
             </section>
     
@@ -896,15 +910,15 @@
         async function loadTripDetail(tripId) {
             clearContent();
             contentLoader.style.display = 'flex'; // Show loader
-    
+        
             try {
                 const res = await fetch(`/union/trips/${tripId}`, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (!res.ok) throw new Error('Error fetching trip details.');
-                
+        
                 const trip = await res.json();
-    
+        
                 dynamicContent.innerHTML = `
                     <div class="back-button-container">
                         <button class="btn-secondary-custom" id="back-to-buses-from-edit">← Back to Buses</button>
@@ -938,23 +952,34 @@
                         <div id="message" class="message"></div>
                     </form>
                 `;
-    
+        
                 // Populate Service Days
                 const serviceDaysContainer = dynamicContent.querySelector('#service-days-container');
-                const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                // Define weekdays with their corresponding integer values
+                const weekdays = [
+                    { name: 'Monday', value: 0 },
+                    { name: 'Tuesday', value: 1 },
+                    { name: 'Wednesday', value: 2 },
+                    { name: 'Thursday', value: 3 },
+                    { name: 'Friday', value: 4 },
+                    { name: 'Saturday', value: 5 },
+                    { name: 'Sunday', value: 6 }
+                ];
+        
                 weekdays.forEach(day => {
-                    const checked = trip.service_days.some(sd => sd.weekday === day) ? 'checked' : '';
+                    // Check if the trip's service_days array contains an object with a matching 'weekday' integer
+                    const checked = trip.service_days.some(sd => sd.weekday === day.value) ? 'checked' : '';
                     const label = document.createElement('label');
                     label.className = 'service-day-label';
                     label.innerHTML = `
-                        <input type="checkbox" name="service_days" class="form-checkbox-custom" value="${day}" ${checked}>
-                        <span>${day.charAt(0).toUpperCase() + day.slice(1)}</span>`;
+                        <input type="checkbox" name="service_days" class="form-checkbox-custom" value="${day.value}" ${checked}>
+                        <span>${day.name}</span>`; // Display the full name
                     serviceDaysContainer.appendChild(label);
                 });
-    
+        
                 // Populate Stops
                 const stopsContainer = dynamicContent.querySelector('#stops-container');
-                trip.stop_times.sort((a,b) => a.sequence - b.sequence).forEach(st => {
+                trip.stop_times.sort((a, b) => a.sequence - b.sequence).forEach(st => {
                     const stopLabel = st.stop_name ? `<strong class="stop-name">${st.stop_name}</strong> <span class="stop-id">(ID: ${st.stop_id})</span>` : `Stop ID: <span class="stop-id">${st.stop_id}</span>`;
                     const div = document.createElement('div');
                     div.className = 'stop-entry';
@@ -969,11 +994,11 @@
                     `;
                     stopsContainer.appendChild(div);
                 });
-    
+        
                 // Add event listeners
                 document.getElementById('back-to-buses-from-edit').addEventListener('click', loadBuses);
                 dynamicContent.querySelector('#edit-trip-form').addEventListener('submit', (e) => handleFormSubmit(e, tripId));
-    
+        
             } catch (error) {
                 dynamicContent.innerHTML = `<p class="message error visible">${error.message}</p>`;
             } finally {
@@ -986,11 +1011,14 @@
             e.preventDefault();
             const form = e.target;
             const msgDiv = form.querySelector('#message');
-            showMessage('Saving...', 'info', form);
+            // Assuming showMessage is a defined function that handles displaying messages
+            showMessage('Saving...', 'info', form); 
             
             const payload = {
                 departure_time: form.querySelector('input[name="departure_time"]').value,
-                service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: cb.value })),
+                // *** IMPORTANT CHANGE HERE ***
+                // Parse cb.value to an integer before sending it to the backend.
+                service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: parseInt(cb.value) })),
                 stop_times: Array.from(form.querySelectorAll('.stop-entry')).map(div => ({
                     stop_id: parseInt(div.querySelector('input[name="stop_id"]').value),
                     arrival_time: div.querySelector('input[name="arrival_time"]').value,
@@ -1004,10 +1032,11 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify(payload)
                 });
-    
+        
                 if (resPut.ok) {
                     showMessage('Trip updated successfully.', 'success', form);
-                    setTimeout(loadBuses, 1500);
+                    // Assuming loadBuses is a defined function to refresh the bus list
+                    setTimeout(loadBuses, 1500); 
                 } else {
                     const err = await resPut.json().catch(() => ({ detail: 'Unknown error' }));
                     throw new Error(JSON.stringify(err.detail || err));
