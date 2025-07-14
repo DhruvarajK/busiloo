@@ -1,9 +1,9 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_serializer
 from typing import List, Literal, Optional, Union
 from datetime import datetime, time, date
 from enum import Enum
 
-from models import StopIssueType
+from models import StopIssueType,Weekday,KeralaDistrict
 
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3)
@@ -19,6 +19,11 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    is_admin: bool  
+    
+class AdminData(BaseModel):
+    message: str
+    sensitive_data: str
 
 class TokenData(BaseModel):
     username: Optional[str] = None
@@ -39,38 +44,37 @@ class StopCreate(BaseModel):
     name: str
     latitude: Optional[str] = None
     longitude: Optional[str] = None
-    district: Optional[str] = None
+    district: Optional[KeralaDistrict] = None  # now uses Enum
     loc_link: Optional[str] = None
 
-# Schema for updating a stop (input) - all fields are optional
+
+
 class StopUpdate(BaseModel):
     name: Optional[str] = None
     latitude: Optional[str] = None
     longitude: Optional[str] = None
-    district: Optional[str] = None
+    district: KeralaDistrict
     loc_link: Optional[str] = None
 
-# Schema for reading/returning a stop (output)
+
 class StopOut(BaseModel):
     id: int
     name: str
     latitude: Optional[str]
     longitude: Optional[str]
-    district: Optional[str]
+    district: KeralaDistrict
     loc_link: Optional[str]
     created_at: datetime
 
-    # This configuration allows Pydantic to read data from ORM models
     model_config = ConfigDict(from_attributes=True)
+    
+    @model_serializer(when_used="json")
+    def serialize_district(self):
+        data = self.model_dump()
+        if self.district:
+            data['district'] = str(self.district) # Convert enum to its string name
+        return data
 
-class WeekdayEnum(str, Enum):
-    monday = "monday"
-    tuesday = "tuesday"
-    wednesday = "wednesday"
-    thursday = "thursday"
-    friday = "friday"
-    saturday = "saturday"
-    sunday = "sunday"
 
 class StopTimeCreate(BaseModel):
     stop_id: int
@@ -78,25 +82,40 @@ class StopTimeCreate(BaseModel):
     sequence: int
 
 class ServiceDayCreate(BaseModel):
-    weekday: WeekdayEnum
+    weekday: Weekday
 
 class TripUpdate(BaseModel):
     departure_time: time
     stop_times: List[StopTimeCreate]
-    service_days: Optional[List[ServiceDayCreate]]  # if provided, will replace existing days
+    service_days: Optional[List[ServiceDayCreate]]  
+    
+    
 
+class CrowdReportOut(BaseModel):
+
+    crowd_level: int
+    description: Optional[str] = None
+    report_time: time
+
+    class Config:
+        from_attributes = True
+
+    
 class StopTimeOut(BaseModel):
     stop_id: int
     stop_name: str
     arrival_time: time
     sequence: int
-    latitude: Optional[str] = None
-    longitude: Optional[str] = None
-    loc_link: Optional[str] = None
-    model_config = ConfigDict(from_attributes=True)
+    latitude: Optional[str]
+    longitude: Optional[str]
+    loc_link: Optional[str]
+    crowd_report: Optional[CrowdReportOut] = None
+
+    class Config:
+        from_attributes = True
 
 class ServiceDayOut(BaseModel):
-    weekday: WeekdayEnum
+    weekday: Weekday
     model_config = ConfigDict(from_attributes=True)
 
 class TripOut(BaseModel):
@@ -108,6 +127,8 @@ class TripOut(BaseModel):
     stop_times: List[StopTimeOut]
     service_days: List[ServiceDayOut]
     model_config = ConfigDict(from_attributes=True)
+    
+
 
 class TripCreate(BaseModel):
     bus_id: int
@@ -155,7 +176,7 @@ class RouteResult(BaseModel):
     end_arrival: time
 
 class CrowdSubmissionIn(BaseModel):
-    crowd_level: int = Field(..., ge=1, le=3)  # 1=low, 2=medium, 3=high
+    crowd_level: int = Field(..., ge=1, le=3) 
 
 class CrowdSubmissionOut(BaseModel):
     bus_id: int
@@ -165,10 +186,10 @@ class CrowdSubmissionOut(BaseModel):
 
 class CrowdPredictionOut(BaseModel):
     bus_id: int
-    predicted_level: Optional[int] = None  # None if insufficient data
-    description: Optional[str] = None  # e.g., "Low/Medium/High" or "No data"
-    based_on_count: int  # number of past submissions used
-    recommended_action: Optional[str] = None  # e.g., "Consider an earlier bus" if high
+    predicted_level: Optional[int] = None  
+    description: Optional[str] = None  
+    based_on_count: int  
+    recommended_action: Optional[str] = None  
 
 class BusArrival(BaseModel):
     bus_id: int
@@ -177,7 +198,7 @@ class BusArrival(BaseModel):
     arrival_time: time
 
 class NearbyBusesResponse(BaseModel):
-    """The complete response for the nearby buses feature."""
+  
     nearest_stop: StopOut
     arrivals: List[BusArrival]
 
@@ -195,10 +216,10 @@ class AppFeedbackOut(BaseModel):
 
 class TrafficBlockCreate(BaseModel):
     description: str = Field(..., min_length=10)
-    severity: int = Field(..., ge=1, le=3)  # 1=low, 2=medium, 3=high
+    severity: int = Field(..., ge=1, le=3)  
     latitude: float
     longitude: float
-    route_name: Optional[str] = None  # Optional route name
+    route_name: Optional[str] = None  
 
 class TrafficBlockOut(BaseModel):
     id: int
@@ -258,7 +279,7 @@ class RouteFareDetail(BaseModel):
 
 
 class FareCalculationResult(BaseModel):
-    """Response model for the fare calculation API."""
+    
     start_stop_name: str
     end_stop_name: str
     distance_km: float
@@ -266,17 +287,17 @@ class FareCalculationResult(BaseModel):
     
 
 class StopIssueBase(BaseModel):
-    """Base schema for a stop issue, containing common fields."""
+   
     stop_id: int
     issue_type: StopIssueType
     description: str
 
 class StopIssueCreate(StopIssueBase):
-    """Schema used for creating a new stop issue. Allows optional user_id."""
+   
     user_id: Optional[int] = None
 
 class StopIssue(StopIssueBase):
-    """Schema for returning a stop issue from the API, includes DB-generated fields."""
+   
     id: int
     status: str
     reported_at: datetime
@@ -300,7 +321,67 @@ class TransferRouteResult(BaseModel):
     second_leg: TransferLeg
     transfer_at_stop_name: str
     transfer_wait_time: str
+    
 
 class CombinedRouteResponse(BaseModel):
-    type: str # "direct", "transfer", or "none"
+    type: str
     results: Optional[Union[List[RouteResult], List[TransferRouteResult]]] = None
+    
+    
+class StopCrowdReportCreate(BaseModel):
+    stop_id: int
+    crowd_level: int = Field(..., ge=1, le=3, description="Crowd level: 1=Low, 2=Medium, 3=High")
+    report_time: time
+    report_weekday: Weekday
+    description: Optional[str] = None
+
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StopCrowdReportOut(StopCrowdReportCreate):
+    id: int
+    reporter_id: int
+    reported_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        use_enum_values=True,     
+    )
+    
+class StopInfoForIssue(BaseModel):
+    """Minimal stop info to be nested in an issue."""
+    id: int
+    name: str
+    model_config = ConfigDict(from_attributes=True)
+
+class UserInfoForIssue(BaseModel):
+    """Minimal user info for nesting."""
+    id: int
+    username: str
+    model_config = ConfigDict(from_attributes=True)
+
+class StopIssueDetailOut(BaseModel):
+    """Detailed schema for displaying an issue in the admin panel."""
+    id: int
+    issue_type: StopIssueType
+    description: str
+    status: str
+    reported_at: datetime
+    stop: StopInfoForIssue  # Nested stop data
+    user: Optional[UserInfoForIssue] = None # Reporter can be anonymous
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class StopIssueUpdate(BaseModel):
+    """Schema for updating the status of an issue."""
+    status: Literal["reported", "in_progress", "resolved"]
+    
+
+class BusWithTripCount(BaseModel):
+    id: int
+    name: str
+    registration_no: str
+    is_ls: bool
+    num_trips: int
+    model_config = ConfigDict(from_attributes=True)
