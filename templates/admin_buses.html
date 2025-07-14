@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Bus List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define custom CSS variables for colors */
+        :root {
+            --primary-red: #e11d48;
+            --primary-red-dark: #be123c;
+            --primary-red-light: #fca5a5; /* Lighter shade for gradients */
+            --gray-900: #1a202c;
+            --gray-600: #4a5568;
+            --gray-500: #718096;
+            --gray-400: #a0aec0;
+            --gray-300: #cbd5e0;
+            --gray-200: #edf2f7;
+            --gray-100: #f7fafc;
+            --green-600: #38a169;
+            --red-600: #e53e3e;
+        }
+
+        /* Basic body styling for full-screen centering and font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Minimum height of the viewport */
+            margin: 0;
+            padding: .5rem; /* Increased padding for better spacing on all screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        /* Main container styling, adopting 'card' aesthetics */
+        .container {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0); /* Subtle gradient for the card */
+            padding: 1.5rem; /* Default padding for all screens */
+            border-radius: 1rem; /* More rounded corners */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+            width: 100%; /* Full width by default */
+            max-width: 60rem; /* Wider max-width for the main panel */
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+            animation: fadeIn 0.8s ease-out; /* Add fade-in animation */
+            min-height: 95vh;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments for main container */
+        @media (min-width: 640px) { /* Small screens and up (sm) */
+            .container {
+                padding: 2.5rem; /* More generous padding */
+            }
+        }
+
+        @media (min-width: 1024px) { /* Large screens and up (lg) */
+            .container {
+                max-width: 70rem; /* Even larger */
+            }
+        }
+
+        /* Heading styles */
+        .main-heading {
+            font-size: 2.5rem; /* Larger text for impact */
+            font-weight: 800; /* font-extrabold */
+            color: var(--gray-900); /* dark gray */
+            margin-bottom: 0.75rem; /* mb-3 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+        }
+
+        @media (min-width: 768px) { /* Medium screens and up (md) */
+            .main-heading {
+                font-size: 3rem; /* md:text-5xl for larger screens */
+            }
+        }
+
+        .main-heading .highlight {
+            color: var(--primary-red);
+        }
+
+        /* Subtitle/description text */
+        .subtitle {
+            color: var(--gray-600); /* gray-600 */
+            margin-bottom: 2.5rem; /* mb-10 */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 300; /* Lighter font weight for subtitle */
+        }
+
+        /* Controls Section - adapted to new input/button styles */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem; /* Adjusted gap */
+            margin-bottom: 2rem; /* Adjusted margin */
+            flex-wrap: wrap;
+        }
+
+        .controls input[type="text"],
+        .controls select {
+            display: block;
+            padding: 0.6rem 1rem; /* Smaller padding for inputs */
+            border: 1px solid var(--gray-300); /* border gray */
+            border-radius: 0.5rem; /* Slightly more rounded */
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04); /* Inner shadow for depth */
+            color: var(--gray-900); /* text-gray-900 */
+            font-size: 0.95rem; /* Smaller text */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
+            flex-grow: 1; /* Allow inputs to grow */
+            min-width: 150px; /* Minimum width for inputs */
+        }
+
+        .controls input::placeholder {
+            color: var(--gray-500); /* placeholder-gray-500 */
+        }
+
+        .controls input:focus,
+        .controls select:focus {
+            outline: none;
+            border-color: var(--primary-red); /* Focus border color */
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2); /* Softer, smaller focus ring */
+        }
+
+        .controls button {
+            background: linear-gradient(to right, var(--primary-red), var(--primary-red-dark)); /* Gradient button */
+            color: #ffffff; /* text-white */
+            font-weight: 600; /* Bolder font */
+            padding: 0.6rem 1.2rem; /* Smaller padding for button */
+            border-radius: 0.5rem; /* More rounded */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+            transition: all 0.3s ease;
+            font-size: 0.95rem; /* Smaller text */
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.02em; /* Slight letter spacing */
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0; /* Prevent button from shrinking */
+        }
+
+        .controls button:hover {
+            background: linear-gradient(to right, var(--primary-red-dark), var(--primary-red)); /* Inverted gradient on hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Even stronger shadow */
+            transform: translateY(-1px); /* Slight lift effect */
+        }
+
+        .controls button:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(190, 18, 60, 0.3), 0 0 0 1px rgba(255, 255, 255, 1);
+        }
+
+        /* Bus Cards Container */
+        .bus-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Smaller minmax for tiny cards */
+            gap: 1rem; /* Smaller gap between cards */
+            padding: 1rem 0;
+            justify-content: center; /* Center cards in the grid */
+        }
+
+        /* Individual Bus Card Styles - made smaller and rectangular */
+        .bus-card {
+            background-color: #ffffff;
+            border: 1px solid var(--gray-200); /* Lighter border */
+            border-radius: 0.6rem; /* Slightly less rounded for a more rectangular feel */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Softer shadow */
+            padding: 0.8rem; /* Significantly reduced padding for a smaller card */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: left; /* Align text left within the card */
+            overflow: hidden; /* Hide overflowing content */
+        }
+
+        .bus-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .bus-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem; /* Reduced margin */
+            color: var(--primary-red-dark); /* Use darker red for heading */
+            font-size: 1.05rem; /* Smaller font for heading */
+            font-weight: 700; /* Bolder heading */
+            border-bottom: 1px solid var(--gray-100); /* Very light border */
+            padding-bottom: 0.4rem; /* Reduced padding */
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: ellipsis; /* Add ellipsis for overflow */
+        }
+
+        .bus-card p {
+            margin: 0.2rem 0; /* Very small margin for compact text */
+            color: var(--gray-600); /* Darker gray for text */
+            font-size: 1rem; /* Very small font size for content */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            line-height: 1.3; /* Slightly tighter line height */
+        }
+
+        .bus-card p strong {
+            color: var(--gray-900); /* Even darker for labels */
+            font-weight: 600;
+            flex-basis: 50%;
+            flex-shrink: 0; /* Prevent label from shrinking */
+        }
+
+        .bus-card .value {
+            flex-basis: 50%;
+            text-align: right;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bus-card .ls-status {
+            font-weight: 700;
+            color: var(--green-600); /* Green for 'Yes' */
+        }
+
+        .bus-card .ls-status.no {
+            color: var(--red-600); /* Red for 'No' */
+        }
+
+        /* Message display area - for loading/error messages */
+        .message-area {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            min-height: 1.2rem;
+            grid-column: 1 / -1; /* Span across all grid columns */
+            padding: 1rem;
+        }
+
+        .message-area.error {
+            color: var(--red-600);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                padding: 12px;
+            }
+
+            .main-heading {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .controls input[type="text"],
+            .controls select,
+            .controls button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .bus-cards-container {
+                gap: 0.75rem;
+                overflow-y: auto;
+                height: 475px;
+                display: flex;
+                flex-wrap: nowrap;
+                flex-direction: column;
+            }
+
+            .bus-card {
+                padding: 0.6rem;
+                min-height: 121px;
+            }
+
+            .bus-card h3 {
+                font-size: 0.95rem;
+            }
+
+            .bus-card p {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-heading">Bus <span class="highlight">Management</span> Dashboard</h1>
+        <p class="subtitle">View and filter bus details for your routes.</p>
+
+        <div class="controls">
+            <input type="text" id="busSearch" placeholder="Search by name or registration number">
+            <select id="lsFilter">
+                <option value="">All Buses</option>
+                <option value="true">Limited Stop (LS)</option>
+                <option value="false">Ordinary</option>
+            </select>
+            <button id="fetchBusesBtn" class="btn-primary">Refresh List</button>
+        </div>
+
+        <div id="busCardsContainer" class="bus-cards-container">
+            <!-- Bus cards will be loaded here by JavaScript -->
+            <p class="message-area">Loading buses...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const busSearchInput = document.getElementById('busSearch');
+            const lsFilterSelect = document.getElementById('lsFilter');
+            const fetchBusesBtn = document.getElementById('fetchBusesBtn');
+            const busCardsContainer = document.getElementById('busCardsContainer');
+
+            // Function to fetch bus data
+            async function fetchBuses() {
+                busCardsContainer.innerHTML = '<p class="message-area">Loading buses...</p>'; // Show loading state
+
+                const searchTerm = busSearchInput.value;
+                const isLs = lsFilterSelect.value === '' ? null : (lsFilterSelect.value === 'true');
+
+                const url = new URL(`/admin/buses`, window.location.origin);
+                if (searchTerm) {
+                    url.searchParams.append('search_query', searchTerm);
+                }
+                if (isLs !== null) {
+                    url.searchParams.append('is_ls', isLs);
+                }
+
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        busCardsContainer.innerHTML = '<p class="message-area error">Authentication token missing. Please log in as admin.</p>';
+                        console.error("Admin token not found in localStorage.");
+                        return;
+                    }
+
+                    const response = await fetch(url.toString(), {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.status === 403) {
+                        busCardsContainer.innerHTML = '<p class="message-area error">Access forbidden. You might not be an admin or your token is invalid.</p>';
+                        console.error("Admin access required.");
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`HTTP error! status: ${response.status}, detail: ${errorData.detail || response.statusText}`);
+                    }
+
+                    const buses = await response.json();
+                    displayBuses(buses);
+
+                } catch (error) {
+                    console.error("Error fetching buses:", error);
+                    busCardsContainer.innerHTML = `<p class="message-area error">Error loading buses: ${error.message}</p>`;
+                }
+            }
+
+            // Function to display bus data as cards
+            function displayBuses(buses) {
+                busCardsContainer.innerHTML = ''; // Clear existing cards
+
+                if (buses.length === 0) {
+                    busCardsContainer.innerHTML = '<p class="message-area">No buses found matching your criteria.</p>';
+                    return;
+                }
+
+                buses.forEach(bus => {
+                    const busCard = document.createElement('div');
+                    busCard.classList.add('bus-card');
+
+                    const lsStatusClass = bus.is_ls ? '' : 'no';
+
+                    busCard.innerHTML = `
+                        <h3>${bus.name}</h3>
+                        <p><strong>ID:</strong> <span class="value">${bus.id}</span></p>
+                        <p><strong>Reg. No.:</strong> <span class="value">${bus.registration_no}</span></p>
+                        <p><strong>Limited Stop:</strong> <span class="value ls-status ${lsStatusClass}">${bus.is_ls ? 'Yes' : 'No'}</span></p>
+                        <p><strong>Trips:</strong> <span class="value">${bus.num_trips}</span></p>
+                    `;
+                    busCardsContainer.appendChild(busCard);
+                });
+            }
+
+            // Event Listeners
+            fetchBusesBtn.addEventListener('click', fetchBuses);
+
+            let searchTimeout;
+            busSearchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(fetchBuses, 500);
+            });
+
+            lsFilterSelect.addEventListener('change', fetchBuses);
+
+            // Initial fetch when the page loads
+            fetchBuses();
+        });
+    </script>
+</body>
+</html>

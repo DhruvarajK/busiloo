@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Union Members</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define custom CSS variables for colors */
+        :root {
+            --primary-red: #e11d48;
+            --primary-red-dark: #be123c;
+            --primary-red-light: #fca5a5; /* Lighter shade for gradients */
+        }
+
+        /* Basic body styling for full-screen centering and font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            display: flex;
+            flex-direction: column; /* Changed to column to stack elements */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Minimum height of the viewport */
+            margin: 0;
+            padding: .5rem; /* Increased padding for better spacing on all screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        /* Card container styling */
+        .card { /* Generic card class for reuse */
+            background: linear-gradient(145deg, #ffffff, #f0f0f0); /* Subtle gradient for the card */
+            padding: 1.5rem; /* Default padding for all screens */
+            border-radius: 1rem; /* More rounded corners */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+            width: 100%; /* Full width by default */
+            max-width: 26rem; /* Slightly larger max-width for better appearance */
+            text-align: center;
+            box-sizing: border-box;
+            position: relative; /* Needed for potential future pseudo-elements */
+            animation: fadeIn 0.8s ease-out; /* Add fade-in animation */
+            margin-top: 2rem; /* Add margin to separate from back link */
+            margin-bottom: 2rem; /* Add margin at the bottom */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments for card */
+        @media (min-width: 640px) { /* Small screens and up (sm) */
+            .card {
+                max-width: 32rem; /* Equivalent to sm:max-w-md, larger */
+                padding: 3.5rem; /* More generous padding */
+            }
+        }
+
+        @media (min-width: 1024px) { /* Large screens and up (lg) */
+            .card {
+                max-width: 38rem; /* Equivalent to lg:max-w-lg, even larger */
+            }
+        }
+
+        /* Heading styles */
+        .main-heading {
+            font-size: 2.5rem; /* Larger text for impact */
+            font-weight: 800; /* font-extrabold */
+            color: #1a202c; /* dark gray */
+            margin-bottom: 0.75rem; /* mb-3 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+        }
+
+        @media (min-width: 768px) { /* Medium screens and up (md) */
+            .main-heading {
+                font-size: 3rem; /* md:text-5xl for larger screens */
+            }
+        }
+
+        .main-heading .highlight {
+            color: var(--primary-red);
+        }
+
+        /* Subtitle/description text */
+        .subtitle {
+            color: #4a5568; /* gray-600 */
+            margin-bottom: 2.5rem; /* mb-10 */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 300; /* Lighter font weight for subtitle */
+        }
+
+        /* Form styling (not directly used here but kept for consistency) */
+        .form { /* Generic form class for reuse */
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem; /* space-y-5, slightly tighter */
+        }
+
+        /* Label styling (not directly used here but kept for consistency) */
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-size: 0.95rem; /* Slightly larger text */
+            font-weight: 600; /* Bolder font weight */
+            color: #2d3748; /* Darker gray for labels */
+            margin-bottom: 0.3rem; /* mb-1 */
+        }
+
+        /* Input field styling (not directly used here but kept for consistency) */
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1.2rem; /* More padding for better touch targets */
+            border: 1px solid #cdd5e0; /* border gray */
+            border-radius: 0.6rem; /* Slightly more rounded */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06); /* Inner shadow for depth */
+            color: #1a202c; /* text-gray-900 */
+            font-size: 1.05rem; /* Slightly larger text */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: #8c96a7; /* placeholder-gray-500 */
+        }
+
+        /* Input focus styles (not directly used here but kept for consistency) */
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-red); /* Focus border color */
+            box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.2); /* Softer, larger focus ring */
+        }
+
+        /* Checkbox specific styling (not directly used here but kept for consistency) */
+        .form-group.checkbox-group {
+            display: flex;
+            align-items: center; /* Align label and checkbox vertically */
+            gap: 0.5rem; /* Space between checkbox and label */
+            margin-top: 0.5rem; /* Add some top margin for spacing */
+            justify-content: flex-start; /* Align to the left */
+        }
+
+        .form-group.checkbox-group label {
+            margin-bottom: 0; /* Remove bottom margin for checkbox label */
+            cursor: pointer; /* Indicate it's clickable */
+            user-select: none; /* Prevent text selection */
+        }
+
+        .form-group.checkbox-group input[type="checkbox"] {
+            width: 1.25rem; /* Standard size for checkbox */
+            height: 1.25rem;
+            accent-color: var(--primary-red); /* Color the checkbox itself */
+            border-radius: 0.25rem; /* Slightly rounded checkbox */
+            cursor: pointer;
+            flex-shrink: 0; /* Prevent it from shrinking */
+        }
+
+        /* Button styling (not directly used here but kept for consistency) */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(to right, var(--primary-red), var(--primary-red-dark)); /* Gradient button */
+            color: #ffffff; /* text-white */
+            font-weight: 700; /* Bolder font */
+            padding: 0.9rem 1.5rem; /* Generous padding for easier tapping */
+            border-radius: 0.75rem; /* More rounded */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+            transition: all 0.3s ease;
+            font-size: 1.2rem; /* Larger text */
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.05em; /* Slight letter spacing */
+            position: relative;
+            overflow: hidden; /* For ripple effect or other future animations */
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, var(--primary-red-dark), var(--primary-red)); /* Inverted gradient on hover */
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3); /* Even stronger shadow */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(190, 18, 60, 0.4), 0 0 0 2px rgba(255, 255, 255, 1);
+        }
+
+        /* Message display area */
+        #message {
+            margin-top: 1.75rem; /* mt-7 */
+            text-align: center;
+            font-size: 0.9rem; /* text-base */
+            font-weight: 500; /* font-medium */
+            color: #4a5568; /* text-gray-700 */
+            min-height: 1.2rem; /* Ensure space even when empty */
+        }
+
+        /* Message colors */
+        #message.text-green-600 {
+            color: #38a169; /* green-600 */
+        }
+        #message.text-red-600 {
+            color: #e53e3e; /* red-600 */
+        }
+
+        /* Footer text and link (not directly used here but kept for consistency) */
+        .footer-text {
+            margin-top: 2.5rem; /* mt-10 */
+            font-size: 0.9rem; /* text-sm */
+            color: #718096; /* gray-500 */
+        }
+
+        .footer-text a {
+            color: var(--primary-red);
+            text-decoration: none;
+            font-weight: 600; /* Bolder link text */
+            transition: text-decoration 0.2s ease, color 0.2s ease;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+            color: var(--primary-red-dark);
+        }
+
+        /* --- Specific styling for the Union Members page --- */
+
+        /* Back to Dashboard link */
+        .back {
+            display: inline-flex;
+            align-items: center;
+            font-size: 1rem;
+            color: var(--primary-red);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 1.5rem; /* Space below the link */
+            transition: color 0.2s ease;
+            position: absolute; /* Position absolutely to top-left */
+            top: 2rem;
+            left: 2rem;
+        }
+
+        .back:hover {
+            color: var(--primary-red-dark);
+            text-decoration: underline;
+        }
+
+
+        /* Page Heading */
+        h1 {
+            font-size: 3rem; /* Larger text for impact */
+            font-weight: 800; /* font-extrabold */
+            color: #1a202c; /* dark gray */
+            margin-bottom: 2rem; /* More space below heading */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 4rem; /* Even larger on medium screens */
+            }
+        }
+
+        /* Loading and Error messages */
+        #loading, #error {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #4a5568;
+            margin-top: 1rem;
+            min-height: 2rem; /* Ensure consistent spacing */
+        }
+
+        #error {
+            color: #e53e3e; /* Red for errors */
+        }
+
+        /* Table Styling */
+        #members-table {
+            width: 100%;
+            max-width: 90%; /* Adjust max-width for better table display */
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Ensures rounded corners are applied to table contents */
+        }
+
+        #members-table thead {
+            background-color: var(--primary-red);
+            color: #ffffff;
+        }
+
+        #members-table th {
+            padding: 1.2rem 1.5rem;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #members-table tbody tr {
+            border-bottom: 1px solid #e2e8f0; /* Light gray border */
+            transition: background-color 0.2s ease;
+        }
+
+        #members-table tbody tr:last-child {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        #members-table tbody tr:hover {
+            background-color: #fef2f2; /* Light red hover effect */
+        }
+
+        #members-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        /* Responsive Table */
+        @media (max-width: 768px) {
+            #members-table, #members-table tbody, #members-table tr, #members-table td {
+                display: block;
+                width: 100%;
+            }
+
+            #members-table thead {
+                display: none; /* Hide table header on small screens */
+            }
+
+            #members-table tr {
+                margin-bottom: 1rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.75rem;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            }
+
+            #members-table td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+
+            #members-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 1.5rem;
+                width: calc(50% - 1.5rem);
+                padding-right: 1rem;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 700;
+                color: #4a5568;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a class="back" href="/admin/dashboard">Back</a>
+    <h1>Union Members Overview</h1>
+
+    <div id="loading">Loading members…</div>
+    <div id="error"></div>
+    <table id="members-table" style="display: none;">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Total Buses</th>
+                <th>Total Trips</th>
+                <th>Joined On</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        (async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('loading').textContent = '';
+                document.getElementById('error').textContent = '🔒 You must be logged in as admin.';
+                return;
+            }
+
+            try {
+                const res = await fetch('/admin/union-members-data', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (res.status === 401) {
+                    document.getElementById('loading').textContent = '';
+                    document.getElementById('error').textContent = '🚫 Invalid credentials — please log in again.';
+                    return;
+                }
+                if (res.status === 403) {
+                    document.getElementById('loading').textContent = '';
+                    document.getElementById('error').textContent = '❌ Admin access required.';
+                    return;
+                }
+                if (!res.ok) {
+                    throw new Error(`Status ${res.status}`);
+                }
+
+                const members = await res.json();
+                const tbody = document.querySelector('#members-table tbody');
+
+                for (const m of members) {
+                    const row = document.createElement('tr');
+                    // Add data-label for responsive table headings
+                    row.innerHTML = `
+                        <td data-label="Username">${m.username}</td>
+                        <td data-label="Email">${m.email}</td>
+                        <td data-label="Total Buses">${m.bus_count}</td>
+                        <td data-label="Total Trips">${m.trip_count}</td>
+                        <td data-label="Joined On">${m.joined_on}</td>
+                    `;
+                    tbody.append(row);
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('members-table').style.display = '';
+            } catch (err) {
+                document.getElementById('loading').textContent = '';
+                document.getElementById('error').textContent = '⚠️ Error loading data.';
+                console.error(err);
+            }
+        })();
+    </script>
+</body>
+</html>

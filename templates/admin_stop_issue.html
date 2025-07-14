@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Stop Issues</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define custom CSS variables for colors */
+        :root {
+            --primary-red: #e11d48;
+            --primary-red-dark: #be123c;
+            --primary-red-light: #fca5a5; /* Lighter shade for gradients */
+            --gray-900: #1a202c;
+            --gray-800: #2d3748;
+            --gray-700: #4a5568;
+            --gray-500: #718096;
+            --gray-300: #cdd5e0;
+            --gray-200: #edf2f7; /* For skeleton loading */
+            --green-600: #38a169;
+            --red-600: #e53e3e;
+        }
+
+        /* Basic body styling for full-screen centering and font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Minimum height of the viewport */
+            margin: 0;
+            padding: .5rem; /* Increased padding for better spacing on all screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            flex-direction: column; /* Allow content to stack */
+        }
+        .combi {
+            display: flex ;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Generic card class for reuse */
+        .card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0); /* Subtle gradient for the card */
+            padding: 1.5rem; /* Default padding for all screens */
+            border-radius: 1rem; /* More rounded corners */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+            width: 100%; /* Full width by default */
+            max-width: 26rem; /* Slightly larger max-width for better appearance */
+            text-align: center;
+            box-sizing: border-box;
+            position: relative; /* Needed for potential future pseudo-elements */
+            animation: fadeIn 0.8s ease-out; /* Add fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments for card */
+        @media (min-width: 640px) { /* Small screens and up (sm) */
+            .card {
+                max-width: 32rem; /* Equivalent to sm:max-w-md, larger */
+                padding: 3.5rem; /* More generous padding */
+            }
+        }
+
+        @media (min-width: 1024px) { /* Large screens and up (lg) */
+            .card {
+                max-width: 38rem; /* Equivalent to lg:max-w-lg, even larger */
+            }
+        }
+
+        /* Container for the main content */
+        .container {
+            width: 100%;
+            max-width: 90rem; /* Increased max-width for a wider layout */
+            margin: 2rem auto; /* Center the container with vertical margin */
+            padding: 1rem;
+            box-sizing: border-box;
+            background-color: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 2rem;
+            }
+        }
+
+        /* Heading styles */
+        .main-heading {
+            font-size: 2.5rem; /* Larger text for impact */
+            font-weight: 800; /* font-extrabold */
+            color: var(--gray-900);
+            margin-bottom: 0.75rem; /* mb-3 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+        }
+
+        @media (min-width: 768px) { /* Medium screens and up (md) */
+            .main-heading {
+                font-size: 3rem; /* md:text-5xl for larger screens */
+            }
+        }
+
+        .main-heading .highlight {
+            color: var(--primary-red);
+        }
+
+        /* Subtitle/description text */
+        .subtitle {
+            color: var(--gray-700);
+            margin-bottom: 2.5rem; /* mb-10 */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 300; /* Lighter font weight for subtitle */
+        }
+
+        /* Form styling */
+        .form { /* Generic form class for reuse */
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem; /* space-y-5, slightly tighter */
+        }
+
+        /* Label styling */
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-size: 0.95rem; /* Slightly larger text */
+            font-weight: 600; /* Bolder font weight */
+            color: var(--gray-800);
+            margin-bottom: 0.3rem; /* mb-1 */
+        }
+
+        /* Input field styling */
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="url"] { /* Removed select from this rule */
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1.2rem; /* More padding for better touch targets */
+            border: 1px solid var(--gray-300);
+            border-radius: 0.6rem; /* Slightly more rounded */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06); /* Inner shadow for depth */
+            color: var(--gray-900);
+            font-size: 1.05rem; /* Slightly larger text */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: var(--gray-500);
+        }
+
+        /* Input focus styles */
+        .form-group input:focus,
+        .form-group select:focus { /* Added select for filter dropdowns */
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.2);
+        }
+
+        /* Custom Select Styling */
+        .form-group select {
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1.2rem; /* Consistent padding */
+            border: 1px solid var(--gray-300);
+            border-radius: 0.6rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+            color: var(--gray-900);
+            font-size: 1.05rem;
+            background-color: #fff; /* Ensure white background */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-sizing: border-box;
+            /* Hide default arrow and add custom one */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%234A5568%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+            padding-right: 2.5rem; /* Make space for the custom arrow */
+            cursor: pointer;
+        }
+
+        /* Button styling */
+        .btn {
+            font-weight: 700;
+            padding: 0.9rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-size: 1rem; /* Slightly smaller for general buttons */
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(to right, var(--primary-red), var(--primary-red-dark));
+            color: #ffffff;
+            font-size: 1.2rem; /* Larger text for primary action */
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, var(--primary-red-dark), var(--primary-red));
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(190, 18, 60, 0.4), 0 0 0 2px rgba(255, 255, 255, 1);
+        }
+
+        .btn-submit {
+            background: linear-gradient(to right, var(--green-600), #2f855a);
+            color: #ffffff;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(to right, #2f855a, var(--green-600));
+            box-shadow: 0 10px 18px rgba(0, 128, 0, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-cancel {
+            background-color: var(--gray-500);
+            color: #ffffff;
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--gray-700);
+            transform: translateY(-1px);
+        }
+
+        .btn-fix {
+            background-color: var(--primary-red);
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-fix:hover:not(:disabled) {
+            background-color: var(--primary-red-dark);
+        }
+
+        .btn-fix:disabled {
+            background-color: var(--gray-500);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Message display area */
+        #message {
+            margin-top: 1.75rem; /* mt-7 */
+            text-align: center;
+            font-size: 0.9rem; /* text-base */
+            font-weight: 500; /* font-medium */
+            color: var(--gray-700);
+            min-height: 1.2rem; /* Ensure space even when empty */
+        }
+
+        /* Message colors */
+        #message.text-green-600 {
+            color: var(--green-600);
+        }
+        #message.text-red-600 {
+            color: var(--red-600);
+        }
+
+        /* Filters section */
+        .filters {
+            display: flex;
+            flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center; /* Center filters on larger screens */
+            align-items: center;
+        }
+
+        .filters label {
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 1rem;
+        }
+
+        .filters select {
+            flex-grow: 1;
+            max-width: 200px;
+            height: 30px;
+            border: 1px solid #d9d9d9;
+            border-radius: 12px;
+        }
+        h3,p{
+            margin: 0;
+        }
+
+        @media (max-width: 639px) {
+            .filters {
+                flex-direction: column; /* Stack filters vertically on mobile */
+                align-items: stretch; /* Stretch items to full width */
+            }
+            .filters label {
+                text-align: left;
+            }
+            .filters select {
+                max-width: none;
+                height: 40px; /* Remove max-width on mobile */
+            }
+        }
+
+        /* Issue card specific styles */
+        .issue-card {
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .issue-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .issue-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-red-dark);
+            margin-bottom: 0.75rem;
+            text-transform: capitalize; /* Capitalize the issue type */
+        }
+
+        .issue-card p {
+            font-size: 1rem;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .issue-card strong {
+            color: var(--gray-900);
+        }
+
+        .issue-card .meta {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin-top: 1rem;
+            border-top: 1px solid #edf2f7;
+            padding-top: 0.75rem;
+        }
+
+        .issue-card .btn-fix {
+            margin-top: 1rem;
+            display: inline-block; /* Make button behave like a block element for width */
+        }
+
+        /* Status indicators */
+        .issue-card.status-reported {
+            opacity: 1;
+        }
+        .issue-card.status-resolved {
+            opacity: 0.8;
+        }
+
+        /* Modal specific styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #ffffff, #f9f9f9);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 400px;
+            text-align: left;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .modal-content .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-content .form-actions .btn {
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        /* Loading Spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001; /* Above modal */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .spinner-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-red);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Skeleton Loading Styles */
+        .skeleton-card {
+            background-color: var(--gray-200);
+            border: 1px solid var(--gray-300);
+            animation: pulse 1.5s infinite ease-in-out;
+            height: 150px; /* Approximate height for a skeleton card */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 1.5rem;
+        }
+
+        .skeleton-card::before {
+            content: '';
+            background-color: var(--gray-300);
+            height: 1.2rem;
+            width: 70%;
+            border-radius: 4px;
+            margin-bottom: 0.8rem;
+        }
+
+        .skeleton-card::after {
+            content: '';
+            background-color: var(--gray-300);
+            height: 0.8rem;
+            width: 90%;
+            border-radius: 4px;
+        }
+        .skeleton-card:nth-child(2)::before { width: 60%; }
+        .skeleton-card:nth-child(2)::after { width: 85%; }
+        .skeleton-card:nth-child(3)::before { width: 80%; }
+        .skeleton-card:nth-child(3)::after { width: 75%; }
+
+
+        @keyframes pulse {
+            0% { background-color: var(--gray-200); }
+            50% { background-color: var(--gray-300); }
+            100% { background-color: var(--gray-200); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container card">
+        <h1 class="main-heading">Reported <span class="highlight">Stop</span> Issues</h1>
+        <div class="filters">
+            <label for="status-filter">Status:</label>
+            <select id="status-filter" class="form-group">
+                <option value="">All</option>
+                <option value="reported" selected>Reported</option>
+                <option value="resolved">Resolved</option>
+            </select>
+            <label for="type-filter">Issue Type:</label>
+            <select id="type-filter" class="form-group">
+                <option value="">All</option>
+                {% for issue_type in issue_types %}
+                <option value="{{ issue_type }}">{{ issue_type.replace('_', ' ').title() }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="issues-container"></div>
+        <div id="message" class="subtitle"></div>
+    </div>
+
+    <div id="fix-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Fix Stop Details</h2>
+            <form id="fix-form" class="form">
+                <input type="hidden" id="form-stop-id">
+                <input type="hidden" id="form-issue-id">
+
+                <div class="form-group">
+                    <label for="stop-name">Stop Name</label>
+                    <input type="text" id="stop-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="stop-lat">Latitude</label>
+                    <input type="text" id="stop-lat" name="latitude">
+                </div>
+                <div class="form-group">
+                    <label for="stop-lon">Longitude</label>
+                    <input type="text" id="stop-lon" name="longitude">
+                </div>
+                <div class="form-group">
+                    <label for="stop-district">District</label>
+                    <select id="stop-district" name="district" required>
+                        <option value="">Select district</option>
+                        <option>Thiruvananthapuram</option>
+                        <option>Kollam</option>
+                        <option>Pathanamthitta</option>
+                        <option>Alappuzha</option>
+                        <option>Kottayam</option>
+                        <option>Idukki</option>
+                        <option>Ernakulam</option>
+                        <option>Thrissur</option>
+                        <option>Palakkad</option>
+                        <option>Malappuram</option>
+                        <option>Kozhikode</option>
+                        <option>Wayanad</option>
+                        <option>Kannur</option>
+                        <option>Kasaragod</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stop-loc-link">Location Link</label>
+                    <input type="url" id="stop-loc-link" name="loc_link">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">Save Changes & Resolve</button>
+                    <button type="button" class="btn btn-cancel" id="cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loading-spinner" class="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const issuesContainer = document.getElementById('issues-container');
+        const statusFilter    = document.getElementById('status-filter');
+        const typeFilter      = document.getElementById('type-filter');
+        const modal           = document.getElementById('fix-modal');
+        const fixForm         = document.getElementById('fix-form');
+        const cancelBtn       = document.getElementById('cancel-btn');
+        const messageDisplay  = document.getElementById('message');
+        const loadingSpinner  = document.getElementById('loading-spinner');
+
+        // District → integer mapping
+        const districtMap = {
+            "Thiruvananthapuram": 1,
+            "Kollam": 2,
+            "Pathanamthitta": 3,
+            "Alappuzha": 4,
+            "Kottayam": 5,
+            "Idukki": 6,
+            "Ernakulam": 7,
+            "Thrissur": 8,
+            "Palakkad": 9,
+            "Malappuram": 10,
+            "Kozhikode": 11,
+            "Wayanad": 12,
+            "Kannur": 13,
+            "Kasaragod": 14
+        };
+
+        const showSpinner = () => loadingSpinner.classList.add('show');
+        const hideSpinner = () => loadingSpinner.classList.remove('show');
+
+        const showMessage = (msg, isError = false) => {
+            messageDisplay.textContent = msg;
+            messageDisplay.className = 'subtitle';
+            messageDisplay.classList.add(isError ? 'text-red-600' : 'text-green-600');
+            setTimeout(() => {
+                messageDisplay.textContent = '';
+                messageDisplay.className = 'subtitle';
+            }, 5000);
+        };
+
+        const renderSkeletonLoaders = () => {
+            issuesContainer.innerHTML = `
+                <div class="issue-card skeleton-card"></div>
+                <div class="issue-card skeleton-card"></div>
+                <div class="issue-card skeleton-card"></div>
+            `;
+        };
+
+        const fetchAndRenderIssues = async () => {
+            renderSkeletonLoaders();
+            const minSpinnerTime = 300;
+            const start = Date.now();
+            let url = '/admin/api/issues?';
+            if (statusFilter.value)   url += `status=${statusFilter.value}&`;
+            if (typeFilter.value)     url += `issue_type=${typeFilter.value}&`;
+
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error('Failed to fetch issues');
+                const issues = await resp.json();
+                const elapsed = Date.now() - start;
+                if (elapsed < minSpinnerTime) {
+                    showSpinner();
+                    await new Promise(r => setTimeout(r, minSpinnerTime - elapsed));
+                }
+                renderIssues(issues);
+            } catch (err) {
+                issuesContainer.innerHTML = `<p class="subtitle text-red-600">Error: ${err.message}</p>`;
+                showMessage(`Error loading issues: ${err.message}`, true);
+            } finally {
+                hideSpinner();
+            }
+        };
+
+        const renderIssues = (issues) => {
+            issuesContainer.innerHTML = '';
+            if (!issues.length) {
+                issuesContainer.innerHTML = '<p class="subtitle">No issues found.</p>';
+                return;
+            }
+            issues.forEach(issue => {
+                const reporter = issue.user?.username || 'Anonymous';
+                const card = document.createElement('div');
+                card.className = `issue-card status-${issue.status}`;
+                card.id = `issue-card-${issue.id}`;
+                card.innerHTML = `
+                    <h3>${issue.issue_type.replace(/_/g,' ')}</h3>
+                    <p><strong>Description:</strong> ${issue.description}</p>
+                    <p><strong>Stop:</strong> ${issue.stop.name} (ID: ${issue.stop.id})</p>
+                    <p class="meta">Reported by ${reporter} on ${new Date(issue.reported_at).toLocaleString()}</p>
+                    <div class="combi"><p class="meta">Status: <strong id="status-text-${issue.id}">${issue.status}</strong></p><button 
+                        class="btn btn-fix"
+                        data-stop-id="${issue.stop.id}"
+                        data-issue-id="${issue.id}"
+                        id="fix-btn-${issue.id}"
+                        ${issue.status==='resolved'?'disabled':''}>
+                        ${issue.status==='resolved'?'Resolved':'Fix This'}
+                    </button></div>
+                    
+                `;
+                issuesContainer.appendChild(card);
+            });
+        };
+
+        // Open Fix modal
+        issuesContainer.addEventListener('click', async e => {
+            if (!e.target.classList.contains('btn-fix')) return;
+            showSpinner();
+            const stopId = e.target.dataset.stopId;
+            const issueId = e.target.dataset.issueId;
+            try {
+                const resp = await fetch(`/admin/api/stops/${stopId}`);
+                if (!resp.ok) throw new Error('Could not fetch stop data');
+                const stopData = await resp.json();
+                // Populate form
+                document.getElementById('form-stop-id').value = stopId;
+                document.getElementById('form-issue-id').value = issueId;
+                document.getElementById('stop-name').value = stopData.name || '';
+                document.getElementById('stop-lat').value = stopData.latitude || '';
+                document.getElementById('stop-lon').value = stopData.longitude || '';
+                // select the district if present
+                document.getElementById('stop-district').value = stopData.district || '';
+                document.getElementById('stop-loc-link').value = stopData.loc_link || '';
+                modal.classList.add('show');
+            } catch (err) {
+                showMessage(`Error: ${err.message}`, true);
+            } finally {
+                hideSpinner();
+            }
+        });
+
+        // Submit Fix form
+        fixForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            showSpinner();
+            const stopId  = document.getElementById('form-stop-id').value;
+            const issueId = document.getElementById('form-issue-id').value;
+
+            // Gather values
+            let payload = {
+                name:      document.getElementById('stop-name').value,
+                latitude:  document.getElementById('stop-lat').value,
+                longitude: document.getElementById('stop-lon').value,
+                district:  document.getElementById('stop-district').value,
+                loc_link:  document.getElementById('stop-loc-link').value
+            };
+            // convert district string → integer
+            if (payload.district && districtMap[payload.district] != null) {
+                payload.district = districtMap[payload.district];
+            }
+            // drop empty
+            const updatePayload = Object.fromEntries(
+                Object.entries(payload).filter(([_, v]) => v !== '' && v != null)
+            );
+
+            try {
+                const resp = await fetch(
+                  `/admin/api/stops/${stopId}?issue_id_to_resolve=${issueId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(updatePayload)
+                });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.detail || 'Update failed');
+                }
+                // update UI
+                const btn    = document.getElementById(`fix-btn-${issueId}`);
+                const status = document.getElementById(`status-text-${issueId}`);
+                const card   = document.getElementById(`issue-card-${issueId}`);
+                btn.disabled = true;
+                btn.textContent = 'Resolved';
+                status.textContent = 'resolved';
+                card.classList.replace('status-reported','status-resolved');
+                modal.classList.remove('show');
+                showMessage('Stop updated and issue resolved!', false);
+
+            } catch (err) {
+                showMessage(`Error: ${err.message}`, true);
+            } finally {
+                hideSpinner();
+            }
+        });
+
+        // Modal close
+        cancelBtn.addEventListener('click', () => modal.classList.remove('show'));
+        modal.addEventListener('click', e => {
+            if (e.target===modal) modal.classList.remove('show');
+        });
+
+        // filters
+        [statusFilter, typeFilter].forEach(el => el.addEventListener('change', fetchAndRenderIssues));
+        fetchAndRenderIssues();
+    });
+    </script>
+
+</body>
+</html>

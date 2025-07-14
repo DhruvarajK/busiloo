@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js CDN for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-red: #D32F2F;
+            --primary-red-dark: #be123c;
+            --light-red-bg: #fef2f2;
+            --light-red-border: #fecaca;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --green-100: #dcfce7;
+            --green-700: #16a34a;
+            --red-100: #fee2e2;
+            --red-700: #dc2626;
+            --blue-100: #dbeafe;
+            --blue-700: #1d4ed8;
+            --primary-color: #D32F2F; /* Bold Red */
+            --primary-dark: #B71C1C;
+            --accent-color: #FFC107; /* Yellow Accent */
+            --background-color: #F5F5F5;
+            --card-background: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #E0E0E0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+        }
+        i{
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        
+    
+    
+        /* General Body & Layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+            margin: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .traceId {
+            padding: 2px 6px;
+            border: 1px solid #ff8b8b;
+            border-radius: 50px;
+            display: flex;
+            font-family: monospace;
+        }
+        .scrt-msg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            font-size: 13px;
+        }
+        h1{
+            margin: 4px;
+        }
+               /* Basic CSS to hide/show elements */
+               .hidden {
+                display: none;
+            }
+            .loading-indicator, .error-message {
+                text-align: center;
+                padding: 20px;
+                font-size: 1.2em;
+                color: #555;
+            }
+            .dashboard-content {
+                padding: 20px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .district-item {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .stops-list {
+                max-height: 200px; /* Example: make it scrollable if many districts */
+                overflow-y: auto;
+                border: 1px solid #ddd;
+                padding: 10px;
+                background-color: #fff;
+            }
+        #page-loader {
+            position: fixed; /* Covers the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: transparent; /* Updated background color */
+            backdrop-filter: blur(5px); /* Added blur effect */
+            display: flex; /* Centers the loader content */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Ensures it's on top of everything */
+            opacity: 1; /* Initially fully visible */
+            transition: opacity 0.5s ease-out; /* Smooth fade-out transition */
+            /* Add pointer-events: none to prevent clicks on content once it's faded out */
+            pointer-events: all;
+            border-radius: 8px; /* Rounded corners for the overlay itself */
+        }
+    
+        /* Class to fade out and hide the loader (added by JavaScript) */
+        #page-loader.fade-out {
+            opacity: 0 !important; /* Force opacity to 0 */
+            pointer-events: none; /* Prevent interaction with elements beneath */
+        }
+    
+    
+        .loader-spinner {
+            border: 6px solid #e0e0e000;
+            border-top: 6px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1.2s linear infinite;
+           
+        }
+        .stats-grid {
+            display: inline-grid;
+            align-items: center;
+            flex-direction: row;
+            width: 100%;
+            gap: 20px;
+            flex-wrap: wrap;
+            grid-template-columns: repeat(2, 1fr);
+        }
+        /* Keyframe animation for the spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+        .main-container {
+            width: 100%;
+            max-width: 64rem; /* Equivalent to max-w-4xl */
+            background-color: #ffffff;
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            min-height: 100vh;
+            display: contents;
+        }
+    
+        @media (min-width: 768px) { /* md breakpoint */
+            .main-container {
+                margin-top: 2rem; /* my-8 */
+                margin-bottom: 2rem; /* my-8 */
+            }
+        }
+    
+        /* Header Styling */
+        .app-header {
+            background-color: var(--primary-red);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .app-header h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+    
+    
+        .nav-link {
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            font-weight: 600; /* font-semibold */
+            color: var(--gray-700);
+            text-decoration: none;
+            border-radius: 0.5rem; /* rounded-lg */
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
+        }
+    
+        .nav-link:hover {
+            background-color: var(--light-red-bg);
+            color: var(--primary-red-dark);
+        }
+    
+        .nav-link.active {
+            background-color: var(--primary-red);
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+        }
+    
+        .nav-link.active:hover {
+            background-color: var(--primary-red-dark);
+        }
+    
+        /* Main Content Area */
+        .content-area {
+            background: var(--card-background);
+            margin: 12px 15px 20px 15px;
+            position: relative;
+            z-index: 10;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 12px 12px;
+        }
+    
+    
+    
+        .content-area p {
+            text-align: center;
+            font-size: 1.125rem; /* text-lg */
+            color: var(--gray-600);
+            margin-top: 1rem; /* mt-4 */
+        }
+    
+        /* List Styling (Buses & Trips) */
+        .content-area h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin: 10px 10px 10px 0px;
+            text-align: left;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .content-area svg{
+            color: var(--primary-color);
+        }
+    
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* space-y-4 */
+        }
+    
+        .list-item {
+            background-color: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 15px; /* p-5 */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            display: flex;
+            flex-direction: column; /* flex-col */
+            justify-content: space-between;
+            align-items: flex-start; /* items-start */
+            gap: 0.75rem; /* gap-3 */
+            transition: box-shadow 0.2s ease-in-out; /* transition-shadow duration-200 */
+        }
+    
+        .list-item:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* hover:shadow-md */
+        }
+    
+        @media (min-width: 768px) { /* md breakpoint */
+            .list-item {
+                flex-direction: row; /* md:flex-row */
+                align-items: center; /* md:items-center */
+            }
+        }
+    
+    
+            .list-item-content {
+                flex-grow: 1;
+                color: var(--gray-800);
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 6px;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+            }
+    
+        .list-item-content strong {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+        }
+    
+        .list-item-content span {
+            display: block; /* block */
+            font-size: 0.875rem; /* text-sm */
+            color: var(--gray-500);
+        }
+    
+        @media (min-width: 640px) { /* sm breakpoint */
+            .list-item-content span {
+                display: inline-block; /* sm:inline-block */
+            }
+        }
+        
+        /* Back button container */
+        .back-button-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+    
+        /* Form Element Styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem; /* gap-6 */
+        }
+    
+        @media (min-width: 768px) { /* md breakpoint */
+            .form-grid {
+                grid-template-columns: 1fr 1fr; /* md:grid-cols-2 */
+            }
+        }
+    
+        .form-label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: var(--gray-700);
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+    
+        .form-input-custom {
+            width: 100%;
+            padding: 0.75rem; /* p-3 */
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            outline: none;
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 */
+            box-sizing: border-box;
+        }
+    
+        .form-input-custom:focus {
+            border-color: transparent;
+            box-shadow: 0 0 0 2px var(--primary-red), 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* focus:ring-2 focus:ring-primary-red */
+        }
+    
+        .form-input-custom[readonly] {
+            background-color: var(--gray-100);
+            cursor: not-allowed;
+        }
+    
+        .service-day-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* gap-3 */
+            padding: 0.75rem; /* p-3 */
+            background-color: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem; /* rounded-lg */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 */
+            margin-bottom: 5px;
+        }
+    
+        .service-day-label:hover {
+            background-color: var(--light-red-bg);
+            border-color: var(--primary-red-dark);
+        }
+    
+        .form-checkbox-custom {
+            height: 1.25rem; /* h-5 */
+            width: 1.25rem; /* w-5 */
+            color: var(--primary-red);
+            border-color: var(--gray-300);
+            border-radius: 0.25rem; /* rounded */
+            outline: none;
+            cursor: pointer;
+            appearance: none; /* Hide default checkbox */
+            flex-shrink: 0;
+            position: relative; /* For custom checkmark */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 0 2px transparent, inset 0 0 0 1px var(--gray-300);
+        }
+    
+        .form-checkbox-custom:checked {
+            background-color: var(--primary-red);
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 2px var(--primary-red), inset 0 0 0 1px var(--primary-red);
+        }
+    
+        .form-checkbox-custom:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 1px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    
+        .form-checkbox-custom:focus {
+            box-shadow: 0 0 0 2px var(--primary-red); /* focus:ring-2 focus:ring-primary-red */
+        }
+    
+        /* Stop Entry Styling */
+        .stops-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* space-y-4 */
+        }
+    
+        .stop-entry {
+            background-color: var(--gray-50);
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid var(--gray-200);
+            display: grid;
+            grid-template-columns: 1fr; /* grid-cols-1 */
+            gap: 1rem; /* gap-4 */
+            align-items: center;
+        }
+        .secondary-actions {
+            padding: 0 15px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: auto;
+            gap: 15px;            /* space between all items */
+          }
+          
+          /* Make the first child span both columns */
+          .secondary-actions > *:last-child {
+           grid-column: 1 / -1;
+           }
+          
+        .action-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 2px 15px;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .action-link .icon { color: var(--primary-color); }
+        .action-link .icon svg { width: auto; height: auto; }
+        .action-link .text h3 { font-size: 1em; margin-bottom: 2px; }
+        .action-link .text p { font-size: 0.8em; color: var(--text-secondary); }
+    
+        
+        /* Base style for the expanding box */
+        .hover-link {
+            display: flex;
+            flex-direction: column; /* Stack content and buttons vertically */
+            align-items: flex-start; /* Align content to the left */
+            gap: 5px; /* Gap between the hover-link-content and hover-buttons-inside */
+            padding: 2px 15px; /* Adjust as needed for overall box padding */
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            overflow: hidden; /* CRITICAL: Hides content exceeding max-height during transition */
+        
+            /* Initial collapsed state using max-height */
+            max-height: var(--initial-hover-link-height);
+            /* Transition max-height and padding. All property for smooth transition on every chaning property */
+            transition: max-height .4s linear, opacity .2s linear, padding-top .4s linear;
+            
+            /* Ensure the padding doesn't get messed up by transition */
+            padding-bottom: 2px; /* Initial padding-bottom matches padding-top */
+        }
+        
+        /* Hover effect for the overall link */
+        .hover-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        /* Style for the top content (icon and text) */
+        .hover-link-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%; /* Ensures this content takes full width */
+            /* No transitions or overflow here, it's always visible */
+        }
+        
+        .hover-link .icon { color: var(--primary-color); }
+        .hover-link .icon svg { width: auto; height: auto; }
+        .hover-link .text h3 { font-size: 1em; margin-bottom: 2px; }
+        .hover-link .text p { font-size: 0.8em; color: var(--text-secondary); }
+        
+        /* Styles for the buttons container inside the expanding box */
+        .hover-buttons-inside {
+            display: flex;
+            gap: 12px;
+            width: 100%; /* Ensure buttons take full available width */
+        
+            /* Initially hide and collapse the buttons within the box */
+            max-height: 0;
+            opacity: 0;
+            /* This padding-top will animate in */
+            padding-top: 0; 
+            
+            /* Transition for these properties */
+            transition: max-height .4s linear, opacity .2s linear, padding-top .4s linear;
+            overflow: hidden; /* Hides content exceeding max-height during transition */
+        }
+        
+        /* Class added by JavaScript when the box is clicked */
+        .hover-link.expanded {
+            /* Set a generous max-height that will definitely contain all content + buttons + gaps */
+            /* Calculate: initial content height + gap + buttons section height + bottom padding */
+            max-height: calc(var(--initial-hover-link-height) + var(--buttons-section-height) + 15px + 15px); /* Added an extra 15px for padding-bottom in expanded state */
+            
+            /* Adjust bottom padding when expanded */
+            padding-bottom: 15px; 
+        }
+        
+        .hover-link.expanded .hover-buttons-inside {
+            max-height: var(--buttons-section-height); /* Make buttons visible */
+            opacity: 1;
+            padding-top: 9px; /* Add desired padding above buttons when shown */
+        }
+        
+    
+        
+    
+        @media (min-width: 768px) { /* md breakpoint */
+            .stop-entry {
+                grid-template-columns: 2fr 1fr; /* md:grid-cols-3, using 2fr 1fr for stop name and time */
+            }
+        }
+    
+        .stop-entry div:first-child { /* Adjust for stop name/ID column */
+            grid-column: span 1;
+            color: var(--gray-800);
+        }
+        @media (min-width: 768px) {
+            .stop-entry div:first-child {
+                grid-column: span 2; /* md:col-span-2 */
+            }
+        }
+    
+        /* Button Styling */
+        .button-container-end {
+            display: flex;
+            justify-content: flex-end; /* justify-end */
+            padding-top: 1.5rem; /* pt-6 */
+        }
+    
+        .btn-primary-custom {
+            background-color: var(--primary-red);
+            color: #ffffff;
+            font-weight: 700; /* font-bold */
+            padding: 8px 15px; /* py-2 px-4 */
+            border-radius: 1.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
+            transform: translateY(0);
+            border: none;
+            cursor: pointer;
+        }
+    
+        .btn-primary-custom:hover {
+            background-color: var(--primary-red-dark);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
+            transform: translateY(-0.125rem); /* hover:-translate-y-0.5 */
+        }
+    
+        .btn-secondary-custom {
+            background-color: var(--gray-600);
+            color: #ffffff;
+            font-weight: 700; /* font-bold */
+            padding: 9px 15px; /* py-2 px-4 */
+            border-radius: 2.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* shadow-md */
+            transition: all 0.2s ease-in-out; /* transition-all duration-200 ease-in-out */
+            transform: translateY(0);
+            border: none;
+            cursor: pointer;
+        }
+    
+        .btn-secondary-custom:hover {
+            background-color: var(--gray-700);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* hover:shadow-lg */
+            transform: translateY(-0.125rem); /* hover:-translate-y-0.5 */
+        }
+    
+        /* Message/Feedback Styling */
+        .message {
+            margin-top: 1rem; /* mt-4 */
+            padding: 0.75rem; /* p-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            text-align: center;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            transition: opacity 0.3s ease-in-out; /* transition-opacity duration-300 */
+            opacity: 0; /* opacity-0 by default */
+        }
+    
+        .message.visible {
+            opacity: 1;
+        }
+    
+        .message.success {
+            background-color: var(--green-100);
+            color: var(--green-700);
+        }
+    
+        .message.error {
+            background-color: var(--red-100);
+            color: var(--red-700);
+        }
+    
+        .message.info { /* For 'Saving...' state */
+            background-color: var(--blue-100);
+            color: var(--blue-700);
+        }
+    
+        /* Ensures the loader is positioned correctly within the content area */
+        .content-area {
+            position: relative;
+            min-height: 300px; /* Give it some minimum height */
+        }
+    
+        /* Styles for the new content loader */
+        #content-loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex; /* Hidden by default, shown by JS */
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7); /* A semi-transparent overlay */
+            z-index: 10;
+            backdrop-filter: blur(2px); /* Modern blur effect */
+            border-radius: var(--border-radius-lg, 12px); /* Match your container's border-radius */
+        }
+    
+        /* The animated spinner element (reusing your existing class name for consistency) */
+        #content-loader .loader-spinner {
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary-color, #007bff); /* Use a theme variable if you have one */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (min-width: 768px) { /* md breakpoint for grid-cols-2 */
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+
+        .stat-card {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        .stat-card p:first-child { /* text-gray-600 */
+            color: #4b5563;
+            margin: 0;
+        }
+
+        .stat-card p:last-child { /* text-2xl font-bold text-indigo-600 */
+            font-size: 1.5rem; /* Equivalent to text-2xl, adjust if needed */
+            font-weight: 700;
+            color: var(--primary-red);
+            margin: 0;
+        }
+
+        hr.divider {
+            margin: 2rem 0; /* my-8 */
+            border: none;
+            border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+        }
+
+        .stops-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .district-item {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .district-item span:first-child {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Chart Styling */
+        .chart-container {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+            width: 90%;
+            height: 300px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-gray-500 {
+            color: #6b7280;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .text-red-600 {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="min-h-screen">
+        <div class="main-container">
+            <header class="app-header">
+                <h1 class="page-header-title">Admin Dashboard</h1>
+                <div class="header-info">
+                    <div id="content"><i>Checking Access Key...</i></div>
+                    <div id="error"></div>
+                </div>
+            </header>
+
+            <section class="secondary-actions">
+                
+                
+                <a href="/union/view_feedback" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g id="User / User_Voice"><path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+                        </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Feedback</h3>
+                        <p>Review user feedback</p>
+                    </div>
+                </a>
+    
+                <a href="/union/add_stop" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 16.01L16.01 15.9989" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6 16.01L6.01 15.9989" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20 22V15V8M20 8H18L18 2H22V8H20Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4 20V22H6V20H4Z" fill="currentColor" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 20V22H16V20H14Z" fill="currentColor" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16 20H2.6C2.26863 20 2 19.7314 2 19.4V12.6C2 12.2686 2.26863 12 2.6 12H16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M14 8H6M14 2H6C3.79086 2 2 3.79086 2 6V8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Add Stop</h3>
+                        <p>Define new bus stops for routes.</p>
+                    </div>
+                </a>
+
+                <a href="/union/submit-stop-crowd-report" class="action-link">
+                    <div class="icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 7.16C17.94 7.15 17.87 7.15 17.81 7.16C16.43 7.11 15.33 5.98 15.33 4.58C15.33 3.15 16.48 2 17.91 2C19.34 2 20.49 3.16 20.49 4.58C20.48 5.98 19.38 7.11 18 7.16Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16.9699 14.44C18.3399 14.67 19.8499 14.43 20.9099 13.72C22.3199 12.78 22.3199 11.24 20.9099 10.3C19.8399 9.59004 18.3099 9.35003 16.9399 9.59003" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M5.96998 7.16C6.02998 7.15 6.09998 7.15 6.15998 7.16C7.53998 7.11 8.63998 5.98 8.63998 4.58C8.63998 3.15 7.48998 2 6.05998 2C4.62998 2 3.47998 3.16 3.47998 4.58C3.48998 5.98 4.58998 7.11 5.96998 7.16Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6.99994 14.44C5.62994 14.67 4.11994 14.43 3.05994 13.72C1.64994 12.78 1.64994 11.24 3.05994 10.3C4.12994 9.59004 5.65994 9.35003 7.02994 9.59003" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 14.63C11.94 14.62 11.87 14.62 11.81 14.63C10.43 14.58 9.32996 13.45 9.32996 12.05C9.32996 10.62 10.48 9.46997 11.91 9.46997C13.34 9.46997 14.49 10.63 14.49 12.05C14.48 13.45 13.38 14.59 12 14.63Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M9.08997 17.78C7.67997 18.72 7.67997 20.26 9.08997 21.2C10.69 22.27 13.31 22.27 14.91 21.2C16.32 20.26 16.32 18.72 14.91 17.78C13.32 16.72 10.69 16.72 9.08997 17.78Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Report Crowd</h3>
+                        <p>Submit reports on bus stop crowding.</p>
+                    </div>
+                </a>
+                <a href="/admin/issues" class="action-link">
+                    <div class="icon">
+                        <svg fill="currentColor" width="24" height="24" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                            <title>bug-slash</title>
+                            <path d="M19.773 25.531c-1.016 0.847-2.332 1.364-3.768 1.375h-0.002c-3.71 0-6.728-3.58-6.728-7.982-0-0.014-0-0.031-0-0.047 0-1.567 0.398-3.040 1.099-4.325l-0.024 0.047c0.096-0.173 0.153-0.379 0.153-0.599 0-0.691-0.56-1.25-1.25-1.25-0.471 0-0.881 0.26-1.094 0.645l-0.003 0.006c-0.678 1.236-1.142 2.685-1.3 4.224l-0.004 0.049h-3.772c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0h3.807c0.148 1.411 0.533 2.701 1.115 3.876l-0.030-0.066-3.68 2.171c-0.371 0.221-0.615 0.62-0.615 1.076v0 2.77c0 0.69 0.56 1.25 1.25 1.25s1.25-0.56 1.25-1.25v0-2.057l3.132-1.848c1.581 1.988 3.984 3.265 6.686 3.311l0.008 0c2.036-0.009 3.901-0.736 5.355-1.941l-0.014 0.011c0.285-0.231 0.465-0.581 0.465-0.973 0-0.69-0.56-1.25-1.25-1.25-0.298 0-0.573 0.105-0.787 0.279l0.002-0.002zM12 7.75h8c0.69-0 1.25-0.56 1.25-1.25v-0c0.010-0.119 0.015-0.258 0.015-0.398 0-2.908-2.357-5.265-5.265-5.265s-5.265 2.357-5.265 5.265c0 0.14 0.005 0.279 0.016 0.416l-0.001-0.018c0 0.69 0.56 1.25 1.25 1.25v0zM18.58 5.25h-5.161c0.278-1.187 1.328-2.058 2.581-2.058s2.303 0.871 2.577 2.040l0.004 0.018zM30.885 29.115l-6.317-6.317c0.281-0.763 0.491-1.652 0.593-2.574l0.005-0.051h3.841c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0h-3.887c-0.144-1.366-0.508-2.615-1.057-3.758l0.030 0.068 3.727-2.306c0.357-0.224 0.591-0.616 0.592-1.062v-4.615c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25v0 3.919l-3.134 1.94c-1.58-2.048-4.017-3.368-6.765-3.419l-0.008-0c-1.66 0.010-3.203 0.505-4.497 1.35l0.032-0.020-8.654-8.654c-0.226-0.225-0.537-0.363-0.881-0.363-0.69 0-1.25 0.56-1.25 1.25 0 0.344 0.139 0.655 0.363 0.881l27.999 28.001c0.226 0.226 0.539 0.366 0.884 0.366 0.691 0 1.251-0.56 1.251-1.251 0-0.345-0.14-0.658-0.366-0.884l0 0zM16.003 10.939c3.71 0 6.728 3.582 6.728 7.984-0.001 0.656-0.068 1.295-0.197 1.912l0.011-0.061-9.177-9.176c0.764-0.408 1.67-0.651 2.633-0.66l0.003-0z"></path>
+                            </svg>
+                    </div>
+                    <div class="text">
+                        <h3>Stop Issue</h3>
+                        <p>Fix Stop issues.</p>
+                    </div>
+                </a>
+                <div class="hover-link" id="exclusionLink">
+                    <div class="hover-link-content">
+                        <div class="icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 7C3 5.11438 3 4.17157 3.58579 3.58579C4.17157 3 5.11438 3 7 3H12H17C18.8856 3 19.8284 3 20.4142 3.58579C21 4.17157 21 5.11438 21 7V10V13C21 14.8856 21 15.8284 20.4142 16.4142C19.8284 17 18.8856 17 17 17H12H7C5.11438 17 4.17157 17 3.58579 16.4142C3 15.8284 3 14.8856 3 13V10V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                <path d="M9 21L11.625 17.5V17.5C11.8125 17.25 12.1875 17.25 12.375 17.5V17.5L15 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 13L9.60314 9.74608C10.2554 8.93076 11.5331 9.06611 12 10V10C12.4669 10.9339 13.7446 11.0692 14.3969 10.2539L17 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                        </div>
+                        <div class="text">
+                            <h3>Analytics</h3>
+                            <p>Manage excluded trips or buses.</p>
+                        </div>
+                    </div>
+                
+                    <div class="hover-buttons-inside">
+                        <div><a href="/admin/union-members"><button class="btn-primary-custom">Union</button></a></div>
+                        <div><a href="/admin/admin_buses"><button class="btn-primary-custom">Bus</button></a></div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="dashboard-content" class="dashboard-content hidden">
+                <section>
+                    <h2>General Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div><svg fill="currentColor" width="44" height="44" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5,20.816V21.5a1.5,1.5,0,0,0,3,0V21h8v.5a1.5,1.5,0,0,0,3,0v-.684A3,3,0,0,0,21,18V4a3,3,0,0,0-3-3H6A3,3,0,0,0,3,4V18A3,3,0,0,0,5,20.816ZM5,4A1,1,0,0,1,6,3H18a1,1,0,0,1,1,1V5H5ZM5,7H19v6H5Zm0,8H19v3a1,1,0,0,1-1,1H6a1,1,0,0,1-1-1Zm1,2a1,1,0,1,1,1,1A1,1,0,0,1,6,17Zm10,0a1,1,0,1,1,1,1A1,1,0,0,1,16,17Z"/></svg></div>
+                        <div><p>Total Buses:</p>
+                            <p id="total-buses">0</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div>
+                                <svg fill="currentColor" width="44" height="44" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.844 20H6.5C5.121 20 4 18.879 4 17.5S5.121 15 6.5 15h7c1.93 0 3.5-1.57 3.5-3.5S15.43 8 13.5 8H8.639a9.812 9.812 0 0 1-1.354 2H13.5c.827 0 1.5.673 1.5 1.5s-.673 1.5-1.5 1.5h-7C4.019 13 2 15.019 2 17.5S4.019 22 6.5 22h9.593a10.415 10.415 0 0 1-1.249-2zM5 2C3.346 2 2 3.346 2 5c0 3.188 3 5 3 5s3-1.813 3-5c0-1.654-1.346-3-3-3zm0 4.5a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 5 6.5z"/><path d="M19 14c-1.654 0-3 1.346-3 3 0 3.188 3 5 3 5s3-1.813 3-5c0-1.654-1.346-3-3-3zm0 4.5a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 19 18.5z"/></svg>
+                            </div>
+                            <div>
+                                <p>Total Trips:</p>
+                            <p id="total-trips">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div>
+                                
+                                <svg width="44" height="44" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;stroke:currentColor;stroke-miterlimit:10;stroke-width:1.95px;}</style></defs><circle class="cls-1" cx="12" cy="5.16" r="3.91"/><path class="cls-1" d="M17.34,12.52c3.24.66,5.41,1.93,5.41,3.39,0,1.91-3.79,3.51-8.8,3.84"/><path class="cls-1" d="M6.66,12.52c-3.24.66-5.41,1.93-5.41,3.39,0,2,4.28,3.71,9.75,3.89"/><polyline class="cls-1" points="8.09 16.89 11.02 19.82 8.09 22.75"/><path class="cls-1" d="M17.86,15.91v-1h0A5.86,5.86,0,0,0,12,9.07h0a5.86,5.86,0,0,0-5.86,5.86h0v1"/></svg>
+                            </div>
+                            <div>
+                                <p>Total Members</p>
+                            <p id="members-trips">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div>
+                                <svg width="44" height="44" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M7.549 10.078c.46.182.88.424 1.258.725.378.3.701.65.97 1.046a4.829 4.829 0 0 1 .848 2.714V15H9.75v-.438a3.894 3.894 0 0 0-1.155-2.782 4.054 4.054 0 0 0-1.251-.84 3.898 3.898 0 0 0-1.532-.315A3.894 3.894 0 0 0 3.03 11.78a4.06 4.06 0 0 0-.84 1.251c-.206.474-.31.985-.315 1.531V15H1v-.438a4.724 4.724 0 0 1 .848-2.713 4.918 4.918 0 0 1 2.229-1.77 2.994 2.994 0 0 1-.555-.493 3.156 3.156 0 0 1-.417-.602 2.942 2.942 0 0 1-.26-.683 3.345 3.345 0 0 1-.095-.739c0-.423.08-.82.24-1.189a3.095 3.095 0 0 1 1.626-1.627 3.067 3.067 0 0 1 2.386-.007 3.095 3.095 0 0 1 1.627 1.627 3.067 3.067 0 0 1 .157 1.928c-.06.237-.148.465-.266.684a3.506 3.506 0 0 1-.417.608c-.16.187-.345.35-.554.492zM5.812 9.75c.301 0 .584-.057.848-.17a2.194 2.194 0 0 0 1.162-1.163c.119-.269.178-.554.178-.854a2.138 2.138 0 0 0-.643-1.538 2.383 2.383 0 0 0-.697-.472 2.048 2.048 0 0 0-.848-.178c-.3 0-.583.057-.847.17a2.218 2.218 0 0 0-1.17 1.17c-.113.264-.17.547-.17.848 0 .3.057.583.17.847.115.264.27.497.466.697a2.168 2.168 0 0 0 1.552.643zM15 1v7h-1.75l-2.625 2.625V8H9.75v-.875h1.75v1.388l1.388-1.388h1.237v-5.25h-8.75v1.572a7.255 7.255 0 0 0-.438.069 2.62 2.62 0 0 0-.437.123V1H15z"/></svg>
+                            </div>
+                            <div>
+                                <p>Total Feedbacks</p>
+                            <p id="total-fb">0</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <hr class="divider">
+
+                <section>
+                    <h2>Stops by District</h2>
+                    <div class="chart-container">
+                        <canvas id="stopsByDistrictChart"></canvas>
+                    </div>
+                    <div id="stops-by-district-list" class="stops-list mt-4">
+                        <!-- District items will be populated here -->
+                    </div>
+                    <p id="no-districts-message" class="hidden text-center text-gray-500 mt-4">
+                        No district data available.
+                    </p>
+                </section>
+            </div>
+
+            <div id="loading-indicator" class="loading-indicator">
+                Loading dashboard statistics... <i class="fas fa-sync-alt fa-spin"></i>
+            </div>
+            <div id="error-message" class="error-message hidden">
+                <p>Error loading data:</p>
+                <p id="error-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mapping for district numbers to names
+        const districtMap = {
+            1: 'Thiruvananthapuram',
+            2: 'Kollam',
+            3: 'Pathanamthitta',
+            4: 'Alappuzha',
+            5: 'Kottayam',
+            6: 'Idukki',
+            7: 'Ernakulam',
+            8: 'Thrissur',
+            9: 'Palakkad',
+            10: 'Malappuram',
+            11: 'Kozhikode',
+            12: 'Wayanad',
+            13: 'Kannur',
+            14: 'Kasaragod'
+        };
+
+        let stopsByDistrictChart; // Declare chart variable globally
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Page Loader functionality
+            const pageLoader = document.getElementById('page-loader');
+            window.addEventListener('load', () => {
+                pageLoader.classList.add('fade-out');
+                pageLoader.addEventListener('transitionend', function handler() {
+                    if (pageLoader.classList.contains('fade-out')) {
+                        pageLoader.style.display = 'none';
+                        pageLoader.removeEventListener('transitionend', handler);
+                    }
+                });
+            });
+
+            // Show page loader on link clicks
+            const allLinks = document.querySelectorAll('a');
+            allLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    // Only trigger for internal links that are not hash links
+                    if (
+                        link.hostname === window.location.hostname &&
+                        link.target !== '_blank' &&
+                        link.href.indexOf('#') === -1
+                    ) {
+                        pageLoader.style.display = 'flex';
+                        pageLoader.classList.remove('fade-out');
+                        pageLoader.style.opacity = '1';
+                    }
+                });
+            });
+
+            // Handle browser back/forward cache (pageshow event)
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    pageLoader.classList.add('fade-out');
+                    pageLoader.addEventListener('transitionend', function handler() {
+                        if (pageLoader.classList.contains('fade-out')) {
+                            pageLoader.style.display = 'none';
+                            pageLoader.removeEventListener('transitionend', handler);
+                        }
+                    });
+                }
+            });
+
+            // Exclusion hover link functionality
+            const exclusionLink = document.getElementById('exclusionLink');
+            if (exclusionLink) {
+                exclusionLink.addEventListener('click', function(event) {
+                    // Prevent immediate redirection if clicking on the main link, but allow clicks on the sub-buttons
+                    if (event.target.closest('.hover-buttons-inside')) {
+                        return;
+                    }
+                    this.classList.toggle('expanded');
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const contentDiv = document.getElementById('content');
+            const errorDiv = document.getElementById('error');
+
+            // Redirect to login if no token is found
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                // Fetch data from the protected API endpoint
+                const res = await fetch('/api/admin/data', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    contentDiv.innerHTML = ` <div class="scrt-msg">${data.message} <div class="traceId">${data.sensitive_data}</div></div>`;
+                } else {
+                    // Handle expired tokens or unauthorized access
+                    const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+                    errorDiv.textContent = 'Error: ' + (err.detail || 'Could not fetch data. Please log in again.');
+                    // Redirect to login after a delay for better user experience
+                    setTimeout(() => window.location.href = '/login', 200);
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An unexpected error occurred. Please try again.';
+                console.error('Fetch error:', error);
+            }
+
+            // Fetch admin statistics after initial auth check
+            fetchAdminStats();
+        });
+
+        async function fetchAdminStats() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const dashboardContent = document.getElementById('dashboard-content');
+            const stopsByDistrictList = document.getElementById('stops-by-district-list');
+            const noDistrictsMessage = document.getElementById('no-districts-message');
+
+            // Show loading indicator, hide content and error
+            loadingIndicator.classList.remove('hidden');
+            dashboardContent.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            noDistrictsMessage.classList.add('hidden');
+
+            try {
+                const apiUrl = `/admin/dashboard-stats`;
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("Fetched data:", data);
+
+                // Update General Statistics
+                document.getElementById('total-buses').textContent = data.total_buses || 0;
+                document.getElementById('total-trips').textContent = data.total_trips || 0;
+                document.getElementById('members-trips').textContent = data.total_users || 0;
+                document.getElementById('total-fb').textContent = data.total_fb || 0;
+                
+                
+
+                // Process Stops by District data
+                stopsByDistrictList.innerHTML = ''; // Clear previous content
+                const stopsData = data.stops_by_district || {};
+
+                const districtLabels = [];
+                const districtCounts = [];
+
+                if (Object.keys(stopsData).length > 0) {
+                    noDistrictsMessage.classList.add('hidden');
+
+                    for (const districtId in stopsData) {
+                        const count = stopsData[districtId];
+                        const districtName = districtMap[districtId] || `Unknown District (${districtId})`; // Map ID to name
+                        
+                        districtLabels.push(districtName);
+                        districtCounts.push(count);
+
+                        const districtItem = document.createElement('div');
+                        districtItem.className = 'district-item';
+                        districtItem.innerHTML = `
+                            <span>${districtName}</span>
+                            <span>${count}</span>
+                        `;
+                        stopsByDistrictList.appendChild(districtItem);
+                    }
+                } else {
+                    noDistrictsMessage.classList.remove('hidden');
+                }
+
+                // Render or update Stops by District Chart
+                const ctx = document.getElementById('stopsByDistrictChart').getContext('2d');
+                if (stopsByDistrictChart) {
+                    stopsByDistrictChart.destroy(); // Destroy existing chart before creating a new one
+                }
+                stopsByDistrictChart = new Chart(ctx, {
+                    type: 'bar', // Bar chart for better comparison
+                    data: {
+                        labels: districtLabels,
+                        datasets: [{
+                            label: 'Number of Stops',
+                            data: districtCounts,
+                            backgroundColor: 'rgb(211,47,47,0.7)', /* Using the indigo color */
+                            borderColor: 'rgba(211,47,47,1)',
+                            borderWidth: 1,
+                            borderRadius: 5, /* Rounded bars */
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, /* Allow canvas to resize freely */
+                        plugins: {
+                            legend: {
+                                display: false, /* No need for legend if only one dataset */
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Stops per District',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                color: '#1f2937'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'District',
+                                    color: '#374151'
+                                },
+                                ticks: {
+                                    color: '#4b5563'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Stops',
+                                    color: '#374151'
+                                },
+                                ticks: {
+                                    precision: 0, /* Ensure integer ticks */
+                                    color: '#4b5563'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Show dashboard content
+                dashboardContent.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Failed to fetch admin stats:", error);
+                errorText.textContent = error.message;
+                errorMessage.classList.remove('hidden');
+                noDistrictsMessage.classList.remove('hidden'); /* Show error and potentially no data message on error */
+            } finally {
+                loadingIndicator.classList.add('hidden'); /* Hide loading indicator */
+            }
+        }
+
+        // Call fetchAdminStats on window load to ensure all elements are ready
+        window.onload = fetchAdminStats;
+    </script>
+    
+</body>
+</html>
