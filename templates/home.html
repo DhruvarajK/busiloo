@@ -336,6 +336,37 @@
         .location-inputs {
             position: relative;
         }
+        #language-select {
+            /* Hide the text content of the select element */
+            text-indent: -9999px; /* Pushes text far out of view */
+            -webkit-appearance: none; /* Removes default browser styling for consistency */
+            -moz-appearance: none;
+            appearance: none;
+            /* Set background image to your SVG icon */
+            background-image: url('data:image/svg+xml;utf8,<svg style="transform: scale(0.9);" fill="%23FFFF" width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1"><path d="M21.05566,12h-2a1,1,0,0,0,0,2v2H17.8714a2.96481,2.96481,0,0,0,.18426-1A2.99955,2.99955,0,0,0,12.458,13.50049a.99992.99992,0,1,0,1.73242.999A1.0009,1.0009,0,0,1,15.05566,14a1,1,0,0,1,0,2,1,1,0,0,0,0,2,1,1,0,1,1,0,2,1.0009,1.0009,0,0,1-.86523-.49951.99992.99992,0,1,0-1.73242.999A2.99955,2.99955,0,0,0,18.05566,19a2.96481,2.96481,0,0,0-.18426-1h1.18426v3a1,1,0,0,0,2,0V14a1,1,0,1,0,0-2ZM9.08594,11.24268a.99963.99963,0,1,0,1.93945-.48536L9.26855,3.72754a2.28044,2.28044,0,0,0-4.4248,0L3.08594,10.75732a.99963.99963,0,1,0,1.93945.48536L5.58618,9H8.52545ZM6.0863,7l.6969-2.78711a.29222.29222,0,0,1,.5459,0L8.02563,7Zm7.96936,0h1a1.001,1.001,0,0,1,1,1V9a1,1,0,0,0,2,0V8a3.00328,3.00328,0,0,0-3-3h-1a1,1,0,0,0,0,2Zm-4,9h-1a1.001,1.001,0,0,1-1-1V14a1,1,0,0,0-2,0v1a3.00328,3.00328,0,0,0,3,3h1a1,1,0,0,0,0-2Z"/></svg>');
+            
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain; /* Adjust as needed */
+            width: 40px; /* Set width and height to match your icon size */
+            height: 29px;
+            cursor: pointer;
+            padding-right: 0; /* Ensure no extra padding pushes the icon */
+            border-radius: 6px;
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid #ffffff80;
+            &:focus {
+                outline: none; 
+                box-shadow: 0 0 0 2px #ffffff80; 
+              }
+          }
+          
+          /* Optional: To make the options still visible when the dropdown is open */
+          #language-select option {
+            text-indent: 0; /* Reset text indent for options */
+          }
+        
         
         .swap-btn {
             position: absolute;
@@ -518,6 +549,14 @@
             <div class="time-section">
                 <span id="current-time"></span>
                 <button id="time-toggle-btn" class="time-toggle">24h</button>
+                
+            </div>
+            <div class="time-section">
+                <select id="language-select"><svg fill="#000000" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1"><path d="M21.05566,12h-2a1,1,0,0,0,0,2v2H17.8714a2.96481,2.96481,0,0,0,.18426-1A2.99955,2.99955,0,0,0,12.458,13.50049a.99992.99992,0,1,0,1.73242.999A1.0009,1.0009,0,0,1,15.05566,14a1,1,0,0,1,0,2,1,1,0,0,0,0,2,1,1,0,1,1,0,2,1.0009,1.0009,0,0,1-.86523-.49951.99992.99992,0,1,0-1.73242.999A2.99955,2.99955,0,0,0,18.05566,19a2.96481,2.96481,0,0,0-.18426-1h1.18426v3a1,1,0,0,0,2,0V14a1,1,0,1,0,0-2ZM9.08594,11.24268a.99963.99963,0,1,0,1.93945-.48536L9.26855,3.72754a2.28044,2.28044,0,0,0-4.4248,0L3.08594,10.75732a.99963.99963,0,1,0,1.93945.48536L5.58618,9H8.52545ZM6.0863,7l.6969-2.78711a.29222.29222,0,0,1,.5459,0L8.02563,7Zm7.96936,0h1a1.001,1.001,0,0,1,1,1V9a1,1,0,0,0,2,0V8a3.00328,3.00328,0,0,0-3-3h-1a1,1,0,0,0,0,2Zm-4,9h-1a1.001,1.001,0,0,1-1-1V14a1,1,0,0,0-2,0v1a3.00328,3.00328,0,0,0,3,3h1a1,1,0,0,0,0-2Z"/></svg>
+                    <option value="en">English</option>
+                    <option value="ml">മലയാളം</option>
+                </select>
+                
             </div>
         </header>
 
@@ -526,11 +565,11 @@
                 <div class="location-inputs">
                     <!-- From Input -->
                     <div class="input-wrapper">
-                        <label for="start-stop-search">FROM</label>
+                        <label data-translate="s01" for="start-stop-search">FROM</label>
                         <div class="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
                         </div>
-                        <input type="text" id="start-stop-search" class="search-input" placeholder="Starting location" readonly>
+                        <input data-translate-placeholder="s02" type="text" id="start-stop-search" class="search-input" placeholder="Starting location" readonly>
                         <input type="hidden" id="start-stop-id">
                     </div>
 
@@ -541,25 +580,25 @@
 
                     <!-- To Input -->
                     <div class="input-wrapper">
-                        <label for="end-stop-search">TO</label>
+                        <label data-translate="s03" for="end-stop-search">TO</label>
                         <div class="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         </div>
-                        <input type="text" id="end-stop-search" class="search-input" placeholder="Destination" readonly>
+                        <input data-translate-placeholder="s04" type="text" id="end-stop-search" class="search-input" placeholder="Destination" readonly>
                         <input type="hidden" id="end-stop-id">
                     </div>
                 </div>
 
                 <!-- Date Picker -->
                 <div class="input-wrapper">
-                    <label for="journey-date">DATE OF JOURNEY</label>
+                    <label data-translate="s05" for="journey-date">DATE OF JOURNEY</label>
                     <div class="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     </div>
                     <input type="text" id="journey-date" class="date-input" readonly>
                 </div>
 
-                <button id="find-btn" class="search-button">Search Buses</button>
+                <button data-translate-button="s06" id="find-btn" class="search-button">Search Buses</button>
             </section>
 
             <section class="secondary-actions">
@@ -570,8 +609,8 @@
                             </svg>
                     </div>
                     <div class="text">
-                        <h3>Search by Bus Name</h3>
-                        <p>Find a specific bus service</p>
+                        <h3 data-translate="s07">Search by Bus Name</h3>
+                        <p data-translate="s08" >Find a specific bus service</p>
                     </div>
                 </a>
                 <a href="/nearby" class="action-link">
@@ -579,8 +618,8 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                     </div>
                     <div class="text">
-                        <h3>Stops Near Me</h3>
-                        <p>Find bus stops and routes around you</p>
+                        <h3 data-translate="s09" >Stops Near Me</h3>
+                        <p data-translate="s10" >Find bus stops and routes around you</p>
                     </div>
                 </a>
                 <a href="/calculate_fare_page" class="action-link">
@@ -589,8 +628,8 @@
                             </svg>
                     </div>
                     <div class="text">
-                        <h3>Calculate fare</h3>
-                        <p>Estimate your travel cost.</p>
+                        <h3 data-translate="s11" >Calculate fare</h3>
+                        <p data-translate="s12" >Estimate your travel cost.</p>
                     </div>
                 </a>
                 <a href="/union/app_feedback" class="action-link">
@@ -602,8 +641,8 @@
                             </svg>
                     </div>
                     <div class="text">
-                        <h3>Feedback</h3>
-                        <p>Share your experience with us.</p>
+                        <h3 data-translate="s13" >Feedback</h3>
+                        <p data-translate="s14" >Share your experience with us.</p>
                     </div>
                 </a>
                 <a href="/traffic_report" class="action-link">
@@ -613,8 +652,8 @@
                             </svg>
                     </div>
                     <div class="text">
-                        <h3>Report Traffic</h3>
-                        <p>Notify us about traffic issues.</p>
+                        <h3 data-translate="s15" >Report Traffic</h3>
+                        <p data-translate="s16" >Notify us about traffic issues.</p>
                     </div>
                 </a>
 
@@ -999,5 +1038,6 @@
             });
         });
     </script>
+    <script src="static/translater.js"></script>
 </body>
 </html>
