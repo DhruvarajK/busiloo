@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create New Trip</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="/static/busiloo.svg" type="image/svg+xml">
   <link href="/static/styles.css" rel="stylesheet">
   <style>
     body {
@@ -629,15 +628,24 @@
 
     // --- UI Population ---
     function setupServiceDays() {
-        const daysContainer = document.querySelector('.service-days-grid');
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        daysContainer.innerHTML = days.map(day => `
-            <label class="service-day-label">
-                <input type="checkbox" name="service_days" value="${day.toLowerCase()}" class="form-checkbox" />
-                <span>${day}</span>
-            </label>
-        `).join('');
-    }
+      const daysContainer = document.querySelector('.service-days-grid');
+      const days = [
+          { name: 'Monday', value: 0 },
+          { name: 'Tuesday', value: 1 },
+          { name: 'Wednesday', value: 2 },
+          { name: 'Thursday', value: 3 },
+          { name: 'Friday', value: 4 },
+          { name: 'Saturday', value: 5 },
+          { name: 'Sunday', value: 6 }
+      ];
+      daysContainer.innerHTML = days.map(day => `
+          <label class="service-day-label">
+              <input type="checkbox" name="service_days" value="${day.value}" class="form-checkbox" />
+              <span>${day.name}</span>
+          </label>
+      `).join('');
+  }
+
 
     function populateConfirmation() {
         const busSelect = document.getElementById('bus-select');
@@ -646,9 +654,15 @@
         const direction = document.getElementById('direction-input').value;
         const departureTime = document.getElementById('departure-time-input').value;
 
+        const weekdayNamesMap = {
+          0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday',
+          4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+      };
+
         const serviceDays = Array.from(document.querySelectorAll('input[name="service_days"]:checked'))
-            .map(cb => cb.parentElement.querySelector('span').textContent)
-            .join(', ');
+        .map(cb => weekdayNamesMap[parseInt(cb.value)]) // Convert value to integer, then map to name
+        .filter(name => name) // Filter out any undefined if a value isn't mapped
+        .join(', ');
 
         const stopsHtml = Array.from(document.querySelectorAll('.stop-entry'))
              .sort((a, b) => { // Sort by sequence before displaying
@@ -967,7 +981,7 @@
             route_name: form.route_name.value.trim(),
             departure_time: form.departure_time.value,
             direction: form.direction.value.trim(),
-            service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: cb.value })),
+            service_days: Array.from(form.querySelectorAll('input[name="service_days"]:checked')).map(cb => ({ weekday: parseInt(cb.value) })),
             stop_times: Array.from(document.querySelectorAll('.stop-entry')).map(div => ({
                 stop_id: parseInt(div.querySelector('input[name="stop_id"]').value),
                 arrival_time: div.querySelector('input[name="arrival_time"]').value,
