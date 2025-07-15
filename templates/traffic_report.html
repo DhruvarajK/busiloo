@@ -335,7 +335,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>
+        <h1 data-translate="s31" >
             <!-- SVG Icon for Traffic Report -->
             <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -355,30 +355,30 @@
 
         <form id="trafficForm">
             <div class="form-group">
-                <label for="description">
+                <label for="description" data-translate="s32" >
                     Description
                 </label>
                 <textarea id="description" name="description" required minlength="10" class="textarea1"
                     placeholder="Describe the traffic situation (e.g., 'Heavy congestion due to accident near...', 'Road closed due to water logging...')"></textarea>
-                <p id="description-error" class="text-xs text-red-500 mt-1 hidden">Description must be at least 10 characters long.</p>
+                <p data-translate="s33" id="description-error" class="text-xs text-red-500 mt-1 hidden">Description must be at least 10 characters long.</p>
             </div>
 
             <div class="form-group">
-                <label for="severity">
+                <label for="severity" data-translate="s34" >
                     Traffic Density
                 </label>
                 <div class="relative">
                     <select id="severity" name="severity" class="select1">
-                        <option value="1">Low</option>
-                        <option value="2">Medium</option>
-                        <option value="3">High</option>
+                        <option data-translate="s35" value="1">Low</option>
+                        <option data-translate="s36" value="2">Medium</option>
+                        <option data-translate="s37" value="3">High</option>
                     </select>
 
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="route_name">
+                <label for="route_name" data-translate="s38" >
                     Route Name (optional)
                 </label>
                 <input type="text" id="route_name" name="route_name"
@@ -392,7 +392,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <span id="location-button-text">Use My Location</span>
+                    <span id="location-button-text" data-translate="s39" >Use My Location</span>
                     <div id="location-spinner" class="hidden ml-2 w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin"></div>
                 </button>
 
@@ -401,7 +401,7 @@
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <span id="submit-button-text">Submit Report</span>
+                    <span id="submit-button-text" data-translate="s40" >Submit Report</span>
                     <div id="submit-spinner" class="hidden ml-2 w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin"></div>
                 </button>
             </div>
@@ -618,5 +618,6 @@
         // Initially disable submit button until location is obtained
         submitBtn.disabled = true;
     </script>
+    <script src="static/translater.js"></script>
 </body>
 </html>
