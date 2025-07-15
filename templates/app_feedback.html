@@ -173,22 +173,22 @@
 </head>
 <body>
   <div class="container">
-    <h2>Submit App Feedback</h2>
+    <h2 data-translate="s22" >Submit App Feedback</h2>
     <div class="form-group">
-      <label for="category">Category</label>
+      <label for="category" data-translate="s23" >Category</label>
       <select id="category">
-        <option value="">-- Select --</option>
-        <option value="Bug">Bug</option>
-        <option value="Suggestion">Suggestion</option>
-        <option value="Question">Question</option>
-        <option value="Other">Other</option>
+        <option value="" data-translate="s24">-- Select --</option>
+        <option value="Bug" data-translate="s25" >Bug</option>
+        <option value="Suggestion" data-translate="s26" >Suggestion</option>
+        <option value="Question" data-translate="s27" >Question</option>
+        <option value="Other" data-translate="s28" >Other</option>
       </select>
     </div>
     <div class="form-group">
-      <label for="message">Message</label>
+      <label for="message" data-translate="s29" >Message</label>
       <textarea id="message" placeholder="Describe the issue or suggestion..."></textarea>
     </div>
-    <button id="submitBtn" onclick="submitFeedback()">Submit Feedback</button>
+    <button id="submitBtn" onclick="submitFeedback()" data-translate="s30" >Submit Feedback</button>
     <div id="status" class="message"></div>
   </div>
 
@@ -247,5 +247,6 @@
       }
     }
   </script>
+  <script src="/static/translater.js"></script>
 </body>
 </html>
