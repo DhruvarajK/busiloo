@@ -20,7 +20,7 @@ import overpy
 from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy import func, and_, select, exists, cast, Float
 from sqlalchemy.orm import joinedload
-
+from sqlalchemy import or_
 
 router = APIRouter(prefix="", tags=["public"])
 templates = None  # will be set in main
@@ -57,7 +57,7 @@ def api_current_trip(bus_id: int, db: Session = Depends(database.get_db)):
         logging.exception("Error determining current weekday")
         raise HTTPException(status_code=500, detail="Error determining current weekday")
 
-    # 2) Find the most‑recent trip that has already departed today
+    # 2) Find the most-recent trip that has already departed today
     try:
         trip = (
             db.query(models.Trip)
@@ -82,36 +82,46 @@ def api_current_trip(bus_id: int, db: Session = Depends(database.get_db)):
         today = now_dt.date()
         one_hour_ago_dt = now_dt - timedelta(hours=1)
 
+        # Eagerly load all relevant crowd reports for all stops in this trip
+        # and filter them in the database for recent and relevant reports.
+        stop_ids_in_trip = [st.stop.id for st in trip.stop_times]
+        recent_crowd_reports = (
+            db.query(models.StopCrowdReport)
+            .filter(
+                models.StopCrowdReport.stop_id.in_(stop_ids_in_trip),
+                models.StopCrowdReport.report_weekday == weekday_enum,
+                or_(
+                    models.StopCrowdReport.report_time.between(one_hour_ago_dt.time(), now_dt.time()),
+                    # Case for reports from yesterday that fall within the last hour window
+                    (models.StopCrowdReport.report_time >= one_hour_ago_dt.time()) & (now_dt.time() < one_hour_ago_dt.time())
+                )
+            )
+            .all()
+        )
+
+        # Create a dictionary for quick lookup of crowd reports by stop_id
+        crowd_reports_by_stop = {}
+        for report in recent_crowd_reports:
+            report_dt = datetime.combine(today, report.report_time, tzinfo=kolkata_tz)
+            if report_dt > now_dt: # Adjust for reports from yesterday that appeared to be future
+                report_dt -= timedelta(days=1)
+
+            if one_hour_ago_dt <= report_dt <= now_dt:
+                # Store the most recent valid report if multiple exist for a stop
+                if report.stop_id not in crowd_reports_by_stop or report_dt > crowd_reports_by_stop[report.stop_id]['report_dt']:
+                    crowd_reports_by_stop[report.stop_id] = {
+                        'report': report,
+                        'report_dt': report_dt
+                    }
+
+
         stop_times_out = []
         for st in sorted(trip.stop_times, key=lambda x: x.sequence):
             stop = st.stop
             current_crowd_report = None
 
-            # Load all crowd reports for this stop
-            stop_with_crowd = (
-                db.query(models.Stop)
-                  .options(joinedload(models.Stop.crowd_reports))
-                  .filter(models.Stop.id == stop.id)
-                  .first()
-            )
-
-            if stop_with_crowd:
-                for report in stop_with_crowd.crowd_reports:
-                    # 1) Skip if not reported today
-                    if report.report_weekday != weekday_enum:
-                        continue
-
-                    # 2) Build a full datetime for the report_time on “today”
-                    report_dt = datetime.combine(today, report.report_time, tzinfo=kolkata_tz)
-
-                    # 3) If that yields a future time, assume it was from yesterday
-                    if report_dt > now_dt:
-                        report_dt -= timedelta(days=1)
-
-                    # 4) Check if it falls in the last hour
-                    if one_hour_ago_dt <= report_dt <= now_dt:
-                        current_crowd_report = schemas.CrowdReportOut.model_validate(report)
-                        break
+            if stop.id in crowd_reports_by_stop:
+                current_crowd_report = schemas.CrowdReportOut.model_validate(crowd_reports_by_stop[stop.id]['report'])
 
             stop_times_out.append(
                 schemas.StopTimeOut(
@@ -142,11 +152,12 @@ def api_current_trip(bus_id: int, db: Session = Depends(database.get_db)):
         )
 
     except HTTPException:
-        # Pass through any intentional 4xx errors
-        raise
+        raise 
     except Exception as e:
-        logging.exception(f"Error fetching current trip for bus {bus_id}: {e}")
-        raise HTTPException(status_code=500, detail="Internal error fetching current trip")
+        logging.exception(f"Error fetching current trip for bus_id {bus_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 
 @router.get("/redirect_to_current_trip/{bus_id}")
 def redirect_to_current_trip(bus_id: int, db: Session = Depends(database.get_db)):
@@ -760,14 +771,14 @@ def get_traffic_notifications(bus_id: int, db: Session = Depends(database.get_db
    
 FARE_STRUCTURES = {
     "ordinary": {
-        "min_fare": 10.0,
+        "min_fare": 13.0,
         "initial_distance_km": 2.5,
-        "per_km_rate_paise": 100,  # 1 Rupee per km
+        "per_km_rate_paise": 150,  
     },
     "limited_stop": {  # Assuming Fast Passenger/Limited Stop FP is 'limited_stop'
         "min_fare": 15.0,
         "initial_distance_km": 5.0,
-        "per_km_rate_paise": 105,  # 1.05 Rupees per km
+        "per_km_rate_paise": 155,  
     }
 }
 
