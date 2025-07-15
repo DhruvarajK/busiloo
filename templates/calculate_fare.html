@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Busiloo - Bus Fare</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="/static/busiloo.svg" type="image/svg+xml">
     <style>
         :root {
             --primary-color: #D32F2F; 
@@ -48,7 +45,7 @@
 
         /* Typography */
         h1 {
-            font-size: 2.25rem;
+            font-size: 30px;
             font-weight: 700;
             text-align: center;
             margin-bottom: 2rem;
@@ -291,63 +288,59 @@
 </head>
 <body>
     <div class="container">
-        <h1>Bus Fare Finder</h1>
+        <h1 data-translate="s17">Bus Fare Finder</h1>
 
         <div class="card">
-            <h2>Enter Your Journey Details</h2>
+            <h2 data-translate="s18">Enter Your Journey Details</h2>
             <form id="fareForm">
                 <div class="form-group">
-                    <label for="startStopName" class="form-label">Start Stop</label>
+                    <label data-translate="s19" for="startStopName" class="form-label">Start Stop</label>
                     <input type="text" id="startStopName" placeholder="e.g., Central Bus Station" class="input-field" autocomplete="off">
                     <input type="hidden" id="startStopId" name="start_stop_id" required>
                     <div id="startStopSearchResults" class="search-results-container hidden"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="endStopName" class="form-label">End Stop</label>
+                    <label data-translate="s20" for="endStopName" class="form-label">End Stop</label>
                     <input type="text" id="endStopName" placeholder="e.g., City Hospital" class="input-field" autocomplete="off">
                     <input type="hidden" id="endStopId" name="end_stop_id" required>
                     <div id="endStopSearchResults" class="search-results-container hidden"></div>
                 </div>
 
-                <button type="submit" class="btn-primary">Calculate Fare & Find Routes</button>
+                <button data-translate="s21" type="submit" class="btn-primary">Calculate Fare & Find Routes</button>
             </form>
         </div>
 
-        <!-- Loading state element -->
         <div id="loading" class="hidden">
             <div class="spinner"></div>
         </div>
 
-        <!-- Error message element -->
         <div id="error" class="hidden">
             <p id="errorMessage"></p>
         </div>
 
-        <!-- Results section -->
         <div id="results" class="hidden">
             <div class="card">
-                <h2>Calculation Summary</h2>
+                <h2 data-translate="s41" >Calculation Summary</h2>
                 <div class="summary-item">
-                    <span class="summary-label">From:</span>
+                    <span data-translate="s01"  class="summary-label">From:</span>
                     <span id="startStopNameDisplay" class="summary-value"></span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">To:</span>
+                    <span data-translate="s03" class="summary-label">To:</span>
                     <span id="endStopNameDisplay" class="summary-value"></span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Est. Distance (Straight Line):</span>
-                    <span class="summary-value"><span id="distanceKm"></span> km</span>
+                    <span data-translate="s44" class="summary-label">Est. Distance:</span>
+                    <span  class="summary-value"><span id="distanceKm"></span> <font data-translate="s45"> km</font></span>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Buses Found on This Route</h2>
+                <h2 data-translate="s42" >Buses Found on This Route</h2>
                 <div id="routesList" class="routes-list">
-                    <!-- Bus route details will be injected here -->
-                </div>
-                <p id="noRoutesMessage" class="no-routes-message hidden">No direct buses found for this route.</p>
+                    </div>
+                <p data-translate="s43" id="noRoutesMessage" class="no-routes-message hidden">No direct buses found for this route.</p>
             </div>
         </div>
     </div>
@@ -484,19 +477,19 @@
                                     <span class="route-detail-value">${route.is_limited_stop ? 'Limited Stop' : 'Ordinary'}</span>
                                 </div>
                                 <div class="route-detail-item">
-                                    <span class="route-detail-label">Direction:</span>
+                                    <span data-translate="s46" class="route-detail-label">Direction:</span>
                                     <span class="route-detail-value">${route.direction}</span>
                                 </div>
                                 <div class="route-detail-item">
-                                    <span class="route-detail-label">Departure:</span>
+                                    <span data-translate="s47" class="route-detail-label">Departure:</span>
                                     <span class="route-detail-value">${route.departure_time}</span>
                                 </div>
                                 <div class="route-detail-item">
-                                    <span class="route-detail-label">Arrival at Start:</span>
+                                    <span data-translate="s48" class="route-detail-label">Arrival at Start:</span>
                                     <span class="route-detail-value">${route.start_arrival_time}</span>
                                 </div>
                                  <div class="route-detail-item">
-                                    <span class="route-detail-label">Arrival at End:</span>
+                                    <span data-translate="s49" class="route-detail-label">Arrival at End:</span>
                                     <span class="route-detail-value">${route.end_arrival_time}</span>
                                 </div>
                             </div>
@@ -519,5 +512,6 @@
             }
         });
     </script>
+    <script src="static/translater.js"> </script>
 </body>
 </html>
