@@ -1,7 +1,9 @@
 
 import random
 import string
+
 from fastapi import APIRouter, FastAPI, HTTPException, Request, Depends,Query
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import auth
@@ -65,6 +67,14 @@ def admin_dashboard(request: Request):
 @app.get("/add_bus")
 def add_bus_page(request: Request):
     return templates.TemplateResponse("add_bus.html", {"request": request})
+
+@app.get("/manifest.json")
+def manifest():
+    return FileResponse("manifest.json", media_type="application/manifest+json")
+
+@app.get("/service-worker.js")
+def sw():
+    return FileResponse("service-worker.js", media_type="application/javascript")
 
 @app.get("/add_trip")
 def add_trip_page(request: Request):
