@@ -41,6 +41,30 @@
         const BUS_NAME = "{{ bus_name }}";
         const tripInfo = document.getElementById('trip-info');
         let is24Hour = true;
+
+        const RECENT_KEY = 'recentTrips';
+        function loadRecent() {
+        try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
+        catch { return []; }
+        }
+        function saveRecent(list) {
+        localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+        }
+        function recordThisTrip() {
+        const url = location.pathname + location.search;
+        const entry = {
+            url,
+            busId: BUS_ID,
+            busName: BUS_NAME,
+            
+            when: Date.now()
+        };
+        let list = loadRecent().filter(e => e.url !== url);
+        list.unshift(entry);
+        if (list.length > 10) list.pop();
+        saveRecent(list);
+        }
+
     
         // --- TIME FORMATTING UTILITIES (Unchanged) ---
         function formatTime(input, showSeconds) {
@@ -100,6 +124,22 @@
         
             return `~${Math.round(diff)} min`;
         }
+        async function fetchWithLocalCache(url) {
+                const key = `cache_${url}`;
+                if (navigator.onLine) {
+                  try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    localStorage.setItem(key, JSON.stringify(data));
+                    return data;
+                  } catch (e) {
+                    console.warn('Network fetch failed, using cache.', e);
+                  }
+                }
+                // offline or fetch failed
+                const cached = localStorage.getItem(key);
+                return cached ? JSON.parse(cached) : [];
+              }
     
         // --- OPTIMIZATION: Update function is now leaner ---
         // It receives cached elements and data instead of querying the DOM itself.
@@ -171,9 +211,14 @@
     
         // --- MAIN FETCH AND RENDER LOGIC ---
         function fetchAndRenderTrip() {
-            fetch(`/api/bus/${BUS_ID}/current_trip`)
-                .then(res => res.ok ? res.json() : Promise.reject(new Error('Trip not found')))
+            fetchWithLocalCache(`/api/bus/${BUS_ID}/current_trip`)
                 .then(trip => {
+                    
+
+                    if (!trip || !Array.isArray(trip.stop_times)) {
+                        throw new Error('No trip data');
+                      }
+                    recordThisTrip(trip);
                     const stopSpacing = 140;
                     const totalHeight = (trip.stop_times.length - 1) * stopSpacing;
     
@@ -269,8 +314,7 @@
     
         // --- OTHER FUNCTIONS (Unchanged, but now called from the main flow) ---
         function loadTrafficNotifications() {
-            fetch(`/api/bus/${BUS_ID}/traffic_notifications`)
-                .then(res => res.ok ? res.json() : Promise.resolve([]))
+            fetchWithLocalCache(`/api/bus/${BUS_ID}/traffic_notifications`)
                 .then(notifications => {
                     document.querySelectorAll('.traffic-alert-container').forEach(el => el.innerHTML = '');
                     notifications.forEach(notif => {
@@ -284,8 +328,7 @@
         }
     
         function loadCrowdPrediction() {
-            fetch(`/api/bus/${BUS_ID}/crowd_prediction`)
-                .then(res => res.ok ? res.json() : Promise.reject())
+            fetchWithLocalCache(`/api/bus/${BUS_ID}/crowd_prediction`)
                 .then(pred => {
                     const cp = document.getElementById('crowd-prediction');
                     cp.innerHTML = pred.predicted_level === null
@@ -328,5 +371,12 @@
         fetchAndRenderTrip();
     
     </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.error('SW registration failed:', err));
+        }
+      </script>
 </body>
 </html>
