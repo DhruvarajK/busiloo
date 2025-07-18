@@ -1,15 +1,17 @@
-const CACHE_NAME = 'busiloo-shell-v1';
-const DATA_CACHE = 'busiloo-data-v1';
 const SHELL_FILES = [
-  '/',                // make sure your server serves index.html on “/”
+  '/', 
   '/static/home.css',
   '/static/busiloo.svg',
   '/static/translater.js',
-  // list all your other assets...
+  '/static/trip.css',
+  // …any other static assets…
 ];
+const CACHE_NAME  = 'busiloo-shell-v1';
+const DATA_CACHE  = 'busiloo-data-v1';
+const HTML_CACHE  = 'busiloo-html-v1';  // ← new
 
+// Pre‑cache shell
 self.addEventListener('install', evt => {
-  // Pre-cache app shell
   evt.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(SHELL_FILES))
@@ -17,12 +19,12 @@ self.addEventListener('install', evt => {
   );
 });
 
+// Clean up old caches
 self.addEventListener('activate', evt => {
-  // Clean up old caches
   evt.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.map(key => {
-        if (![CACHE_NAME, DATA_CACHE].includes(key)) {
+        if (![CACHE_NAME, DATA_CACHE, HTML_CACHE].includes(key)) {
           return caches.delete(key);
         }
       }))
@@ -30,22 +32,17 @@ self.addEventListener('activate', evt => {
   );
 });
 
-// Helper for API caching
+// Helper: fetch & cache API JSON
 async function fetchAndCache(request) {
   const cache = await caches.open(DATA_CACHE);
   try {
     const response = await fetch(request);
     cache.put(request, response.clone());
     return response;
-  } catch (err) {
-    console.warn('🗄️ Fetch failed; returning cache or fallback:', request.url, err);
-
+  } catch {
     const cached = await cache.match(request);
-    if (cached) {
-      return cached;
-    }
-
-    // FINAL FALLBACK: empty JSON (or whatever shape your app expects)
+    if (cached) return cached;
+    // fallback JSON
     const fallbackBody = request.url.includes('/find_route_results')
       ? JSON.stringify({ type: 'none', results: [] })
       : JSON.stringify([]);
@@ -56,18 +53,39 @@ async function fetchAndCache(request) {
   }
 }
 
+// Helper: fetch & cache HTML pages (dynamic caching)
+async function cacheHtml(request) {
+  const cache = await caches.open(HTML_CACHE);
+  try {
+    const response = await fetch(request);
+    cache.put(request, response.clone());
+    return response;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    // final fallback to shell
+    return caches.match('/');
+  }
+}
 
+// Main fetch handler
 self.addEventListener('fetch', evt => {
   const url = new URL(evt.request.url);
 
-  // 1) API calls: network-first, then cache
+  // 1) HTML navigations → dynamic cacheHtml()
+  if (evt.request.mode === 'navigate') {
+    evt.respondWith(cacheHtml(evt.request));
+    return;
+  }
+
+  // 2) API calls: network‑first, then DATA_CACHE
   if (url.pathname.startsWith('/union/stops') ||
       url.pathname.startsWith('/api/')) {
     evt.respondWith(fetchAndCache(evt.request));
     return;
   }
 
-  // 2) App shell & assets: cache-first
+  // 3) App shell & static assets: cache‑first
   evt.respondWith(
     caches.match(evt.request)
       .then(resp => resp || fetch(evt.request))
