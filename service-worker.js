@@ -38,10 +38,24 @@ async function fetchAndCache(request) {
     cache.put(request, response.clone());
     return response;
   } catch (err) {
+    console.warn('🗄️ Fetch failed; returning cache or fallback:', request.url, err);
+
     const cached = await cache.match(request);
-    return cached || Response.error();
+    if (cached) {
+      return cached;
+    }
+
+    // FINAL FALLBACK: empty JSON (or whatever shape your app expects)
+    const fallbackBody = request.url.includes('/find_route_results')
+      ? JSON.stringify({ type: 'none', results: [] })
+      : JSON.stringify([]);
+    return new Response(fallbackBody, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
+
 
 self.addEventListener('fetch', evt => {
   const url = new URL(evt.request.url);
