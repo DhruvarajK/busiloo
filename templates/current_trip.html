@@ -50,11 +50,13 @@
         function saveRecent(list) {
         localStorage.setItem(RECENT_KEY, JSON.stringify(list));
         }
-        function recordThisTrip() {
+        function recordThisTrip(trip) {
+        console.log('recordThisTrip called with tripData:', trip); 
         const url = location.pathname + location.search;
         const entry = {
             url,
             busId: BUS_ID,
+            tripName: trip.route_name,
             busName: BUS_NAME,
             
             when: Date.now()
