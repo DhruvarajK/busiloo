@@ -551,7 +551,7 @@ function removeRecent(idx) {
 }
 function renderRecent() {
     const ul = document.getElementById('recent-trips-list');
-    const secul =  document.getElementById('recent-trips-section');
+    const secul = document.getElementById('recent-trips-section');
     const list = loadRecent();
 
     // Clear existing content
@@ -581,10 +581,18 @@ function renderRecent() {
         busNameSpan.textContent = e.busName;
         a.appendChild(busNameSpan);
 
+        // Create and append the trip name span directly to the link.
+        if (e.tripName) { // Only add if tripName exists
+            const tripNameSpan = document.createElement('span');
+            tripNameSpan.className = 'trip-name-v1'; // Define this CSS class for styling
+            tripNameSpan.textContent = ` ${e.tripName}`; // Add parentheses for formatting
+            a.appendChild(tripNameSpan);
+        }
+
         // Create and append the bus ID span directly to the link.
         const busIdSpan = document.createElement('span');
         busIdSpan.className = 'bus-id-v1';
-        busIdSpan.textContent = `id ${e.busId}`;
+        busIdSpan.textContent = ` id ${e.busId}`;
         a.appendChild(busIdSpan);
 
         // Create the remove button.
@@ -599,7 +607,7 @@ function renderRecent() {
         // Add the SVG icon inside the button.
         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-        // Append the link (which now contains bus name and ID) and the button to the list item.
+        // Append the link (which now contains bus name, trip name, and ID) and the button to the list item.
         li.append(a, btn);
         // Append the list item to the main list.
         ul.append(li);
