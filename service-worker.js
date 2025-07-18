@@ -1,0 +1,61 @@
+const CACHE_NAME = 'busiloo-shell-v1';
+const DATA_CACHE = 'busiloo-data-v1';
+const SHELL_FILES = [
+  '/',                // make sure your server serves index.html on “/”
+  '/static/home.css',
+  '/static/busiloo.svg',
+  '/static/translater.js',
+  // list all your other assets...
+];
+
+self.addEventListener('install', evt => {
+  // Pre-cache app shell
+  evt.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(SHELL_FILES))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', evt => {
+  // Clean up old caches
+  evt.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(key => {
+        if (![CACHE_NAME, DATA_CACHE].includes(key)) {
+          return caches.delete(key);
+        }
+      }))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Helper for API caching
+async function fetchAndCache(request) {
+  const cache = await caches.open(DATA_CACHE);
+  try {
+    const response = await fetch(request);
+    cache.put(request, response.clone());
+    return response;
+  } catch (err) {
+    const cached = await cache.match(request);
+    return cached || Response.error();
+  }
+}
+
+self.addEventListener('fetch', evt => {
+  const url = new URL(evt.request.url);
+
+  // 1) API calls: network-first, then cache
+  if (url.pathname.startsWith('/union/stops') ||
+      url.pathname.startsWith('/api/')) {
+    evt.respondWith(fetchAndCache(evt.request));
+    return;
+  }
+
+  // 2) App shell & assets: cache-first
+  evt.respondWith(
+    caches.match(evt.request)
+      .then(resp => resp || fetch(evt.request))
+  );
+});
