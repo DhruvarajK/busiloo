@@ -5,9 +5,6 @@
     <title>BusBuddy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/busiloo.svg" type="image/svg+xml">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/home.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e88e5">
@@ -171,7 +168,7 @@
         </div>
         <div id="details-container" class="hidden"></div>
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
     
@@ -281,7 +278,6 @@
                 const cached = localStorage.getItem(key);
                 return cached ? JSON.parse(cached) : [];
               }
-              
     
             // --- OVERLAY LOGIC ---
             const searchOverlay = document.getElementById('search-overlay');
@@ -351,7 +347,7 @@
     
             // --- FETCH STOPS & SETUP INPUTS ---
             fetchWithLocalCache('/union/stops?skip=0&limit=1000')
-                .then(r => r.json())
+                
                 .then(data => allStops = data)
                 .catch(err => console.error("Failed to fetch stops:", err));
     
@@ -496,12 +492,6 @@
                 resultsOverlay.classList.add('active');
     
                 fetchWithLocalCache(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
                 .then(data => {
                     // Case 1: No routes found
                     if (data.type === 'none' || !data.results || data.results.length === 0) {
