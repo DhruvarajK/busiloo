@@ -8,535 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-
-        /* --- App Theme & Variables --- */
-        :root {
-            --primary-color: #D32F2F; /* Bold Red */
-            --primary-dark: #B71C1C;
-            --accent-color: #FFC107; /* Yellow Accent */
-            --background-color: #F5F5F5;
-            --card-background: #FFFFFF;
-            --text-primary: #212121;
-            --text-secondary: #757575;
-            --border-color: #E0E0E0;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --border-radius: 12px;
-            
-        }
-
-        /* --- Base & Body --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to bottom right, #fef2f2, #fee2e2, #fecaca); /* Enhanced light red gradient background */
-            color: var(--text-primary);
-            padding-top: 9.5rem;
-            overscroll-behavior: none;
-        }
-
-        /* Hidden Utility Class */
-.hidden {
-    display: none !important;
-}
-
-/* --- Options List View --- */
-#options-container h3 {
-    font-size: 18px;
-    font-weight: 600;
-    padding: 16px;
-    margin: 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.route-option {
-    padding: 16px;
-    border-bottom: 1px solid #e0e0e0;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.route-option:hover {
-    background-color: #f0f0f0;
-}
-
-.route-option:last-child {
-    border-bottom: none;
-}
-
-.route-summary {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    justify-content: space-between;
-}
-
-.route-summary .time {
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.route-icons {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.route-icons .icon {
-    width: 20px;
-    height: 20px;
-    color: #5f6368;
-}
-
-.route-icons .chevron-right {
-    width: 16px;
-    height: 16px;
-    color: #5f6368;
-}
-
-.route-details-summary {
-    font-size: 13px;
-    color: #5f6368;
-
-}
-
-/* --- Detailed Route View --- */
-#details-header {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-#back-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#back-btn svg {
-    width: 24px;
-    height: 24px;
-    color: #5f6368;
-}
-
-#details-header h4 {
-    font-size: 16px;
-    font-weight: 500;
-    margin: 0;
-    margin-left: 16px;
-}
-
-.timeline {
-    padding: 0 16px;
-}
-
-.timeline-item {
-    display: flex;
-    position: relative;
-    padding: 16px 0;
-}
-
-.timeline-item:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    left: 12px;
-    top: 38px;
-    width: 2px;
-    height: calc(100% - 24px);
-    background-color: #e0e0e0;
-}
-
-.timeline-icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background-color: #dfdfdf;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 16px;
-    z-index: 1;
-}
-
-.timeline-icon svg {
-    width: 16px;
-    height: 16px;
-    color: #5f6368;
-}
-
-.timeline-content {
-    flex: 1;
-}
-
-.timeline-content p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.timeline-content p strong {
-    font-weight: 500;
-}
-
-#details-back-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#details-back-btn svg {
-    width: 24px;
-    height: 24px;
-    color: #5f6368;
-}
-
-.bus-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.bus-name {
-    font-size: 15px;
-    font-weight: 500;
-    color: #d32f2f; /* Bus color */
-}
-
-.view-trip-btn {
-    font-size: 12px;
-    color: #1a73e8;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.transfer-info, .destination-info {
-    font-size: 14px;
-    padding: 4px 0;
-}
-
-.wait-details {
-    font-size: 13px;
-    color: #5f6368;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-}
-.wait-details svg {
-    width: 14px;
-    height: 14px;
-}
-        #page-loader {
-            position: fixed; /* Covers the entire viewport */
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: transparent; /* Updated background color */
-            backdrop-filter: blur(5px); /* Added blur effect */
-            display: flex; /* Centers the loader content */
-            justify-content: center;
-            align-items: center;
-            z-index: 9999; /* Ensures it's on top of everything */
-            opacity: 1; /* Initially fully visible */
-            transition: opacity 0.5s ease-out; /* Smooth fade-out transition */
-            pointer-events: all;
-            border-radius: 8px; /* Rounded corners for the overlay itself */
-        }
-
-        /* Class to fade out and hide the loader (added by JavaScript) */
-        #page-loader.fade-out {
-            opacity: 0 !important; /* Force opacity to 0 */
-            pointer-events: none; /* Prevent interaction with elements beneath */
-        }
-
-
-        .loader-spinner {
-            border: 6px solid #e0e0e000;
-            border-top: 6px solid #e24a4a;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1.2s linear infinite;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Keyframe animation for the spinner */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* --- Main App Container --- */
-        .app-container {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        /* --- App Header --- */
-        .app-header {
-            background-color: var(--primary-color);
-            padding: 20px;
-            color: white;
-            text-align: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 20;
-        }
-        .app-header h1 {
-            font-size: 1.8em;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex ;
-            align-items: center;
-            justify-content: center;
-        }
-        .time-section {
-            font-size: 0.9em;
-            background: rgba(0,0,0,0.1);
-            padding: 8px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .time-toggle {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.5);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-weight: 500;
-            font-family: 'Poppins', sans-serif;
-            transition: background-color 0.2s;
-        }
-        .time-toggle:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-
-        /* --- Main Search Card --- */
-        .search-form-card {
-            background: var(--card-background);
-            margin: 12px 15px 20px 15px;
-            position: relative;
-            z-index: 10;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 25px;
-        }
-
-        .location-inputs {
-            position: relative;
-        }
-        #language-select {
-            /* Hide the text content of the select element */
-            text-indent: -9999px; /* Pushes text far out of view */
-            -webkit-appearance: none; /* Removes default browser styling for consistency */
-            -moz-appearance: none;
-            appearance: none;
-            /* Set background image to your SVG icon */
-            background-image: url('data:image/svg+xml;utf8,<svg style="transform: scale(0.9);" fill="%23FFFF" width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1"><path d="M21.05566,12h-2a1,1,0,0,0,0,2v2H17.8714a2.96481,2.96481,0,0,0,.18426-1A2.99955,2.99955,0,0,0,12.458,13.50049a.99992.99992,0,1,0,1.73242.999A1.0009,1.0009,0,0,1,15.05566,14a1,1,0,0,1,0,2,1,1,0,0,0,0,2,1,1,0,1,1,0,2,1.0009,1.0009,0,0,1-.86523-.49951.99992.99992,0,1,0-1.73242.999A2.99955,2.99955,0,0,0,18.05566,19a2.96481,2.96481,0,0,0-.18426-1h1.18426v3a1,1,0,0,0,2,0V14a1,1,0,1,0,0-2ZM9.08594,11.24268a.99963.99963,0,1,0,1.93945-.48536L9.26855,3.72754a2.28044,2.28044,0,0,0-4.4248,0L3.08594,10.75732a.99963.99963,0,1,0,1.93945.48536L5.58618,9H8.52545ZM6.0863,7l.6969-2.78711a.29222.29222,0,0,1,.5459,0L8.02563,7Zm7.96936,0h1a1.001,1.001,0,0,1,1,1V9a1,1,0,0,0,2,0V8a3.00328,3.00328,0,0,0-3-3h-1a1,1,0,0,0,0,2Zm-4,9h-1a1.001,1.001,0,0,1-1-1V14a1,1,0,0,0-2,0v1a3.00328,3.00328,0,0,0,3,3h1a1,1,0,0,0,0-2Z"/></svg>');
-            
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain; /* Adjust as needed */
-            width: 40px; /* Set width and height to match your icon size */
-            height: 29px;
-            cursor: pointer;
-            padding-right: 0; /* Ensure no extra padding pushes the icon */
-            border-radius: 6px;
-            display: flex;
-            background-color: rgba(255, 255, 255, 0.2);
-            border: 1px solid #ffffff80;
-            &:focus {
-                outline: none; 
-                box-shadow: 0 0 0 2px #ffffff80; 
-              }
-          }
-          
-          /* Optional: To make the options still visible when the dropdown is open */
-          #language-select option {
-            text-indent: 0; /* Reset text indent for options */
-          }
-        
-        
-        .swap-btn {
-            position: absolute;
-            top: 58%;
-            right: 0px;
-            transform: translateY(-50%);
-            z-index: 11;
-            width: 40px;
-            height: 40px;
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .swap-btn:hover {
-            transform: translateY(-50%) rotate(180deg);
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .swap-btn svg { width: 20px; height: 20px; color: var(--primary-color); }
-
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 15px;
-        }
-        .input-wrapper:last-of-type {
-            margin-bottom: 20px;
-        }
-
-        .input-wrapper .icon {
-            position: absolute;
-            left: 15px;
-            top: 70%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-        }
-        .input-wrapper .icon svg { width: 20px; height: 20px; }
-        
-        .search-input, .date-input {
-            width: 100%;
-            padding: 15px 15px 15px 50px;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            background: #F9F9F9;
-            cursor: pointer;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-        
-        .search-button {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: 600;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .search-button:hover { background: var(--primary-dark); }
-        
-        /* --- Secondary Actions --- */
-        .secondary-actions {
-            padding: 0 15px;
-        }
-        .action-link {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: var(--card-background);
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            text-decoration: none;
-            color: var(--text-primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .action-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .action-link .icon { color: var(--primary-color); }
-        .action-link .icon svg { width: 24px; height: 24px; }
-        .action-link .text h3 { font-size: 1em; margin-bottom: 2px; }
-        .action-link .text p { font-size: 0.8em; color: var(--text-secondary); }
-
-        /* --- OVERLAY STYLES --- */
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--background-color); z-index: 100;
-            display: flex; flex-direction: column;
-            transform: scale(1.1); opacity: 0; visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
-        }
-        .overlay.active { transform: scale(1); opacity: 1; visibility: visible; }
-        
-        .overlay-header {
-            display: flex; align-items: center; padding: 15px;
-            background: var(--card-background); flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .back-btn, .close-btn {
-            background: none; border: none; font-size: 24px;
-            cursor: pointer; padding: 5px; color: var(--text-secondary);
-        }
-        .back-btn svg, .close-btn svg { width: 28px; height: 28px; }
-
-        .overlay-header h2 { flex: 1; text-align: center; font-weight: 600; font-size: 1.2em; }
-        
-        .overlay-search-wrapper { padding: 15px; background: var(--card-background); }
-        .overlay-search-input {
-            width: 100%; padding: 12px 15px; font-size: 16px;
-            border: 1px solid var(--border-color); border-radius: 10px;
-            background: var(--background-color); font-family: 'Poppins', sans-serif;
-        }
-        
-        .search-results { flex: 1; overflow-y: auto; }
-        .result-item {
-            display: flex; align-items: center; gap: 15px; width: 100%;
-            padding: 15px 20px; border: none; border-bottom: 1px solid var(--border-color);
-            background: var(--card-background); text-align: left; cursor: pointer;
-            font-size: 16px; color: var(--text-primary); text-decoration: none;
-            transition: background-color 0.2s;
-        }
-        .result-item .icon { color: var(--text-secondary); }
-        .result-item:hover { background-color: #f7f7f7; }
-        
-        .no-results, .loading { padding: 40px 20px; text-align: center; color: var(--text-secondary); }
-        .loading { color: var(--primary-color); font-weight: 500; }
-
-        /* --- Results Overlay Table --- */
-        .results-overlay .results-content { flex: 1; overflow-y: auto; padding: 15px; }
-        .results-overlay table {
-            width: 100%; border-collapse: collapse; background: white;
-            border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow);
-        }
-        .results-overlay th, .results-overlay td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .results-overlay th { background: #f2f2f2; font-weight: 600; font-size: 0.9em; }
-        .results-overlay tr:last-child td { border-bottom: none; }
-        .results-overlay td { color: var(--text-secondary); font-size: 0.95em; }
-        .results-overlay td:first-child { color: var(--text-primary); font-weight: 500; }
-        .results-overlay .view-trip-btn {
-            background-color: var(--primary-color); color: white;
-            padding: 8px 12px; border-radius: 8px; text-decoration: none;
-            font-size: 0.9em; font-weight: 500; display: inline-block;
-            transition: background-color 0.2s;
-        }
-        .results-overlay .view-trip-btn:hover { background-color: var(--primary-dark); }
-    
-    </style>
+    <link rel="stylesheet" href="/static/home.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e88e5">
 </head>
 <body>
     <div id="page-loader">
@@ -697,7 +171,7 @@
         </div>
         <div id="details-container" class="hidden"></div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
     
@@ -790,6 +264,24 @@
             setInterval(updateCurrentTime, 60000); // Update every minute
             updateCurrentTime();
             setJourneyDate();
+
+            async function fetchWithLocalCache(url) {
+                const key = `cache_${url}`;
+                if (navigator.onLine) {
+                  try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    localStorage.setItem(key, JSON.stringify(data));
+                    return data;
+                  } catch (e) {
+                    console.warn('Network fetch failed, using cache.', e);
+                  }
+                }
+                // offline or fetch failed
+                const cached = localStorage.getItem(key);
+                return cached ? JSON.parse(cached) : [];
+              }
+              
     
             // --- OVERLAY LOGIC ---
             const searchOverlay = document.getElementById('search-overlay');
@@ -858,7 +350,7 @@
             });
     
             // --- FETCH STOPS & SETUP INPUTS ---
-            fetch('/union/stops?skip=0&limit=1000')
+            fetchWithLocalCache('/union/stops?skip=0&limit=1000')
                 .then(r => r.json())
                 .then(data => allStops = data)
                 .catch(err => console.error("Failed to fetch stops:", err));
@@ -1003,7 +495,7 @@
                 resultsContent.innerHTML = '<div class="loading">Searching for buses...</div>';
                 resultsOverlay.classList.add('active');
     
-                fetch(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
+                fetchWithLocalCache(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1045,6 +537,14 @@
             });
         });
     </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker
+            .register('/service-worker.js')
+            .then(() => console.log('SW registered'))
+            .catch(err => console.error('SW failed', err));
+        }
+      </script>
     <script src="static/translater.js"></script>
 </body>
 </html>
