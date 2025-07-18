@@ -79,6 +79,7 @@
                 <button data-translate-button="s06" id="find-btn" class="search-button">Search Buses</button>
             </section>
 
+
             <section class="secondary-actions">
                 <a href="#" id="bus-search-action" class="action-link">
                     <div class="icon">
@@ -137,6 +138,13 @@
 
                 
             </section>
+            <section id="recent-trips-section" class="secondary-actions">
+                <h3>Your Recent Trips</h3>
+                <ul id="recent-trips-list">
+                  <!-- populated by JS -->
+                </ul>
+            </section>
+              
         </main>
     </div>
 
@@ -526,6 +534,79 @@
                 });
             });
         });
+        // —— Recent‑Trips Logic ——
+const RECENT_KEY = 'recentTrips';
+function loadRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
+  catch { return []; }
+}
+function saveRecent(list) {
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+}
+function removeRecent(idx) {
+  const list = loadRecent();
+  list.splice(idx, 1);
+  saveRecent(list);
+  renderRecent();
+}
+function renderRecent() {
+    const ul = document.getElementById('recent-trips-list');
+    const secul =  document.getElementById('recent-trips-section');
+    const list = loadRecent();
+
+    // Clear existing content
+    ul.innerHTML = '';
+
+    if (!list.length) {
+        secul.style.display = 'none'; // Hide the ul
+        return;
+    }
+
+    // If there are trips, ensure the ul is visible.
+    secul.style.display = 'block'; // Or 'flex', 'grid', etc., depending on your CSS display property
+
+    list.forEach((e, i) => {
+        // Create the main list item container.
+        const li = document.createElement('li');
+        li.className = 'trip-item';
+
+        // Create the main link element and make it the primary container.
+        const a = document.createElement('a');
+        a.className = 'trip-link';
+        a.href = e.url; // Assuming the saved object has a 'url' property.
+
+        // Create and append the bus name span directly to the link.
+        const busNameSpan = document.createElement('span');
+        busNameSpan.className = 'bus-name-v1';
+        busNameSpan.textContent = e.busName;
+        a.appendChild(busNameSpan);
+
+        // Create and append the bus ID span directly to the link.
+        const busIdSpan = document.createElement('span');
+        busIdSpan.className = 'bus-id-v1';
+        busIdSpan.textContent = `id ${e.busId}`;
+        a.appendChild(busIdSpan);
+
+        // Create the remove button.
+        const btn = document.createElement('button');
+        btn.className = 'remove-trip-button';
+        btn.title = 'Remove';
+        btn.onclick = (event) => {
+            event.stopPropagation(); // Prevent the link from being clicked when the button is clicked
+            removeRecent(i);
+        };
+
+        // Add the SVG icon inside the button.
+        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
+        // Append the link (which now contains bus name and ID) and the button to the list item.
+        li.append(a, btn);
+        // Append the list item to the main list.
+        ul.append(li);
+    });
+}
+document.addEventListener('DOMContentLoaded', renderRecent);
+
     </script>
     <script>
         if ('serviceWorker' in navigator) {
