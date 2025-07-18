@@ -293,8 +293,8 @@
         }
         .time-section {
             font-size: 0.9em;
-            background: rgba(0,0,0,0.1);
-            padding: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 5px;
             border-radius: 8px;
             display: inline-flex;
             align-items: center;
@@ -343,19 +343,17 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain; /* Adjust as needed */
-            width: 40px; /* Set width and height to match your icon size */
-            height: 29px;
+            width: 33px;
+            height: 25px;
             cursor: pointer;
             padding-right: 0; /* Ensure no extra padding pushes the icon */
             border-radius: 6px;
             display: flex;
             background-color: rgba(255, 255, 255, 0.2);
             border: 1px solid #ffffff80;
-            &:focus {
-                outline: none; 
-                box-shadow: 0 0 0 2px #ffffff80; 
-              }
+            
           }
+
           
           /* Optional: To make the options still visible when the dropdown is open */
           #language-select option {
