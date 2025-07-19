@@ -5,7 +5,7 @@
     <title>Current Trip for {{ bus_name }}</title>
     <link rel="icon" href="/static/busiloo.svg" type="image/svg+xml">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="static/trip.css">
+    <link rel="stylesheet" href="/static/trip.css">
 
 </head>
 <body>
@@ -241,7 +241,7 @@
                 shouldShowTooltip = true;
                 busMarker.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => {
-                    shouldShowTooltip = true;
+                    shouldShowTooltip = false;
                 }, 3000);
             });
             
