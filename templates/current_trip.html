@@ -14,6 +14,12 @@
     <div id="trip-info" >
         <p style="text-align: center; padding-top: 50px;">Loading trip information...<br><br>Please note: The scheduled bus time and timeline chart may be inaccurate based on traffic and other conditions.</p>
     </div>
+    <button id="scroll-to-bus-btn"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <g>
+            <path fill="none" d="M0 0h24v24H0z"/>
+            <path fill="currentColor" d="M18.033 16.618l4.28 4.281-1.414 1.415-4.28-4.281A8.963 8.963 0 0 1 11 20a8.998 8.998 0 0 1-8.065-5H9l-1.304 2.173A6.972 6.972 0 0 0 11 18a6.977 6.977 0 0 0 4.875-1.975l.15-.15A6.977 6.977 0 0 0 18 11c0-.695-.101-1.366-.29-2h2.067c.146.643.223 1.313.223 2a8.963 8.963 0 0 1-1.967 5.618zM19.065 7H13l1.304-2.173A6.972 6.972 0 0 0 11 4c-3.868 0-7 3.132-7 7 0 .695.101 1.366.29 2H2.223A9.038 9.038 0 0 1 2 11c0-4.973 4.027-9 9-9a8.998 8.998 0 0 1 8.065 5z"/>
+        </g>
+    </svg></button>
 
     <!-- The modal structure is kept in the HTML for semantic structure. -->
     <div id="crowd-modal" class="modal-overlay">
@@ -40,7 +46,13 @@
         console.log('BUS_ID:', BUS_ID); // Check what value BUS_ID actually holds
         const BUS_NAME = "{{ bus_name }}";
         const tripInfo = document.getElementById('trip-info');
+        const scrollBtn = document.getElementById('scroll-to-bus-btn');
         let is24Hour = true;
+        let shouldShowTooltip = true;
+        let tooltipTimeout;
+
+
+
 
         const RECENT_KEY = 'recentTrips';
         function loadRecent() {
@@ -182,7 +194,59 @@
                     if (stop.etaElement) stop.etaElement.textContent = `ETA: ${calculateETA(currentMinutes, stop.timeInMinutes)}`;
                 }
             });
+            let tooltipText;
+                if (currentMinutes >= cachedStopElements[cachedStopElements.length - 1].timeInMinutes) {
+                    const lastName = cachedStopElements[cachedStopElements.length - 1]
+                    .element.querySelector('.stop-name').textContent.trim();
+                    tooltipText = `Arrived at ${lastName}`;
+                } else {
+                    // Find previous stop
+                    const prevIndex = cachedStopElements.findIndex(st => st.timeInMinutes > currentMinutes) - 1;
+                    if (prevIndex >= 0) {
+                    const prevName = cachedStopElements[prevIndex]
+                        .element.querySelector('.stop-name').textContent.trim();
+                    tooltipText = `Departed from ${prevName}`;
+                    }
+                }
+                // Remove old tooltip
+                // Only show tooltip based on flags
+                const oldTip = busMarker.querySelector('.bus-tooltip');
+                if (oldTip) oldTip.remove();
+
+                if (tooltipText && shouldShowTooltip) {
+                    const tip = document.createElement('div');
+                    tip.className = 'bus-tooltip';
+                    tip.textContent = tooltipText;
+                    busMarker.appendChild(tip);
+
+                    // Clear previous timeout
+                    clearTimeout(tooltipTimeout);
+                    tooltipTimeout = setTimeout(() => {
+                        const stillTip = busMarker.querySelector('.bus-tooltip');
+                        if (stillTip) stillTip.remove();
+                    }, 3000);
+                }
+
+
+
+                // --- New: Show/hide button if marker is out of view ---
+                const rect = busMarker.getBoundingClientRect();
+                const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+                if (rect.top < 0 || rect.bottom > viewHeight) {
+                    scrollBtn.style.display = 'flex';
+                } else {
+                    scrollBtn.style.display = 'none';
+            }
+            scrollBtn.addEventListener('click', () => {
+                shouldShowTooltip = true;
+                busMarker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    shouldShowTooltip = false;
+                }, 3000);
+            });
+            
         }
+
     
         // --- OPTIMIZATION: Event listeners are set up once ---
         function setupEventListeners(cachedStopElements) {
@@ -303,7 +367,9 @@
                         if (busMarker) {
                             busMarker.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
+                        shouldShowTooltip = false;
                     }, 100);
+                    
     
                     // Load additional data
                     loadCrowdPrediction();
