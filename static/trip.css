@@ -416,8 +416,7 @@
           #bus-marker .bus-tooltip {
             position: absolute;
             top: -6px;
-            left: 130px;
-            transform: translateX(-50%);
+            left: 45px;
             background: var(--color-redbus-red);
             color: #fff;
             padding: 14px 8px;
