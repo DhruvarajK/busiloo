@@ -89,6 +89,16 @@
    ```
    The app will be available at `http://localhost:8000`.
 
+### Run with Docker
+
+1. **Build and start the container**:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+2. The application will be accessible at `http://localhost:8000`.
+
 ---
 
 ## Project Structure
