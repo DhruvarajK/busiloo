@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Busiloo</title>
@@ -9,6 +10,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e88e5">
 </head>
+
 <body>
     <div id="page-loader">
         <div class="loader-spinner"></div>
@@ -16,25 +18,26 @@
 
     <!-- Main App Structure -->
     <div class="app-container">
-        
+
         <header class="app-header">
             <h1>Busiloo&nbsp;<svg width="27" height="27" viewBox="3 1 24 24" xmlns="http://www.w3.org/2000/svg">
-                <g>
-                    <path fill="none" d="M0 0h24v24H0z"/>
-                    <path fill="currentColor" d="M12 3v2H5v7h16v8h-1v1a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1H3v-8H2V8h1V5a2 2 0 0 1 2-2h7zm7 11H5v4h14v-4zm-9 1v2H6v-2h4zm8 0v2h-4v-2h4zm.5-14a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 5.167c-.491 0-.94.177-1.289.47l-.125.115L18.5 8.167l1.413-1.416a1.994 1.994 0 0 0-1.413-.584zm0-2.667a4.65 4.65 0 0 0-3.128 1.203l-.173.165.944.942a3.323 3.323 0 0 1 2.357-.977 3.32 3.32 0 0 1 2.201.83l.156.147.943-.943A4.652 4.652 0 0 0 18.5 3.5z"/>
-                </g>
-            </svg></h1>
+                    <g>
+                        <path fill="none" d="M0 0h24v24H0z" />
+                        <path fill="currentColor"
+                            d="M12 3v2H5v7h16v8h-1v1a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1H3v-8H2V8h1V5a2 2 0 0 1 2-2h7zm7 11H5v4h14v-4zm-9 1v2H6v-2h4zm8 0v2h-4v-2h4zm.5-14a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 5.167c-.491 0-.94.177-1.289.47l-.125.115L18.5 8.167l1.413-1.416a1.994 1.994 0 0 0-1.413-.584zm0-2.667a4.65 4.65 0 0 0-3.128 1.203l-.173.165.944.942a3.323 3.323 0 0 1 2.357-.977 3.32 3.32 0 0 1 2.201.83l.156.147.943-.943A4.652 4.652 0 0 0 18.5 3.5z" />
+                    </g>
+                </svg></h1>
             <div class="time-section">
                 <span id="current-time"></span>
                 <button id="time-toggle-btn" class="time-toggle">24h</button>
-                
+
             </div>
             <div class="time-section">
-                <select id="language-select"><svg fill="#000000" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1"><path d="M21.05566,12h-2a1,1,0,0,0,0,2v2H17.8714a2.96481,2.96481,0,0,0,.18426-1A2.99955,2.99955,0,0,0,12.458,13.50049a.99992.99992,0,1,0,1.73242.999A1.0009,1.0009,0,0,1,15.05566,14a1,1,0,0,1,0,2,1,1,0,0,0,0,2,1,1,0,1,1,0,2,1.0009,1.0009,0,0,1-.86523-.49951.99992.99992,0,1,0-1.73242.999A2.99955,2.99955,0,0,0,18.05566,19a2.96481,2.96481,0,0,0-.18426-1h1.18426v3a1,1,0,0,0,2,0V14a1,1,0,1,0,0-2ZM9.08594,11.24268a.99963.99963,0,1,0,1.93945-.48536L9.26855,3.72754a2.28044,2.28044,0,0,0-4.4248,0L3.08594,10.75732a.99963.99963,0,1,0,1.93945.48536L5.58618,9H8.52545ZM6.0863,7l.6969-2.78711a.29222.29222,0,0,1,.5459,0L8.02563,7Zm7.96936,0h1a1.001,1.001,0,0,1,1,1V9a1,1,0,0,0,2,0V8a3.00328,3.00328,0,0,0-3-3h-1a1,1,0,0,0,0,2Zm-4,9h-1a1.001,1.001,0,0,1-1-1V14a1,1,0,0,0-2,0v1a3.00328,3.00328,0,0,0,3,3h1a1,1,0,0,0,0-2Z"/></svg>
+                <select id="language-select">
                     <option value="en">English</option>
                     <option value="ml">മലയാളം</option>
                 </select>
-                
+
             </div>
         </header>
 
@@ -45,24 +48,40 @@
                     <div class="input-wrapper">
                         <label data-translate="s01" for="start-stop-search">FROM</label>
                         <div class="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="10" r="3" />
+                                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
+                            </svg>
                         </div>
-                        <input data-translate-placeholder="s02" type="text" id="start-stop-search" class="search-input" placeholder="Starting location" readonly>
+                        <input data-translate-placeholder="s02" type="text" id="start-stop-search" class="search-input"
+                            placeholder="Starting location" readonly>
                         <input type="hidden" id="start-stop-id">
                     </div>
 
                     <!-- Swap Button -->
                     <button class="swap-btn" id="swap-btn" aria-label="Swap locations">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
                     </button>
 
                     <!-- To Input -->
                     <div class="input-wrapper">
                         <label data-translate="s03" for="end-stop-search">TO</label>
                         <div class="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
                         </div>
-                        <input data-translate-placeholder="s04" type="text" id="end-stop-search" class="search-input" placeholder="Destination" readonly>
+                        <input data-translate-placeholder="s04" type="text" id="end-stop-search" class="search-input"
+                            placeholder="Destination" readonly>
                         <input type="hidden" id="end-stop-id">
                     </div>
                 </div>
@@ -71,7 +90,13 @@
                 <div class="input-wrapper">
                     <label data-translate="s05" for="journey-date">DATE OF JOURNEY</label>
                     <div class="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
                     </div>
                     <input type="text" id="journey-date" class="date-input" readonly>
                 </div>
@@ -84,67 +109,88 @@
                 <a href="#" id="bus-search-action" class="action-link">
                     <div class="icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9436 1.25H12.0564C13.8942 1.24998 15.3498 1.24997 16.489 1.40314C17.6614 1.56076 18.6104 1.89288 19.3588 2.64124C20.1071 3.38961 20.4392 4.33856 20.5969 5.51098C20.6996 6.27504 20.7334 7.18144 20.7445 8.25H21C21.9665 8.25 22.75 9.0335 22.75 10V11C22.75 11.5508 22.4907 12.0695 22.05 12.4L20.7475 13.3768C20.7402 14.6093 20.7113 15.6375 20.5969 16.489C20.4392 17.6614 20.1071 18.6104 19.3588 19.3588C19.1689 19.5486 18.9661 19.7117 18.75 19.852V21C18.75 21.9665 17.9665 22.75 17 22.75H15.5C14.5335 22.75 13.75 21.9665 13.75 21V20.7445C13.2253 20.75 12.6616 20.75 12.0564 20.75H11.9436C11.3384 20.75 10.7747 20.75 10.25 20.7445V21C10.25 21.9665 9.4665 22.75 8.5 22.75H7C6.0335 22.75 5.25 21.9665 5.25 21V19.852C5.03392 19.7117 4.83112 19.5486 4.64124 19.3588C3.89288 18.6104 3.56076 17.6614 3.40313 16.489C3.28866 15.6375 3.25975 14.6093 3.25246 13.3768L1.95 12.4C1.50934 12.0695 1.25 11.5508 1.25 11V10C1.25 9.0335 2.0335 8.25 3 8.25H3.25546C3.26659 7.18144 3.30041 6.27504 3.40313 5.51098C3.56076 4.33856 3.89288 3.38961 4.64124 2.64124C5.38961 1.89288 6.33855 1.56076 7.51098 1.40314C8.65019 1.24997 10.1058 1.24998 11.9436 1.25ZM3.25 9.75H3C2.86193 9.75 2.75 9.86193 2.75 10V11C2.75 11.0787 2.78705 11.1528 2.85 11.2L3.25 11.5L3.25 9.94359C3.25 9.87858 3.25 9.81405 3.25 9.75ZM4.75573 13.75C4.76662 14.7836 4.79821 15.6082 4.88976 16.2892C5.02502 17.2952 5.27869 17.8749 5.7019 18.2981C6.12511 18.7213 6.70476 18.975 7.71085 19.1102C8.73851 19.2484 10.0932 19.25 12 19.25C13.9068 19.25 15.2615 19.2484 16.2892 19.1102C17.2952 18.975 17.8749 18.7213 18.2981 18.2981C18.7213 17.8749 18.975 17.2952 19.1102 16.2892C19.2018 15.6082 19.2334 14.7836 19.2443 13.75H4.75573ZM19.25 12.25H4.75002C4.75 12.1677 4.75 12.0844 4.75 12V10C4.75 8.1173 4.75155 6.77287 4.88458 5.75H19.1154C19.2484 6.77287 19.25 8.1173 19.25 10V12C19.25 12.0844 19.25 12.1677 19.25 12.25ZM20.75 11.5L21.15 11.2C21.213 11.1528 21.25 11.0787 21.25 11V10C21.25 9.86193 21.1381 9.75 21 9.75H20.75C20.75 9.81405 20.75 9.87858 20.75 9.94359V11.5ZM18.701 4.25C18.5882 4.03672 18.4548 3.85859 18.2981 3.7019C17.8749 3.27869 17.2952 3.02502 16.2892 2.88976C15.2615 2.75159 13.9068 2.75 12 2.75C10.0932 2.75 8.73851 2.75159 7.71085 2.88976C6.70476 3.02502 6.12511 3.27869 5.7019 3.7019C5.54522 3.85859 5.41177 4.03672 5.29896 4.25H18.701ZM6.75 20.4605V21C6.75 21.1381 6.86193 21.25 7 21.25H8.5C8.63807 21.25 8.75 21.1381 8.75 21V20.7042C8.30066 20.6815 7.88845 20.6476 7.51098 20.5969C7.24599 20.5612 6.99242 20.5167 6.75 20.4605ZM15.25 20.7042V21C15.25 21.1381 15.3619 21.25 15.5 21.25H17C17.1381 21.25 17.25 21.1381 17.25 21V20.4605C17.0076 20.5167 16.754 20.5612 16.489 20.5969C16.1116 20.6476 15.6993 20.6815 15.25 20.7042ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM14.75 16C14.75 15.5858 15.0858 15.25 15.5 15.25H17C17.4142 15.25 17.75 15.5858 17.75 16C17.75 16.4142 17.4142 16.75 17 16.75H15.5C15.0858 16.75 14.75 16.4142 14.75 16Z" fill="currentColor"/>
-                            </svg>
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M11.9436 1.25H12.0564C13.8942 1.24998 15.3498 1.24997 16.489 1.40314C17.6614 1.56076 18.6104 1.89288 19.3588 2.64124C20.1071 3.38961 20.4392 4.33856 20.5969 5.51098C20.6996 6.27504 20.7334 7.18144 20.7445 8.25H21C21.9665 8.25 22.75 9.0335 22.75 10V11C22.75 11.5508 22.4907 12.0695 22.05 12.4L20.7475 13.3768C20.7402 14.6093 20.7113 15.6375 20.5969 16.489C20.4392 17.6614 20.1071 18.6104 19.3588 19.3588C19.1689 19.5486 18.9661 19.7117 18.75 19.852V21C18.75 21.9665 17.9665 22.75 17 22.75H15.5C14.5335 22.75 13.75 21.9665 13.75 21V20.7445C13.2253 20.75 12.6616 20.75 12.0564 20.75H11.9436C11.3384 20.75 10.7747 20.75 10.25 20.7445V21C10.25 21.9665 9.4665 22.75 8.5 22.75H7C6.0335 22.75 5.25 21.9665 5.25 21V19.852C5.03392 19.7117 4.83112 19.5486 4.64124 19.3588C3.89288 18.6104 3.56076 17.6614 3.40313 16.489C3.28866 15.6375 3.25975 14.6093 3.25246 13.3768L1.95 12.4C1.50934 12.0695 1.25 11.5508 1.25 11V10C1.25 9.0335 2.0335 8.25 3 8.25H3.25546C3.26659 7.18144 3.30041 6.27504 3.40313 5.51098C3.56076 4.33856 3.89288 3.38961 4.64124 2.64124C5.38961 1.89288 6.33855 1.56076 7.51098 1.40314C8.65019 1.24997 10.1058 1.24998 11.9436 1.25ZM3.25 9.75H3C2.86193 9.75 2.75 9.86193 2.75 10V11C2.75 11.0787 2.78705 11.1528 2.85 11.2L3.25 11.5L3.25 9.94359C3.25 9.87858 3.25 9.81405 3.25 9.75ZM4.75573 13.75C4.76662 14.7836 4.79821 15.6082 4.88976 16.2892C5.02502 17.2952 5.27869 17.8749 5.7019 18.2981C6.12511 18.7213 6.70476 18.975 7.71085 19.1102C8.73851 19.2484 10.0932 19.25 12 19.25C13.9068 19.25 15.2615 19.2484 16.2892 19.1102C17.2952 18.975 17.8749 18.7213 18.2981 18.2981C18.7213 17.8749 18.975 17.2952 19.1102 16.2892C19.2018 15.6082 19.2334 14.7836 19.2443 13.75H4.75573ZM19.25 12.25H4.75002C4.75 12.1677 4.75 12.0844 4.75 12V10C4.75 8.1173 4.75155 6.77287 4.88458 5.75H19.1154C19.2484 6.77287 19.25 8.1173 19.25 10V12C19.25 12.0844 19.25 12.1677 19.25 12.25ZM20.75 11.5L21.15 11.2C21.213 11.1528 21.25 11.0787 21.25 11V10C21.25 9.86193 21.1381 9.75 21 9.75H20.75C20.75 9.81405 20.75 9.87858 20.75 9.94359V11.5ZM18.701 4.25C18.5882 4.03672 18.4548 3.85859 18.2981 3.7019C17.8749 3.27869 17.2952 3.02502 16.2892 2.88976C15.2615 2.75159 13.9068 2.75 12 2.75C10.0932 2.75 8.73851 2.75159 7.71085 2.88976C6.70476 3.02502 6.12511 3.27869 5.7019 3.7019C5.54522 3.85859 5.41177 4.03672 5.29896 4.25H18.701ZM6.75 20.4605V21C6.75 21.1381 6.86193 21.25 7 21.25H8.5C8.63807 21.25 8.75 21.1381 8.75 21V20.7042C8.30066 20.6815 7.88845 20.6476 7.51098 20.5969C7.24599 20.5612 6.99242 20.5167 6.75 20.4605ZM15.25 20.7042V21C15.25 21.1381 15.3619 21.25 15.5 21.25H17C17.1381 21.25 17.25 21.1381 17.25 21V20.4605C17.0076 20.5167 16.754 20.5612 16.489 20.5969C16.1116 20.6476 15.6993 20.6815 15.25 20.7042ZM6.25 16C6.25 15.5858 6.58579 15.25 7 15.25H8.5C8.91421 15.25 9.25 15.5858 9.25 16C9.25 16.4142 8.91421 16.75 8.5 16.75H7C6.58579 16.75 6.25 16.4142 6.25 16ZM14.75 16C14.75 15.5858 15.0858 15.25 15.5 15.25H17C17.4142 15.25 17.75 15.5858 17.75 16C17.75 16.4142 17.4142 16.75 17 16.75H15.5C15.0858 16.75 14.75 16.4142 14.75 16Z"
+                                fill="currentColor" />
+                        </svg>
                     </div>
                     <div class="text">
                         <h3 data-translate="s07">Search by Bus Name</h3>
-                        <p data-translate="s08" >Find a specific bus service</p>
+                        <p data-translate="s08">Find a specific bus service</p>
                     </div>
                 </a>
                 <a href="/nearby" class="action-link">
                     <div class="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
                     </div>
                     <div class="text">
-                        <h3 data-translate="s09" >Stops Near Me</h3>
-                        <p data-translate="s10" >Find bus stops and routes around you</p>
+                        <h3 data-translate="s09">Stops Near Me</h3>
+                        <p data-translate="s10">Find bus stops and routes around you</p>
                     </div>
                 </a>
                 <a href="/calculate_fare_page" class="action-link">
                     <div class="icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19.5 12.5C19.5 11.12 20.62 10 22 10V9C22 5 21 4 17 4H7C3 4 2 5 2 9V9.5C3.38 9.5 4.5 10.62 4.5 12C4.5 13.38 3.38 14.5 2 14.5V15C2 19 3 20 7 20H17C21 20 22 19 22 15C20.62 15 19.5 13.88 19.5 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14.75L15 8.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.9945 14.75H15.0035" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.99451 9.25H9.00349" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M19.5 12.5C19.5 11.12 20.62 10 22 10V9C22 5 21 4 17 4H7C3 4 2 5 2 9V9.5C3.38 9.5 4.5 10.62 4.5 12C4.5 13.38 3.38 14.5 2 14.5V15C2 19 3 20 7 20H17C21 20 22 19 22 15C20.62 15 19.5 13.88 19.5 12.5Z"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M9 14.75L15 8.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M14.9945 14.75H15.0035" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M8.99451 9.25H9.00349" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
                     </div>
                     <div class="text">
-                        <h3 data-translate="s11" >Calculate fare</h3>
-                        <p data-translate="s12" >Estimate your travel cost.</p>
+                        <h3 data-translate="s11">Calculate fare</h3>
+                        <p data-translate="s12">Estimate your travel cost.</p>
                     </div>
                 </a>
                 <a href="/union/app_feedback" class="action-link">
                     <div class="icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g id="User / User_Voice">
-                            <path id="Vector" d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path id="Vector"
+                                    d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M16.8281 5.17188C17.1996 5.54331 17.4942 5.98427 17.6952 6.46957C17.8962 6.95487 17.9999 7.47533 17.9999 8.00062C17.9999 8.52591 17.8963 9.04497 17.6953 9.53027C17.4943 10.0156 17.1996 10.457 16.8281 10.8285M19 3C19.6566 3.65661 20.1775 4.43612 20.5328 5.29402C20.8882 6.15192 21.0718 7.07127 21.0718 7.99985C21.0718 8.92844 20.8886 9.84815 20.5332 10.7061C20.1778 11.564 19.6566 12.3435 19 13.0001M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </g>
-                            </svg>
+                        </svg>
                     </div>
                     <div class="text">
-                        <h3 data-translate="s13" >Feedback</h3>
-                        <p data-translate="s14" >Share your experience with us.</p>
+                        <h3 data-translate="s13">Feedback</h3>
+                        <p data-translate="s14">Share your experience with us.</p>
                     </div>
                 </a>
                 <a href="/traffic_report" class="action-link">
                     <div class="icon">
                         <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 3.75L15.75 3H8.25L7.5 3.75V6.75H6V8.25H7.5V11.25H6V12.75H7.5V15.75H6V17.25H7.5V20.25L8.25 21H15.75L16.5 20.25V17.25H18V15.75H16.5V12.75H18V11.25H16.5V8.25H18V6.75H16.5V3.75ZM9 4.5H15V19.5H9V4.5ZM12 9C12.8284 9 13.5 8.32843 13.5 7.5C13.5 6.67157 12.8284 6 12 6C11.1716 6 10.5 6.67157 10.5 7.5C10.5 8.32843 11.1716 9 12 9ZM13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12ZM12 18C12.8284 18 13.5 17.3284 13.5 16.5C13.5 15.6716 12.8284 15 12 15C11.1716 15 10.5 15.6716 10.5 16.5C10.5 17.3284 11.1716 18 12 18Z" fill="currentColor"/>
-                            </svg>
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M16.5 3.75L15.75 3H8.25L7.5 3.75V6.75H6V8.25H7.5V11.25H6V12.75H7.5V15.75H6V17.25H7.5V20.25L8.25 21H15.75L16.5 20.25V17.25H18V15.75H16.5V12.75H18V11.25H16.5V8.25H18V6.75H16.5V3.75ZM9 4.5H15V19.5H9V4.5ZM12 9C12.8284 9 13.5 8.32843 13.5 7.5C13.5 6.67157 12.8284 6 12 6C11.1716 6 10.5 6.67157 10.5 7.5C10.5 8.32843 11.1716 9 12 9ZM13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12ZM12 18C12.8284 18 13.5 17.3284 13.5 16.5C13.5 15.6716 12.8284 15 12 15C11.1716 15 10.5 15.6716 10.5 16.5C10.5 17.3284 11.1716 18 12 18Z"
+                                fill="currentColor" />
+                        </svg>
                     </div>
                     <div class="text">
-                        <h3 data-translate="s15" >Report Traffic</h3>
-                        <p data-translate="s16" >Notify us about traffic issues.</p>
+                        <h3 data-translate="s15">Report Traffic</h3>
+                        <p data-translate="s16">Notify us about traffic issues.</p>
                     </div>
                 </a>
 
-                
+
             </section>
             <section id="recent-trips-section" class="secondary-actions">
                 <h3>Your Recent Trips</h3>
                 <ul id="recent-trips-list">
-                  <!-- populated by JS -->
+                    <!-- populated by JS -->
                 </ul>
             </section>
-              
+
         </main>
     </div>
 
@@ -152,10 +198,14 @@
     <div id="search-overlay" class="overlay">
         <div class="overlay-header">
             <button class="back-btn" id="back-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
             </button>
             <div class="overlay-search-wrapper">
-                 <input type="text" id="overlay-search-input" class="overlay-search-input" placeholder="Search..." />
+                <input type="text" id="overlay-search-input" class="overlay-search-input" placeholder="Search..." />
             </div>
         </div>
         <div class="search-results" id="search-results">
@@ -167,19 +217,23 @@
     <div id="results-overlay" class="overlay results-overlay">
         <div class="overlay-header">
             <button class="close-btn" id="results-close-btn">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
             </button>
             <h2>Available Buses</h2>
         </div>
         <div class="results-content" id="results-content">
-            
+
         </div>
         <div id="details-container" class="hidden"></div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-    
+
             const pageLoader = document.getElementById('page-loader');
             window.addEventListener('load', () => {
                 console.log('Window loaded. Hiding initial page loader.');
@@ -191,7 +245,7 @@
                     }
                 });
             });
-    
+
             // --- 2. Show loader when <a> links are clicked ---
             const allLinks = document.querySelectorAll('a');
             allLinks.forEach(link => {
@@ -219,13 +273,13 @@
                     });
                 }
             });
-    
+
             // --- TIME & DATE LOGIC ---
             const currentTimeElem = document.getElementById('current-time');
             const journeyDateElem = document.getElementById('journey-date');
             const timeToggleBtn = document.getElementById('time-toggle-btn');
             let is24Hour = false; // Default to 12-hour format
-    
+
             function formatTime(dateOrString) {
                 let date;
                 if (typeof dateOrString === 'string') {
@@ -240,7 +294,7 @@
                     hour12: !is24Hour
                 }).format(date);
             }
-            
+
             function updateCurrentTime() {
                 const now = new Date();
                 const options = {
@@ -249,23 +303,23 @@
                 };
                 currentTimeElem.textContent = new Intl.DateTimeFormat('en-US', options).format(now).replace(' at', ',');
             }
-            
+
             function setJourneyDate() {
                 const today = new Date();
                 journeyDateElem.value = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             }
-            
+
             timeToggleBtn.addEventListener('click', () => {
                 is24Hour = !is24Hour;
                 timeToggleBtn.textContent = is24Hour ? "12h" : "24h";
                 updateCurrentTime();
-                
+
                 // Update times in the results table if it's open
                 document.querySelectorAll('[data-time]').forEach(el => {
                     el.textContent = formatTime(el.getAttribute('data-time'));
                 });
             });
-    
+
             setInterval(updateCurrentTime, 60000); // Update every minute
             updateCurrentTime();
             setJourneyDate();
@@ -273,28 +327,28 @@
             async function fetchWithLocalCache(url) {
                 const key = `cache_${url}`;
                 if (navigator.onLine) {
-                  try {
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    localStorage.setItem(key, JSON.stringify(data));
-                    return data;
-                  } catch (e) {
-                    console.warn('Network fetch failed, using cache.', e);
-                  }
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        localStorage.setItem(key, JSON.stringify(data));
+                        return data;
+                    } catch (e) {
+                        console.warn('Network fetch failed, using cache.', e);
+                    }
                 }
                 // offline or fetch failed
                 const cached = localStorage.getItem(key);
                 return cached ? JSON.parse(cached) : [];
-              }
-    
+            }
+
             // --- OVERLAY LOGIC ---
             const searchOverlay = document.getElementById('search-overlay');
             const overlaySearchInput = document.getElementById('overlay-search-input');
             const searchResults = document.getElementById('search-results');
             const backBtn = document.getElementById('back-btn'); // This is the search overlay back button
-            
+
             let currentSearchType = '', currentTargetInput = null, currentHiddenInput = null, searchTimeout = null, allStops = [];
-    
+
             function openSearchOverlay(type, target, hidden = null) {
                 currentSearchType = type;
                 currentTargetInput = target;
@@ -305,12 +359,12 @@
                 searchResults.innerHTML = '<div class="no-results">Start typing to search...</div>';
                 setTimeout(() => overlaySearchInput.focus(), 100);
             }
-    
+
             function closeSearchOverlay() {
                 searchOverlay.classList.remove('active');
             }
             backBtn.addEventListener('click', closeSearchOverlay);
-    
+
             overlaySearchInput.addEventListener('input', () => {
                 const q = overlaySearchInput.value.trim().toLowerCase();
                 clearTimeout(searchTimeout);
@@ -319,7 +373,7 @@
                     return;
                 }
                 searchResults.innerHTML = '<div class="loading">Searching...</div>';
-                
+
                 searchTimeout = setTimeout(() => {
                     if (currentSearchType === 'buses') {
                         fetch(`/api/search_bus?q=${encodeURIComponent(q)}`)
@@ -352,43 +406,43 @@
                     }
                 }, 300);
             });
-    
+
             // --- FETCH STOPS & SETUP INPUTS ---
             fetchWithLocalCache('/union/stops?skip=0&limit=1000')
-                
+
                 .then(data => allStops = data)
                 .catch(err => console.error("Failed to fetch stops:", err));
-    
+
             document.getElementById('start-stop-search').addEventListener('click', (e) => openSearchOverlay('stops', e.target, document.getElementById('start-stop-id')));
             document.getElementById('end-stop-search').addEventListener('click', (e) => openSearchOverlay('stops', e.target, document.getElementById('end-stop-id')));
             document.getElementById('bus-search-action').addEventListener('click', () => openSearchOverlay('buses', null, null));
-    
+
             // --- SWAP BUTTON LOGIC ---
             document.getElementById('swap-btn').addEventListener('click', () => {
                 const startInput = document.getElementById('start-stop-search');
                 const endInput = document.getElementById('end-stop-search');
                 const startIdInput = document.getElementById('start-stop-id');
                 const endIdInput = document.getElementById('end-stop-id');
-    
+
                 [startInput.value, endInput.value] = [endInput.value, startInput.value];
                 [startIdInput.value, endIdInput.value] = [endIdInput.value, startIdInput.value];
             });
-    
-    
+
+
             // --- RESULTS OVERLAY LOGIC ---
             const resultsOverlay = document.getElementById('results-overlay');
             const resultsContent = document.getElementById('results-content');
             const resultsClose = document.getElementById('results-close-btn');
             const detailsContainer = document.getElementById('details-container');
-    
+
             resultsClose.addEventListener('click', () => resultsOverlay.classList.remove('active'));
-    
+
             const displayRouteData = (data) => {
-                
-                    // 1. Build the Options List View
-                    let optionsHtml="";
-                    data.results.forEach((r, index) => {
-                        optionsHtml += `
+
+                // 1. Build the Options List View
+                let optionsHtml = "";
+                data.results.forEach((r, index) => {
+                    optionsHtml += `
                             <div class="route-option" data-index="${index}">
                                 <div class="route-summary">
                                     <span class="time">${formatTime(r.first_leg.departure_time)} - ${formatTime(r.second_leg.arrival_time)}</span>
@@ -401,19 +455,19 @@
                                 <p class="route-details-summary">Wait: ${r.transfer_wait_time} • Total: ${r.total_duration}</p>
                             </div>
                         `;
+                });
+                resultsContent.innerHTML = optionsHtml;
+
+                // 2. Add Event Listeners to switch to Detailed View
+                document.querySelectorAll('.route-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        const index = e.currentTarget.dataset.index;
+                        const r = data.results[index];
+                        showDetailsView(r);
                     });
-                    resultsContent.innerHTML = optionsHtml;
-            
-                    // 2. Add Event Listeners to switch to Detailed View
-                    document.querySelectorAll('.route-option').forEach(option => {
-                        option.addEventListener('click', (e) => {
-                            const index = e.currentTarget.dataset.index;
-                            const r = data.results[index];
-                            showDetailsView(r);
-                        });
-                    });
+                });
             };
-            
+
             // --- Function to build and show the Detailed View ---
             const showDetailsView = (r) => {
                 let detailsHtml = `
@@ -473,18 +527,18 @@
                     </div>
                 `;
                 detailsContainer.innerHTML = detailsHtml;
-            
+
                 // Switch views
                 resultsContent.classList.add('hidden');
                 detailsContainer.classList.remove('hidden');
-            
+
                 // FIX: Add event listener for the new back button using its unique ID
                 document.getElementById('details-back-btn').addEventListener('click', () => {
                     detailsContainer.classList.add('hidden');
                     resultsContent.classList.remove('hidden');
                 });
             };
-    
+
             document.getElementById('find-btn').addEventListener('click', () => {
                 const startId = document.getElementById('start-stop-id').value;
                 const endId = document.getElementById('end-stop-id').value;
@@ -498,133 +552,133 @@
                 }
                 resultsContent.innerHTML = '<div class="loading">Searching for buses...</div>';
                 resultsOverlay.classList.add('active');
-    
+
                 fetchWithLocalCache(`/api/find_route_results?start_stop_id=${startId}&end_stop_id=${endId}`)
-                .then(data => {
-                    // Case 1: No routes found
-                    if (data.type === 'none' || !data.results || data.results.length === 0) {
-                        resultsContent.innerHTML = '<h3>No Routes Found</h3><p class="no-results">No direct or transfer routes are available for your selection at this time.</p>';
-                        return;
-                    }
-    
-                    // Case 2: Direct routes found
-                    if (data.type === 'direct') {
-                        let html = '<h3>Direct Buses</h3><table><thead><tr><th>Bus</th><th>Route</th><th>Depart</th><th>Arrive</th><th></th></tr></thead><tbody>';
-                        data.results.forEach(r => {
-                            html += `<tr>
+                    .then(data => {
+                        // Case 1: No routes found
+                        if (data.type === 'none' || !data.results || data.results.length === 0) {
+                            resultsContent.innerHTML = '<h3>No Routes Found</h3><p class="no-results">No direct or transfer routes are available for your selection at this time.</p>';
+                            return;
+                        }
+
+                        // Case 2: Direct routes found
+                        if (data.type === 'direct') {
+                            let html = '<h3>Direct Buses</h3><table><thead><tr><th>Bus</th><th>Route</th><th>Depart</th><th>Arrive</th><th></th></tr></thead><tbody>';
+                            data.results.forEach(r => {
+                                html += `<tr>
                                 <td>${r.bus_name}</td>
                                 <td>${r.route_name} (${r.direction})</td>
                                 <td><span data-time="${r.start_arrival}">${formatTime(r.start_arrival)}</span></td>
                                 <td><span data-time="${r.end_arrival}">${formatTime(r.end_arrival)}</span></td>
                                 <td><a href="/redirect_to_current_trip/${r.bus_id}" class="view-trip-btn">View Trip</a></td>
                             </tr>`;
-                        });
-                        html += '</tbody></table>';
-                        resultsContent.innerHTML = html;
-                    } 
-                    
-                    // Case 3: Transfer routes found (NEW UI)
-                    else if (data.type === 'transfer') {
-                        displayRouteData(data);
-                    }
-    
-                }).catch(error => {
-                    console.error("Error fetching route data:", error);
-                    resultsContent.innerHTML = '<h3>Error</h3><p class="no-results">An error occurred while fetching route data. Please try again.</p>';
-                });
+                            });
+                            html += '</tbody></table>';
+                            resultsContent.innerHTML = html;
+                        }
+
+                        // Case 3: Transfer routes found (NEW UI)
+                        else if (data.type === 'transfer') {
+                            displayRouteData(data);
+                        }
+
+                    }).catch(error => {
+                        console.error("Error fetching route data:", error);
+                        resultsContent.innerHTML = '<h3>Error</h3><p class="no-results">An error occurred while fetching route data. Please try again.</p>';
+                    });
             });
         });
         // —— Recent‑Trips Logic ——
-const RECENT_KEY = 'recentTrips';
-function loadRecent() {
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
-  catch { return []; }
-}
-function saveRecent(list) {
-  localStorage.setItem(RECENT_KEY, JSON.stringify(list));
-}
-function removeRecent(idx) {
-  const list = loadRecent();
-  list.splice(idx, 1);
-  saveRecent(list);
-  renderRecent();
-}
-function renderRecent() {
-    const ul = document.getElementById('recent-trips-list');
-    const secul = document.getElementById('recent-trips-section');
-    const list = loadRecent();
-
-    // Clear existing content
-    ul.innerHTML = '';
-
-    if (!list.length) {
-        secul.style.display = 'none'; // Hide the ul
-        return;
-    }
-
-    // If there are trips, ensure the ul is visible.
-    secul.style.display = 'block'; // Or 'flex', 'grid', etc., depending on your CSS display property
-
-    list.forEach((e, i) => {
-        // Create the main list item container.
-        const li = document.createElement('li');
-        li.className = 'trip-item';
-
-        // Create the main link element and make it the primary container.
-        const a = document.createElement('a');
-        a.className = 'trip-link';
-        a.href = e.url; // Assuming the saved object has a 'url' property.
-
-        // Create and append the bus name span directly to the link.
-        const busNameSpan = document.createElement('span');
-        busNameSpan.className = 'bus-name-v1';
-        busNameSpan.textContent = e.busName;
-        a.appendChild(busNameSpan);
-
-        // Create and append the trip name span directly to the link.
-        if (e.tripName) { // Only add if tripName exists
-            const tripNameSpan = document.createElement('span');
-            tripNameSpan.className = 'trip-name-v1'; // Define this CSS class for styling
-            tripNameSpan.textContent = ` ${e.tripName}`; // Add parentheses for formatting
-            a.appendChild(tripNameSpan);
+        const RECENT_KEY = 'recentTrips';
+        function loadRecent() {
+            try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
+            catch { return []; }
         }
+        function saveRecent(list) {
+            localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+        }
+        function removeRecent(idx) {
+            const list = loadRecent();
+            list.splice(idx, 1);
+            saveRecent(list);
+            renderRecent();
+        }
+        function renderRecent() {
+            const ul = document.getElementById('recent-trips-list');
+            const secul = document.getElementById('recent-trips-section');
+            const list = loadRecent();
 
-        // Create and append the bus ID span directly to the link.
-        const busIdSpan = document.createElement('span');
-        busIdSpan.className = 'bus-id-v1';
-        busIdSpan.textContent = ` id ${e.busId}`;
-        a.appendChild(busIdSpan);
+            // Clear existing content
+            ul.innerHTML = '';
 
-        // Create the remove button.
-        const btn = document.createElement('button');
-        btn.className = 'remove-trip-button';
-        btn.title = 'Remove';
-        btn.onclick = (event) => {
-            event.stopPropagation(); // Prevent the link from being clicked when the button is clicked
-            removeRecent(i);
-        };
+            if (!list.length) {
+                secul.style.display = 'none'; // Hide the ul
+                return;
+            }
 
-        // Add the SVG icon inside the button.
-        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            // If there are trips, ensure the ul is visible.
+            secul.style.display = 'block'; // Or 'flex', 'grid', etc., depending on your CSS display property
 
-        // Append the link (which now contains bus name, trip name, and ID) and the button to the list item.
-        li.append(a, btn);
-        // Append the list item to the main list.
-        ul.append(li);
-    });
-}
-document.addEventListener('DOMContentLoaded', renderRecent);
+            list.forEach((e, i) => {
+                // Create the main list item container.
+                const li = document.createElement('li');
+                li.className = 'trip-item';
+
+                // Create the main link element and make it the primary container.
+                const a = document.createElement('a');
+                a.className = 'trip-link';
+                a.href = e.url; // Assuming the saved object has a 'url' property.
+
+                // Create and append the bus name span directly to the link.
+                const busNameSpan = document.createElement('span');
+                busNameSpan.className = 'bus-name-v1';
+                busNameSpan.textContent = e.busName;
+                a.appendChild(busNameSpan);
+
+                // Create and append the trip name span directly to the link.
+                if (e.tripName) { // Only add if tripName exists
+                    const tripNameSpan = document.createElement('span');
+                    tripNameSpan.className = 'trip-name-v1'; // Define this CSS class for styling
+                    tripNameSpan.textContent = ` ${e.tripName}`; // Add parentheses for formatting
+                    a.appendChild(tripNameSpan);
+                }
+
+                // Create and append the bus ID span directly to the link.
+                const busIdSpan = document.createElement('span');
+                busIdSpan.className = 'bus-id-v1';
+                busIdSpan.textContent = ` id ${e.busId}`;
+                a.appendChild(busIdSpan);
+
+                // Create the remove button.
+                const btn = document.createElement('button');
+                btn.className = 'remove-trip-button';
+                btn.title = 'Remove';
+                btn.onclick = (event) => {
+                    event.stopPropagation(); // Prevent the link from being clicked when the button is clicked
+                    removeRecent(i);
+                };
+
+                // Add the SVG icon inside the button.
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
+                // Append the link (which now contains bus name, trip name, and ID) and the button to the list item.
+                li.append(a, btn);
+                // Append the list item to the main list.
+                ul.append(li);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', renderRecent);
 
     </script>
     <script>
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker
-            .register('/service-worker.js')
-            .then(() => console.log('SW registered'))
-            .catch(err => console.error('SW failed', err));
+            navigator.serviceWorker
+                .register('/service-worker.js')
+                .then(() => console.log('SW registered'))
+                .catch(err => console.error('SW failed', err));
         }
-      </script>
+    </script>
     <script src="static/translater.js"></script>
 </body>
-</html>
 
+</html>
